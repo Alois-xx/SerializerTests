@@ -1,0 +1,12 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/bin
+/obj
+/obj
+
+
+/.vs/SerializerTests/v15
+/packages
+/.vs

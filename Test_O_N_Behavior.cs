@@ -12,6 +12,13 @@ namespace SerializerTests
     {
         List<ISerializeDeserializeTester> SerializersToTest;
 
+        // capture first time init effects by executing serialize/deserialize with N=1 two times
+        static int[] ObjectCountToTest = new int[]
+        {
+            1, 1, 10, 100, 500, 1000, 10*1000, 50*1000, 100*1000, 200*1000, 300*1000, 400*1000, 500*1000, 600*1000, 700*1000, 800*1000, 900*1000, 1000*1000
+        };
+
+
         public Test_O_N_Behavior(List<ISerializeDeserializeTester> serializersToTest)
         {
             SerializersToTest = serializersToTest;
@@ -19,59 +26,98 @@ namespace SerializerTests
   
         public  void TestSerialize(int nObjects = 1000 * 1000, int nRuns = 5)
         {
-            Console.WriteLine(GetHeader(true));
+            Console.WriteLine(GetHeader(Format.Serialize));
             foreach (var formatter in SerializersToTest)
             {
-                // capture first time init effects by executing serialize/deserialize with N=1
-                for (int NBooks = 1; NBooks <= nObjects; NBooks += 100 * 1000)
+                int NBooks = 0;
+
+                for (int i = 0; i < ObjectCountToTest.Length && ObjectCountToTest[i] <= nObjects; i++)
                 {
+                    NBooks = ObjectCountToTest[i];
                     var times = formatter.TestSerialize(nTimes: nRuns, nObjectsToCreate: NBooks);
                     Print(formatter, NBooks, times);
 
-                    if (NBooks == 1)
+                    if (nObjects == 1)
                     {
-                        NBooks = 0;
+                        break;
                     }
+
                 }
             }
         }
 
         public  void TestDeserialize(int nObjects=1000*1000, int nRuns=5)
         {
-            Console.WriteLine(GetHeader(false));
+            Console.WriteLine(GetHeader(Format.Deserialize));
             foreach (var formatter in SerializersToTest)
             {
-                // capture first time init effects by executing serialize/deserialize with N=1
-                for (int NBooks = 1; NBooks <= nObjects; NBooks += 100 * 1000)
+                int NBooks = 0;
+                for (int i = 0; i < ObjectCountToTest.Length && ObjectCountToTest[i] <= nObjects; i++)
                 {
+                    NBooks = ObjectCountToTest[i];
                     var times = formatter.TestDeserialize(nTimes: nRuns, nObjectsToCreate: NBooks);
                     Print(formatter, NBooks, times);
-
-                    if (NBooks == 1)
+                    if (nObjects == 1)
                     {
-                        NBooks = 0;
+                        break;
                     }
                 }
             }
         }
 
+        public void TestCombined(int nObjects = 1000 * 1000, int nRuns = 5)
+        {
+            Console.WriteLine(GetHeader(Format.Combined));
+            foreach (var formatter in SerializersToTest)
+            {
+                int NBooks = 0;
 
-        private  void Print(ISerializeDeserializeTester formatter, int NBooks, (double firstS, double averageS, long serializedSize) times)
+                for (int i = 0; i < ObjectCountToTest.Length && ObjectCountToTest[i] <= nObjects; i++)
+                {
+                    NBooks = ObjectCountToTest[i];
+                    var timesSerialize = formatter.TestSerialize(nTimes: nRuns, nObjectsToCreate: NBooks);
+                    var timesDeserialize = formatter.TestDeserialize(nTimes: nRuns, nObjectsToCreate: NBooks);
+
+                    Print(formatter, NBooks, timesSerialize, timesDeserialize);
+                }
+            }
+        }
+
+
+        private void Print(ISerializeDeserializeTester formatter, int NBooks, (double firstS, double averageS, long serializedSize) times)
         {
             string typeName = formatter.GetType().Name;
             typeName = typeName.Substring(0, typeName.Length - 2); // omit generic arg `1 of typename
             Console.WriteLine($"{typeName}<{formatter.GetType().GetGenericArguments()[0].Name}>\t{NBooks}\t{times.averageS:F3}\t{times.serializedSize}\t{formatter.FileVersion}");
         }
 
-         string GetHeader(bool serialize)
+        private void Print(ISerializeDeserializeTester formatter, int NBooks, (double firstS, double averageS, long serializedSize) timesSerialize, (double firstS, double averageS, long dataSize) timesDeserialize)
         {
-            string str = "serialize";
-            if (!serialize)
-            {
-                str = "de" + str;
-            }
+            string typeName = formatter.GetType().Name;
+            typeName = typeName.Substring(0, typeName.Length - 2); // omit generic arg `1 of typename
+            Console.WriteLine($"{typeName}<{formatter.GetType().GetGenericArguments()[0].Name}>\t{NBooks}\t{timesSerialize.averageS:F3}\t{timesDeserialize.averageS:F3}\t{timesSerialize.serializedSize}\t{formatter.FileVersion}");
+        }
 
-            return $"Serializer\tObjects\t\"Time to {str} in s\"\t\"Size in bytes\"\tFileVersion";
+        enum Format
+        {
+            Deserialize,
+            Serialize,
+            Combined,
+        }
+
+        string GetHeader(Format format)
+        {
+            switch(format)
+            {
+                case Format.Combined:
+                    return "Serializer\tObjects\t\"Time to serialize in s\"\t\"Time to deserialize in s\"\t\"Size in bytes\"\tFileVersion";
+                case Format.Deserialize:
+                    return "Serializer\tObjects\t\"Time to deserialize in s\"\t\"Size in bytes\"\tFileVersion";
+                case Format.Serialize:
+                    return "Serializer\tObjects\t\"Time to serialize in s\"\t\"Size in bytes\"\tFileVersion";
+                default:
+                    throw new NotSupportedException($"Output format {format} is not supported.");
+            }
         }
     }
 }

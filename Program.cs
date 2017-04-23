@@ -48,15 +48,80 @@ namespace SerializerTests
 
     class Program
     {
-        static string Help = "SerializerTests is a serializer performance testing framework to evaluate and compare differnt serializers for .NET by Alois Kraus" + Environment.NewLine +
-                             "SerializerTests -test [serialize, deserialize, firstCall]" + Environment.NewLine +
+        static string Help = "SerializerTests is a serializer performance testing framework to evaluate and compare different serializers for .NET by Alois Kraus" + Environment.NewLine +
+                             "SerializerTests [-Runs dd] -test [serialize, deserialize, combined, firstCall]" + Environment.NewLine +
+                             " -Runs      Default is 5. The result is averaged where the first run is excluded from the average" + Environment.NewLine  +
                              " -test      Tests a scenario to compare the overhead of many different serializers" + Environment.NewLine +
-                             "            to execute deserialize you must first have called the serialize to generate serialized test data on disk to be read during deserialize" + Environment.NewLine;
+                             "            To execute deserialize you must first have called the serialize to generate serialized test data on disk to be read during deserialize" + Environment.NewLine;
         private Queue<string> Args;
+
+        List<ISerializeDeserializeTester> SerializersToTest;
+        List<ISerializeDeserializeTester> StartupSerializersToTest;
+
+        int Runs = 5;
+
 
         public Program(string[] args)
         {
             Args = new Queue<string>(args);
+            SerializersToTest = new List<ISerializeDeserializeTester>
+            {
+                new SlimSerializer<BookShelf>(Data),
+                new FastJson<BookShelf>(Data),
+                new Jil<BookShelf>(Data),
+                new DataContractIndented<BookShelf>(Data),
+                new DataContractBinaryXml<BookShelf>(Data),
+                new DataContract<BookShelf>(Data),
+                new XmlSerializer<BookShelf>(Data),
+                new JsonNet<BookShelf>(Data),
+                new Protobuf_net<BookShelf>(Data),
+                new BinaryFormatter<BookShelf>(Data),
+            };
+
+            StartupSerializersToTest = new List<ISerializeDeserializeTester>
+            {
+                new SlimSerializer<BookShelf>(Data),
+                new SlimSerializer<BookShelf1>(Data1),
+                new SlimSerializer<BookShelf2>(Data2),
+                new SlimSerializer<LargeBookShelf>(DataLarge),
+
+                new BinaryFormatter<BookShelf>(Data),
+                new BinaryFormatter<BookShelf1>(Data1),
+                new BinaryFormatter<BookShelf2>(Data2),
+                new BinaryFormatter<LargeBookShelf>(DataLarge),
+
+                new FastJson<BookShelf>(Data),
+                new FastJson<BookShelf1>(Data1),
+                new FastJson<BookShelf2>(Data2),
+                new FastJson<LargeBookShelf>(DataLarge),
+
+                new Jil<BookShelf>(Data),
+                new Jil<BookShelf1>(Data1),
+                new Jil<BookShelf2>(Data2),
+                new Jil<LargeBookShelf>(DataLarge),
+
+                new DataContract<BookShelf>(Data),
+                new DataContract<BookShelf1>(Data1),
+                new DataContract<BookShelf2>(Data2),
+                new DataContract<LargeBookShelf>(DataLarge),
+
+                new XmlSerializer<BookShelf>(Data),
+                new XmlSerializer<BookShelf1>(Data1),
+                new XmlSerializer<BookShelf2>(Data2),
+                new XmlSerializer<LargeBookShelf>(DataLarge),
+
+
+                new JsonNet<BookShelf>(Data),
+                new JsonNet<BookShelf1>(Data1),
+                new JsonNet<BookShelf2>(Data2),
+                new JsonNet<LargeBookShelf>(DataLarge),
+
+                new Protobuf_net<BookShelf>(Data),
+                new Protobuf_net<BookShelf1>(Data1),
+                new Protobuf_net<BookShelf2>(Data2),
+                new Protobuf_net<LargeBookShelf>(DataLarge),
+            };
+
         }
 
         static void Main(string[] args)
@@ -97,6 +162,10 @@ namespace SerializerTests
 
                 switch (lowerArg)
                 {
+                    case "-runs":
+                        string n = NextLower();
+                        Runs = int.Parse(n);
+                        break;
                     case "-test":
                         string nextArg = NextLower();
                         if (nextArg?.Equals("serialize") == true)
@@ -110,6 +179,10 @@ namespace SerializerTests
                         else if (nextArg?.Equals("firstcall") == true)
                         {
                             FirstCall();
+                        }
+                        else if(nextArg?.Equals("combined") == true)
+                        {
+                            Combined();
                         }
                         else
                         {
@@ -136,96 +209,40 @@ namespace SerializerTests
 
             if (!IsNGenned())
             {
-                Console.WriteLine( "Not NGenned! Results may not be accurate in your target deployment.");
+                Console.WriteLine( "Warning: Not NGenned! Results may not be accurate in your target deployment.");
                 Console.WriteLine(@"Please execute: %windir%\Microsoft.NET\Framework64\v4.0.30319\ngen.exe install SerializerTests.exe");
+                Console.WriteLine(@"This will precompile the executable and all referenced dlls. Undoing this is not as easy since you must call ngen uninstall for the executable and all references assemblies.");
             }
 
             WarnIfDebug();
         }
 
+
         private void Deserialize()
         {
-            List<ISerializeDeserializeTester> serializersToTest = new List<ISerializeDeserializeTester>
-            {
-                new FastJson<BookShelf>(Data),
-                new JIL<BookShelf>(Data),
-                new DataContractIndented<BookShelf>(Data),
-                new DataContractBinaryXml<BookShelf>(Data),
-                new DataContract<BookShelf>(Data),
-                new XmlSerializer<BookShelf>(Data),
-                new JsonNet<BookShelf>(Data),
-                new Protobuf_net<BookShelf>(Data),
-                new BinaryFormatter<BookShelf>(Data),
-            };
-            var tester = new Test_O_N_Behavior(serializersToTest);
-            tester.TestDeserialize();
+            var tester = new Test_O_N_Behavior(SerializersToTest);
+            tester.TestDeserialize(nRuns: Runs);
         }
 
         private void Serialize()
         {
-            List<ISerializeDeserializeTester> serializersToTest = new List<ISerializeDeserializeTester>
-            {
-                new FastJson<BookShelf>(Data),
-                new JIL<BookShelf>(Data),
-                new DataContractIndented<BookShelf>(Data),
-                new DataContractBinaryXml<BookShelf>(Data),
-                new DataContract<BookShelf>(Data),
-                new XmlSerializer<BookShelf>(Data),
-                new JsonNet<BookShelf>(Data),
-                new Protobuf_net<BookShelf>(Data),
-                new BinaryFormatter<BookShelf>(Data),
-            };
-            var tester = new Test_O_N_Behavior(serializersToTest);
-            tester.TestSerialize();
+            var tester = new Test_O_N_Behavior(SerializersToTest);
+            tester.TestSerialize(nRuns: Runs);
+        }
+
+        private void Combined()
+        {
+            var tester = new Test_O_N_Behavior(SerializersToTest);
+            tester.TestCombined(nRuns: Runs);
         }
 
 
         /// <summary>
-        /// Test for each serializer 5 differnt types the first call effect
+        /// Test for each serializer 5 different types the first call effect
         /// </summary>
         private void FirstCall()
         {
-            List<ISerializeDeserializeTester> serializersToTest = new List<ISerializeDeserializeTester>
-            {
-                new BinaryFormatter<BookShelf>(Data),
-                new BinaryFormatter<BookShelf1>(Data1),
-                new BinaryFormatter<BookShelf2>(Data2),
-                new BinaryFormatter<LargeBookShelf>(DataLarge),
-
-                new FastJson<BookShelf>(Data),
-                new FastJson<BookShelf1>(Data1),
-                new FastJson<BookShelf2>(Data2),
-                new FastJson<LargeBookShelf>(DataLarge),
-                
-
-                new JIL<BookShelf>(Data),
-                new JIL<BookShelf1>(Data1),
-                new JIL<BookShelf2>(Data2),
-                new JIL<LargeBookShelf>(DataLarge),
-
-                new DataContract<BookShelf>(Data),
-                new DataContract<BookShelf1>(Data1),
-                new DataContract<BookShelf2>(Data2),
-                new DataContract<LargeBookShelf>(DataLarge),
-
-                new XmlSerializer<BookShelf>(Data),
-                new XmlSerializer<BookShelf1>(Data1),
-                new XmlSerializer<BookShelf2>(Data2),
-                new XmlSerializer<LargeBookShelf>(DataLarge),
-
-
-                new JsonNet<BookShelf>(Data),
-                new JsonNet<BookShelf1>(Data1),
-                new JsonNet<BookShelf2>(Data2),
-                new JsonNet<LargeBookShelf>(DataLarge),
-
-                new Protobuf_net<BookShelf>(Data),
-                new Protobuf_net<BookShelf1>(Data1),
-                new Protobuf_net<BookShelf2>(Data2),
-                new Protobuf_net<LargeBookShelf>(DataLarge),
-            };
-
-            var tester = new Test_O_N_Behavior(serializersToTest);
+            var tester = new Test_O_N_Behavior(StartupSerializersToTest);
             tester.TestSerialize(nObjects: 1, nRuns:1);
         }
 

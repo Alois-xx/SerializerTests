@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace SerializerTests.Serializers
 {
     // https://github.com/kevin-montrose/Jil
-    class JIL<T> : TestBase<T, Jil.JSON> where T : class
+    class Jil<T> : TestBase<T, Jil.JSON> where T : class
     {
-        public JIL(Func<int, T> testData)
+        public Jil(Func<int, T> testData)
         {
             base.CreateNTestData = testData;
         }

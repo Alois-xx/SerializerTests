@@ -177,7 +177,10 @@ namespace SerializerTests
         {
             string file = GetInputOutputFileName(nObjectsCreatedAndSaved);
             byte[] bytes = File.ReadAllBytes(file);
-            return new MemoryStream(bytes);
+            var stream = GetMemoryStream();
+            stream.Write(bytes, 0, bytes.Length);
+            stream.Position = 0;
+            return stream;
         }
 
         public string FileVersion

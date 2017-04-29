@@ -66,20 +66,32 @@ namespace SerializerTests
             Args = new Queue<string>(args);
             SerializersToTest = new List<ISerializeDeserializeTester>
             {
+                new Wire<BookShelf>(Data),
+                new Protobuf_net<BookShelf>(Data),
+                new MsgPack<BookShelf>(Data),
                 new SlimSerializer<BookShelf>(Data),
-                new FastJson<BookShelf>(Data),
                 new Jil<BookShelf>(Data),
+                new FastJson<BookShelf>(Data),
                 new DataContractIndented<BookShelf>(Data),
                 new DataContractBinaryXml<BookShelf>(Data),
                 new DataContract<BookShelf>(Data),
                 new XmlSerializer<BookShelf>(Data),
                 new JsonNet<BookShelf>(Data),
-                new Protobuf_net<BookShelf>(Data),
                 new BinaryFormatter<BookShelf>(Data),
             };
 
             StartupSerializersToTest = new List<ISerializeDeserializeTester>
             {
+                new Wire<BookShelf>(Data),
+                new Wire<BookShelf1>(Data1),
+                new Wire<BookShelf2>(Data2),
+                new Wire<LargeBookShelf>(DataLarge),
+
+                new MsgPack<BookShelf>(Data),
+                new MsgPack<BookShelf1>(Data1),
+                new MsgPack<BookShelf2>(Data2),
+                new MsgPack<LargeBookShelf>(DataLarge),
+
                 new SlimSerializer<BookShelf>(Data),
                 new SlimSerializer<BookShelf1>(Data1),
                 new SlimSerializer<BookShelf2>(Data2),

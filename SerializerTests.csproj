@@ -40,6 +40,9 @@
     <Reference Include="Jil, Version=2.15.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Jil.2.15.0\lib\net45\Jil.dll</HintPath>
     </Reference>
+    <Reference Include="MsgPack, Version=0.1.4298.15470, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\MsgPack.0.1.0.2011042300\lib\net40\MsgPack.dll</HintPath>
+    </Reference>
     <Reference Include="MySql.Data, Version=6.9.8.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>packages\NFX.3.4.0.1\lib\MySql.Data.dll</HintPath>
     </Reference>
@@ -79,9 +82,14 @@
       <HintPath>packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="Wire, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Wire.0.8.2\lib\net45\Wire.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Serializers\BinaryFormatter.cs" />
+    <Compile Include="Serializers\MsgPack.cs" />
+    <Compile Include="Serializers\Wire.cs" />
     <Compile Include="Serializers\SlimSerializer.cs" />
     <Compile Include="TypesToSerialize\BookShelf.cs" />
     <Compile Include="Program.cs" />

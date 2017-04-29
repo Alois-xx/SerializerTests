@@ -4,6 +4,6 @@
     <StartArguments>-test combined</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>-test firstcall</StartArguments>
+    <StartArguments>-test combined</StartArguments>
   </PropertyGroup>
 </Project>

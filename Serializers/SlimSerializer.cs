@@ -25,7 +25,8 @@ namespace SerializerTests.Serializers
                                   .SelectMany(t => makeVariations(t));
 
               var result = new SlimSerializer( types );
-              result.TypeMode = TypeRegistryMode.Batch;
+              //Enable Batch mode for streaming messages, in that case the deserializing serializer has to be a different instance
+              //result.TypeMode = TypeRegistryMode.Batch;
               return result;
             };
         }

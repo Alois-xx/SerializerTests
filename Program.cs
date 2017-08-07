@@ -78,6 +78,7 @@ namespace SerializerTests
                 new XmlSerializer<BookShelf>(Data),
                 new JsonNet<BookShelf>(Data),
                 new BinaryFormatter<BookShelf>(Data),
+                new MessagePackSharp<BookShelf>(Data),
             };
 
             StartupSerializersToTest = new List<ISerializeDeserializeTester>
@@ -132,6 +133,11 @@ namespace SerializerTests
                 new Protobuf_net<BookShelf1>(Data1),
                 new Protobuf_net<BookShelf2>(Data2),
                 new Protobuf_net<LargeBookShelf>(DataLarge),
+
+                new MessagePackSharp<BookShelf>(Data),
+                new MessagePackSharp<BookShelf1>(Data1),
+                new MessagePackSharp<BookShelf2>(Data2),
+                new MessagePackSharp<LargeBookShelf>(DataLarge),
             };
 
         }

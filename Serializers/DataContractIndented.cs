@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace SerializerTests.Serializers
 {
     class DataContractIndented<T> : TestBase<T, DataContractSerializer> where T : class
     {
-        public DataContractIndented(Func<int, T> testData)
+        public DataContractIndented(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
         {
-            base.CreateNTestData = testData;
             base.CustomSerialize = SerializeXmlIndented;
             base.CustomDeserialize = DeserializeXmlIndented;
             FormatterFactory = () => new DataContractSerializer(typeof(T));

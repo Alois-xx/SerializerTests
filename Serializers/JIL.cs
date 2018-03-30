@@ -10,9 +10,8 @@ namespace SerializerTests.Serializers
     // https://github.com/kevin-montrose/Jil
     class Jil<T> : TestBase<T, Jil.JSON> where T : class
     {
-        public Jil(Func<int, T> testData)
+        public Jil(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
         {
-            base.CreateNTestData = testData;
         }
 
         protected override void Serialize(T obj, Stream stream)

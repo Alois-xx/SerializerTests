@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SerializerTests.Serializers
 {
     public class DataContract<T> : TestBase<T, DataContractSerializer> where T : class
     {
-        public DataContract(Func<int,T> testData)
+        public DataContract(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
         {
-            base.CreateNTestData = testData;
             FormatterFactory = () => new DataContractSerializer(typeof(T));
         }
 

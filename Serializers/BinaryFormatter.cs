@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SerializerTests
 {
     public class BinaryFormatter<T> : TestBase<T, System.Runtime.Serialization.Formatters.Binary.BinaryFormatter> where T : class
     {
-        public BinaryFormatter(Func<int,T> testData)
+        public BinaryFormatter(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
         {
-            base.CreateNTestData = testData;
             FormatterFactory = () => new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
         }
 

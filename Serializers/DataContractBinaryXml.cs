@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace SerializerTests.Serializers
 {
     public class DataContractBinaryXml<T> : TestBase<T, DataContractSerializer> where T : class
     {
-        public DataContractBinaryXml(Func<int,T> testData)
+        public DataContractBinaryXml(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
         {
-            base.CreateNTestData = testData;
             base.CustomSerialize = SerializeBinaryXml;
             base.CustomDeserialize = DeserializeBinaryXml;
             FormatterFactory = () => new DataContractSerializer(typeof(T));

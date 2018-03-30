@@ -14,9 +14,8 @@ namespace SerializerTests.Serializers
     class SlimSerializer<T> : TestBase<T, SlimSerializer> where T:class
     {
        
-        public SlimSerializer(Func<int, T> testData)
+        public SlimSerializer(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
         { 
-            base.CreateNTestData = testData;
             FormatterFactory = () =>
             {
               var types = Assembly.GetExecutingAssembly()
@@ -31,7 +30,9 @@ namespace SerializerTests.Serializers
             };
         }
 
+#pragma warning disable IDE1006 // Naming Styles
         private IEnumerable<Type> makeVariations(Type t)
+#pragma warning restore IDE1006 // Naming Styles
         {
           yield return t;
           yield return t.MakeArrayType();

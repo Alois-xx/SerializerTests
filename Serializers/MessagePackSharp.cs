@@ -8,11 +8,14 @@ using System.Threading.Tasks;
 
 namespace SerializerTests.Serializers
 {
+    /// <summary>
+    /// https://github.com/neuecc/MessagePack-CSharp
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class MessagePackSharp<T> : TestBase<T, MessagePack.IFormatterResolver> where T : class
     {
-        public MessagePackSharp(Func<int, T> testData)
+        public MessagePackSharp(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
         {
-            base.CreateNTestData = testData;
             FormatterFactory = () => MessagePack.Resolvers.StandardResolver.Instance;
         }
 

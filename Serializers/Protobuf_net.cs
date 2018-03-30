@@ -11,9 +11,8 @@ namespace SerializerTests
     // https://github.com/mgravell/protobuf-net
     public class Protobuf_net<T> : TestBase<T, RuntimeTypeModel> where T : class
     {
-        public Protobuf_net(Func<int,T> testData)
+        public Protobuf_net(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
         {
-            base.CreateNTestData = testData;
             FormatterFactory = () => RuntimeTypeModel.Create();
         }
 

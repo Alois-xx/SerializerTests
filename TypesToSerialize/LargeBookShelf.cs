@@ -2,10 +2,10 @@
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+
+
+#pragma warning disable 0169
 
 namespace SerializerTests.TypesToSerialize
 {
@@ -87,7 +87,7 @@ namespace SerializerTests.TypesToSerialize
        
     }
 
-    [Serializable, DataContract, ProtoContract]
+    [Serializable, DataContract, ProtoContract, MessagePackObject]
     public class LargeBook
     {
         [DataMember, ProtoMember(1), Key(0)]

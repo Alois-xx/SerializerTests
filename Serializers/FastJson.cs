@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SerializerTests.Serializers
 {
+    /// <summary>
+    /// https://github.com/mgholam/fastJSON/
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     class FastJson<T> : TestBase<T, fastJSON.JSONParameters> where T : class
     {
-        public FastJson(Func<int, T> testData)
+        public FastJson(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
         {
-            base.CreateNTestData = testData;
         }
 
         protected override void Serialize(T obj, Stream stream)

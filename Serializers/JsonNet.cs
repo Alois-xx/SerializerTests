@@ -11,9 +11,8 @@ namespace SerializerTests.Serializers
     // http://www.newtonsoft.com/json
     public class JsonNet<T> : TestBase<T,JsonSerializer> where T : class
     {
-        public JsonNet(Func<int, T> testData)
+        public JsonNet(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
         {
-            base.CreateNTestData = testData;
             FormatterFactory = () => new JsonSerializer();
         }
 

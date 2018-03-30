@@ -1,4 +1,5 @@
-﻿using SerializerTests.Serializers;
+﻿using FlatBuffers;
+using SerializerTests.Serializers;
 using SerializerTests.TypesToSerialize;
 using System;
 using System.Collections.Generic;
@@ -12,17 +13,16 @@ namespace SerializerTests
     /* 
      * Howto add your own serializer:
      * 
-        1. Look at Serializers directory fore examples.
+        1. Look at Serializers directory for examples.
       
             You need to set the CreateNTestData delegate so the tester can serialize and deserialize it. 
             For the default settings you need only to override Serialize and Deserialize and call your formatter. The serializer type argument
-            is used to print out the assemlby version of your serializer. You can use any type of the declaring assembly.
+            is used to print out the assembly version of your serializer. You can use any type of the declaring assembly.
 
             public class BinaryFormatter<T> : TestBase<T, System.Runtime.Serialization.Formatters.Binary.BinaryFormatter> where T : class
             {
-                public BinaryFormatter(Func<int,T> testData)
+                public BinaryFormatter(Func<int,T> testData, Action<T> toucher):base(testData, toucher)
                 {
-                    base.CreateNTestData = testData;
                     FormatterFactory = () => new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 }
 
@@ -51,7 +51,8 @@ namespace SerializerTests
         static string Help = "SerializerTests is a serializer performance testing framework to evaluate and compare different serializers for .NET by Alois Kraus" + Environment.NewLine +
                              "SerializerTests [-Runs dd] -test [serialize, deserialize, combined, firstCall]" + Environment.NewLine +
                              " -Runs      Default is 5. The result is averaged where the first run is excluded from the average" + Environment.NewLine  +
-                             " -test      Tests a scenario to compare the overhead of many different serializers" + Environment.NewLine +
+                             " -test sc   sc can be serialize, deserialize, combined or firstcall to test a scenario for many different serializers" + Environment.NewLine +
+                             " -notouch   Do not touch the deserialized objects to test lazy deserialization" + Environment.NewLine + 
                              "            To execute deserialize you must first have called the serialize to generate serialized test data on disk to be read during deserialize" + Environment.NewLine;
         private Queue<string> Args;
 
@@ -59,6 +60,8 @@ namespace SerializerTests
         List<ISerializeDeserializeTester> StartupSerializersToTest;
 
         int Runs = 5;
+        bool IsNGenWarn = true;
+        bool IsTouch = true;
 
 
         public Program(string[] args)
@@ -66,78 +69,102 @@ namespace SerializerTests
             Args = new Queue<string>(args);
             SerializersToTest = new List<ISerializeDeserializeTester>
             {
-                new Wire<BookShelf>(Data),
-                new Protobuf_net<BookShelf>(Data),
-                new MsgPack<BookShelf>(Data),
-                new SlimSerializer<BookShelf>(Data),
-                new Jil<BookShelf>(Data),
-                new FastJson<BookShelf>(Data),
-                new DataContractIndented<BookShelf>(Data),
-                new DataContractBinaryXml<BookShelf>(Data),
-                new DataContract<BookShelf>(Data),
-                new XmlSerializer<BookShelf>(Data),
-                new JsonNet<BookShelf>(Data),
-                new BinaryFormatter<BookShelf>(Data),
-                new MessagePackSharp<BookShelf>(Data),
+                new FlatBuffer<BookShelfFlat>(DataFlat, TouchFlat),
+                new Bois<BookShelf>(Data, TouchBookShelf),
+                new GroBuf<BookShelf>(Data, TouchBookShelf),
+                new Jil<BookShelf>(Data, TouchBookShelf),
+                new MessagePackSharp<BookShelf>(Data, TouchBookShelf),
+                new Wire<BookShelf>(Data, TouchBookShelf),
+                new Protobuf_net<BookShelf>(Data, TouchBookShelf),
+                new SlimSerializer<BookShelf>(Data, TouchBookShelf),
+                new ZeroFormatter<ZeroFormatterBookShelf>(DataZeroFormatter, TouchZeroFormatterShelf),
+                new ServiceStack<BookShelf>(Data, TouchBookShelf),
+                new FastJson<BookShelf>(Data, TouchBookShelf),
+                new DataContractIndented<BookShelf>(Data, TouchBookShelf),
+                new DataContractBinaryXml<BookShelf>(Data, TouchBookShelf),
+                new DataContract<BookShelf>(Data, TouchBookShelf),
+                new XmlSerializer<BookShelf>(Data, TouchBookShelf),
+                new JsonNet<BookShelf>(Data, TouchBookShelf),
+                new MsgPack_Cli<BookShelf>(Data, TouchBookShelf),
+                new BinaryFormatter<BookShelf>(Data, TouchBookShelf),
             };
 
             StartupSerializersToTest = new List<ISerializeDeserializeTester>
             {
-                new Wire<BookShelf>(Data),
-                new Wire<BookShelf1>(Data1),
-                new Wire<BookShelf2>(Data2),
-                new Wire<LargeBookShelf>(DataLarge),
+                new ServiceStack<BookShelf>(Data, null),
+                new ServiceStack<BookShelf1>(Data1, null),
+                new ServiceStack<BookShelf2>(Data2, null),
+                new ServiceStack<LargeBookShelf>(DataLarge, null),
 
-                new MsgPack<BookShelf>(Data),
-                new MsgPack<BookShelf1>(Data1),
-                new MsgPack<BookShelf2>(Data2),
-                new MsgPack<LargeBookShelf>(DataLarge),
+                new Bois<BookShelf>(Data, null),
+                new Bois<BookShelf1>(Data1, null),
+                new Bois<BookShelf2>(Data2, null),
+                new Bois<LargeBookShelf>(DataLarge, null),
 
-                new SlimSerializer<BookShelf>(Data),
-                new SlimSerializer<BookShelf1>(Data1),
-                new SlimSerializer<BookShelf2>(Data2),
-                new SlimSerializer<LargeBookShelf>(DataLarge),
+                new GroBuf<BookShelf>(Data, null),
+                new GroBuf<BookShelf1>(Data1, null),
+                new GroBuf<BookShelf2>(Data2, null),
+                new GroBuf<LargeBookShelf>(DataLarge, null),
 
-                new BinaryFormatter<BookShelf>(Data),
-                new BinaryFormatter<BookShelf1>(Data1),
-                new BinaryFormatter<BookShelf2>(Data2),
-                new BinaryFormatter<LargeBookShelf>(DataLarge),
+                new ZeroFormatter<ZeroFormatterBookShelf>(DataZeroFormatter, null),
+                new ZeroFormatter<ZeroFormatterBookShelf1>(DataZeroFormatter1, null),
+                new ZeroFormatter<ZeroFormatterBookShelf2>(DataZeroFormatter2, null),
+                new ZeroFormatter<ZeroFormatterLargeBookShelf>(DataZeroFormatterLarge, null),
 
-                new FastJson<BookShelf>(Data),
-                new FastJson<BookShelf1>(Data1),
-                new FastJson<BookShelf2>(Data2),
-                new FastJson<LargeBookShelf>(DataLarge),
+                new Wire<BookShelf>(Data, null),
+                new Wire<BookShelf1>(Data1, null),
+                new Wire<BookShelf2>(Data2, null),
+                new Wire<LargeBookShelf>(DataLarge, null),
 
-                new Jil<BookShelf>(Data),
-                new Jil<BookShelf1>(Data1),
-                new Jil<BookShelf2>(Data2),
-                new Jil<LargeBookShelf>(DataLarge),
+                new SlimSerializer<BookShelf>(Data, null),
+                new SlimSerializer<BookShelf1>(Data1, null),
+                new SlimSerializer<BookShelf2>(Data2, null),
+                new SlimSerializer<LargeBookShelf>(DataLarge, null),
 
-                new DataContract<BookShelf>(Data),
-                new DataContract<BookShelf1>(Data1),
-                new DataContract<BookShelf2>(Data2),
-                new DataContract<LargeBookShelf>(DataLarge),
+                new BinaryFormatter<BookShelf>(Data, null),
+                new BinaryFormatter<BookShelf1>(Data1, null),
+                new BinaryFormatter<BookShelf2>(Data2, null),
+                new BinaryFormatter<LargeBookShelf>(DataLarge, null),
 
-                new XmlSerializer<BookShelf>(Data),
-                new XmlSerializer<BookShelf1>(Data1),
-                new XmlSerializer<BookShelf2>(Data2),
-                new XmlSerializer<LargeBookShelf>(DataLarge),
+                new FastJson<BookShelf>(Data, null),
+                new FastJson<BookShelf1>(Data1, null),
+                new FastJson<BookShelf2>(Data2, null),
+                new FastJson<LargeBookShelf>(DataLarge, null),
 
+                new Jil<BookShelf>(Data, null),
+                new Jil<BookShelf1>(Data1, null),
+                new Jil<BookShelf2>(Data2, null),
+                new Jil<LargeBookShelf>(DataLarge, null),
 
-                new JsonNet<BookShelf>(Data),
-                new JsonNet<BookShelf1>(Data1),
-                new JsonNet<BookShelf2>(Data2),
-                new JsonNet<LargeBookShelf>(DataLarge),
+                new DataContract<BookShelf>(Data, null),
+                new DataContract<BookShelf1>(Data1, null),
+                new DataContract<BookShelf2>(Data2, null),
+                new DataContract<LargeBookShelf>(DataLarge, null),
 
-                new Protobuf_net<BookShelf>(Data),
-                new Protobuf_net<BookShelf1>(Data1),
-                new Protobuf_net<BookShelf2>(Data2),
-                new Protobuf_net<LargeBookShelf>(DataLarge),
+                new XmlSerializer<BookShelf>(Data, null),
+                new XmlSerializer<BookShelf1>(Data1, null),
+                new XmlSerializer<BookShelf2>(Data2, null),
+                new XmlSerializer<LargeBookShelf>(DataLarge, null),
 
-                new MessagePackSharp<BookShelf>(Data),
-                new MessagePackSharp<BookShelf1>(Data1),
-                new MessagePackSharp<BookShelf2>(Data2),
-                new MessagePackSharp<LargeBookShelf>(DataLarge),
+                new JsonNet<BookShelf>(Data, null),
+                new JsonNet<BookShelf1>(Data1, null),
+                new JsonNet<BookShelf2>(Data2, null),
+                new JsonNet<LargeBookShelf>(DataLarge, null),
+
+                new Protobuf_net<BookShelf>(Data, null),
+                new Protobuf_net<BookShelf1>(Data1, null),
+                new Protobuf_net<BookShelf2>(Data2, null),
+                new Protobuf_net<LargeBookShelf>(DataLarge, null),
+
+                new MessagePackSharp<BookShelf>(Data, null),
+                new MessagePackSharp<BookShelf1>(Data1, null),
+                new MessagePackSharp<BookShelf2>(Data2, null),
+                new MessagePackSharp<LargeBookShelf>(DataLarge, null),
+
+                new MsgPack_Cli<BookShelf>(Data, null),
+                new MsgPack_Cli<BookShelf1>(Data1, null),
+                new MsgPack_Cli<BookShelf2>(Data2, null),
+                new MsgPack_Cli<LargeBookShelf>(DataLarge, null),
             };
 
         }
@@ -171,7 +198,7 @@ namespace SerializerTests
 
         private void Run()
         {
-            PreChecks();
+            string testCase = null;
 
             while (Args.Count > 0)
             {
@@ -184,32 +211,42 @@ namespace SerializerTests
                         string n = NextLower();
                         Runs = int.Parse(n);
                         break;
+                    case "-notouch":
+                        IsTouch = false;
+                        break;
                     case "-test":
-                        string nextArg = NextLower();
-                        if (nextArg?.Equals("serialize") == true)
-                        {
-                            Serialize();
-                        }
-                        else if (nextArg?.Equals("deserialize") == true)
-                        {
-                            Deserialize();
-                        }
-                        else if (nextArg?.Equals("firstcall") == true)
-                        {
-                            FirstCall();
-                        }
-                        else if(nextArg?.Equals("combined") == true)
-                        {
-                            Combined();
-                        }
-                        else
-                        {
-                            throw new NotSupportedException($"Error: Arg {nextArg} is not a valid option!");
-                        }
+                        testCase = NextLower();
+                        break;
+                    case "-nongenwarn":
+                        IsNGenWarn = false;
                         break;
                     default:
                         throw new NotSupportedException($"Argument {curArg} is not valid");
                 }
+            }
+
+            PreChecks();
+
+
+            if (testCase?.Equals("serialize") == true)
+            {
+                Serialize();
+            }
+            else if (testCase?.Equals("deserialize") == true)
+            {
+                Deserialize();
+            }
+            else if (testCase?.Equals("firstcall") == true)
+            {
+                FirstCall();
+            }
+            else if (testCase?.Equals("combined") == true)
+            {
+                Combined();
+            }
+            else
+            {
+                throw new NotSupportedException($"Error: Arg {testCase} is not a valid option!");
             }
         }
 
@@ -221,15 +258,16 @@ namespace SerializerTests
             {
                 Assembly.Load("notExistingToTriggerGACPrefetch, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null");
             }
-            catch (FileNotFoundException ex)
+            catch (FileNotFoundException)
             {
             }
 
-            if (!IsNGenned())
+            if (IsNGenWarn && !IsNGenned())
             {
                 Console.WriteLine( "Warning: Not NGenned! Results may not be accurate in your target deployment.");
-                Console.WriteLine(@"Please execute: %windir%\Microsoft.NET\Framework64\v4.0.30319\ngen.exe install SerializerTests.exe");
-                Console.WriteLine(@"This will precompile the executable and all referenced dlls. Undoing this is not as easy since you must call ngen uninstall for the executable and all references assemblies.");
+                Console.WriteLine(@"Please execute Ngen.cmd install to Ngen all dlls.");
+                Console.WriteLine(@"To uninstall call Ngen.cmd uninstall");
+                Console.WriteLine(@"The script will take care that the assemblies are really uninstalled. NGen is a bit tricky there.");
             }
 
             WarnIfDebug();
@@ -299,29 +337,139 @@ namespace SerializerTests
 
         BookShelf Data(int nToCreate)
         {
-            var lret = new BookShelf("private member value");
-            lret.Books = Enumerable.Range(1, nToCreate).Select(i => new Book { Id = i, Title = $"Book {i}" }).ToList();
+            var lret = new BookShelf("private member value")
+            {
+                Books = Enumerable.Range(1, nToCreate).Select(i => new Book { Id = i, Title = $"Book {i}" }).ToList()
+            };
             return lret;
+        }
+
+        BookShelfFlat DataFlat(int nToCreate)
+        {
+            var builder = new FlatBufferBuilder(1024);
+
+            Offset<BookFlat>[] books = new Offset<BookFlat>[nToCreate];
+
+            for(int i=1;i<=nToCreate;i++)
+            {
+                var title = builder.CreateString($"Book {i}");
+                var bookOffset = BookFlat.CreateBookFlat(builder, title, i);
+                books[i - 1] = bookOffset;
+            }
+
+            var secretOffset = builder.CreateString("private member value");
+            VectorOffset booksVector = builder.CreateVectorOfTables<BookFlat>(books);
+            var lret = BookShelfFlat.CreateBookShelfFlat(builder, booksVector, secretOffset);
+            builder.Finish(lret.Value);
+            var bookshelf = BookShelfFlat.GetRootAsBookShelfFlat(builder.DataBuffer);
+            return bookshelf;
+        }
+
+        /// <summary>
+        /// Call all setters once to get a feeling for the deserialization overhead
+        /// </summary>
+        /// <param name="data"></param>
+        void TouchFlat(BookShelfFlat data)
+        {
+           if (!IsTouch) return;
+
+           string tmpTitle = null;
+           int tmpId = 0;
+           for(int i=0;i<data.BooksLength;i++)
+            {
+                var book = data.Books(i);
+                tmpTitle = book.Value.Title;
+                tmpId = book.Value.Id;
+            }
+        }
+
+        ZeroFormatterBookShelf  DataZeroFormatter(int nToCreate)
+        {
+            var shelf = new ZeroFormatterBookShelf
+            {
+                Books = Enumerable.Range(1, nToCreate).Select(i => new ZeroFormatterBook { Id = i, Title = $"Book {i}" }).ToList()
+            };
+            return shelf;
+        }
+
+        ZeroFormatterBookShelf1 DataZeroFormatter1(int nToCreate)
+        {
+            var shelf = new ZeroFormatterBookShelf1
+            {
+                Books = Enumerable.Range(1, nToCreate).Select(i => new ZeroFormatterBook1 { Id = i, Title = $"Book {i}" }).ToList()
+            };
+            return shelf;
+        }
+
+        ZeroFormatterBookShelf2 DataZeroFormatter2(int nToCreate)
+        {
+            var shelf = new ZeroFormatterBookShelf2
+            {
+                Books = Enumerable.Range(1, nToCreate).Select(i => new ZeroFormatterBook2 { Id = i, Title = $"Book {i}" }).ToList()
+            };
+            return shelf;
+        }
+
+        ZeroFormatterLargeBookShelf DataZeroFormatterLarge(int nToCreate)
+        {
+            var lret = new ZeroFormatterLargeBookShelf("private member value2")
+            {
+                Books = Enumerable.Range(1, nToCreate).Select(i => new ZeroFormatterLargeBook { Id = i, Title = $"Book {i}" }).ToList()
+            };
+            return lret;
+        }
+
+        void TouchZeroFormatterShelf(ZeroFormatterBookShelf data)
+        {
+            if (!IsTouch) return;
+
+            string tmpTitle = null;
+            int tmpId = 0;
+            for(int i=0;i<data.Books.Count;i++)
+            {
+                tmpTitle = data.Books[i].Title;
+                tmpId = data.Books[i].Id;
+            }
+        }
+
+
+        void TouchBookShelf(BookShelf data)
+        {
+            if (!IsTouch) return;
+
+            string tmpTitle = null;
+            int tmpId = 0;
+            for(int i=0;i<data.Books.Count;i++)
+            {
+                tmpTitle = data.Books[i].Title;
+                tmpId = data.Books[i].Id;
+            }
         }
 
         BookShelf1 Data1(int nToCreate)
         {
-            var lret = new BookShelf1("private member value1");
-            lret.Books = Enumerable.Range(1, nToCreate).Select(i => new Book1 { Id = i, Title = $"Book {i}" }).ToList();
+            var lret = new BookShelf1("private member value1")
+            {
+                Books = Enumerable.Range(1, nToCreate).Select(i => new Book1 { Id = i, Title = $"Book {i}" }).ToList()
+            };
             return lret;
         }
 
         BookShelf2 Data2(int nToCreate)
         {
-            var lret = new BookShelf2("private member value2");
-            lret.Books = Enumerable.Range(1, nToCreate).Select(i => new Book2 { Id = i, Title = $"Book {i}" }).ToList();
+            var lret = new BookShelf2("private member value2")
+            {
+                Books = Enumerable.Range(1, nToCreate).Select(i => new Book2 { Id = i, Title = $"Book {i}" }).ToList()
+            };
             return lret;
         }
 
         LargeBookShelf DataLarge(int nToCreate)
         {
-            var lret = new LargeBookShelf("private member value2");
-            lret.Books = Enumerable.Range(1, nToCreate).Select(i => new LargeBook { Id = i, Title = $"Book {i}" }).ToList();
+            var lret = new LargeBookShelf("private member value2")
+            {
+                Books = Enumerable.Range(1, nToCreate).Select(i => new LargeBook { Id = i, Title = $"Book {i}" }).ToList()
+            };
             return lret;
         }
 

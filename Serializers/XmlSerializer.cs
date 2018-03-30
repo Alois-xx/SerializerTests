@@ -10,9 +10,8 @@ namespace SerializerTests.Serializers
 {
     public class XmlSerializer<T> : TestBase<T, System.Xml.Serialization.XmlSerializer> where T : class
     {
-        public XmlSerializer(Func<int, T> testData)
+        public XmlSerializer(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
         {
-            base.CreateNTestData = testData;
             FormatterFactory = () => new System.Xml.Serialization.XmlSerializer(typeof(T));
         }
 

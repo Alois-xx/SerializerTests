@@ -1,0 +1,15 @@
+// example IDL file
+
+namespace SerializerTests.Serializers;
+
+table BookFlat {
+  Title:string;
+  Id:int;
+}
+
+table BookShelfFlat {
+  Books:[BookFlat];
+  Secret:string;
+}
+
+root_type BookShelfFlat;

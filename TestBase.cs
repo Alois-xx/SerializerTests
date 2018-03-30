@@ -17,11 +17,11 @@ namespace SerializerTests
         string FileVersion { get;  }
     }
 
-    public abstract class TestBase<T,F> : ISerializeDeserializeTester where T : class where F: class 
+    public abstract class TestBase<T, F> : ISerializeDeserializeTester where F : class
     {
         string FileBaseName = "Serialized_";
 
-        protected Func<int,T> CreateNTestData;
+        protected Func<int, T> CreateNTestData;
 
         int ObjectsToCreate
         {
@@ -37,7 +37,7 @@ namespace SerializerTests
         {
             get
             {
-                if( myFormatter == null)
+                if (myFormatter == null)
                 {
                     myFormatter = FormatterFactory();
                 }
@@ -54,7 +54,7 @@ namespace SerializerTests
         {
             get
             {
-                if(DefaultTestData == null || ObjectsCreated != ObjectsToCreate)
+                if (DefaultTestData == null || ObjectsCreated != ObjectsToCreate)
                 {
                     DefaultTestData = CreateNTestData(ObjectsToCreate);
                     ObjectsCreated = ObjectsToCreate;
@@ -63,6 +63,14 @@ namespace SerializerTests
             }
         }
 
+        protected TestBase(Func<int, T> testData, Action<T> data)
+        {
+            CreateNTestData = testData;
+            TouchData = data;
+        }
+
+        protected Action<T> TouchData;
+ 
         protected abstract void Serialize(T obj, Stream stream);
         protected abstract T Deserialize(Stream stream);
 
@@ -70,15 +78,23 @@ namespace SerializerTests
         protected Action<MemoryStream> CustomSerialize;
 
         MemoryStream myStream;
+
+        // ServiceStack.Text closes the stream which is in my opinion an error. Work around that here.
+        class UndisposableMemoryStream : MemoryStream
+        {
+            protected override void Dispose(bool disposing)
+            {
+                
+            }
+        }
+
         protected MemoryStream GetMemoryStream()
         {
-            if( myStream == null)
+            if( myStream == null )
             {
-                myStream = new MemoryStream();
+                myStream = new UndisposableMemoryStream();
             }
-
             myStream.Position = 0;
-
             return myStream;
         }
 
@@ -132,15 +148,18 @@ namespace SerializerTests
             long size = myStream.Length;
             var times = Test(nTimes, () =>
             {
+                T deserialized = default(T);
                 if (CustomDeserialize == null)
                 {
-                    var deserialized = Deserialize(GetMemoryStream());
+                    deserialized = Deserialize(GetMemoryStream());
                 }
                 else
                 {
                     // call deserialize with custom overloads to check out e.g. XmlDictionaryWriter 
-                    CustomDeserialize(GetMemoryStream());
+                    deserialized = CustomDeserialize(GetMemoryStream());
                 }
+
+                TouchData?.Invoke(deserialized); // touch data to test out delayed deserializing or not at all serializing serializers
             });
 
             return CalcTime(times, size);

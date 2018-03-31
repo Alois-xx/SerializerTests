@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace SerializerTests
+namespace SerializerTests.Serializers
 {
     public class BinaryFormatter<T> : TestBase<T, System.Runtime.Serialization.Formatters.Binary.BinaryFormatter> where T : class
     {

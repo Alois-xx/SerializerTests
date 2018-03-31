@@ -1,169 +1,61 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{337C6F7B-B5D3-4243-A23A-D7D5DBCD3127}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>SerializerTests</RootNamespace>
-    <AssemblyName>SerializerTests</AssemblyName>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <!-- 
+    <TargetFrameworks>netcoreapp2.0;net471</TargetFrameworks>
+    -->
+    <TargetFrameworks>netcoreapp2;net471</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RuntimeIdentifiers>win7-x64</RuntimeIdentifiers>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="fastjson, Version=2.1.0.0, Culture=neutral, PublicKeyToken=6b75a806b86095cd, processorArchitecture=MSIL">
-      <HintPath>packages\fastJSON.2.1.28\lib\net40\fastjson.dll</HintPath>
-    </Reference>
+    <Compile Remove="packages\**" />
+    <None Remove="packages\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove=".gitattributes" />
+    <None Remove=".gitignore" />
+    <None Remove="Serializers\flatc.exe" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net471' ">
+    <Content Include="Ngen.cmd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RunTests.cmd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2' ">
+    <Content Include="RunTests_Core.cmd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="fastJSON" Version="2.1.28" />
+    <PackageReference Include="GroBuf" Version="1.3.0" />
+    <PackageReference Include="Jil" Version="2.15.4" />
+    <PackageReference Include="MessagePack" Version="1.7.3.4" />
+    <PackageReference Include="MsgPack.Cli" Version="0.9.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="protobuf-net" Version="2.3.7" />
+    <PackageReference Include="Salar.Bois" Version="2.2.2" />
+    <PackageReference Include="ServiceStack.Text" Version="5.0.2" />
+    <PackageReference Include="Wire" Version="0.8.2" />
+    <PackageReference Include="ZeroFormatter" Version="1.6.4" />
+  	<PackageReference Include="NFX" Version="3.5.0.5" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="FlatBuffers">
       <HintPath>ExternalDependencies\FlatBuffers.dll</HintPath>
-    </Reference>
-    <Reference Include="GrEmit">
-      <HintPath>ExternalDependencies\GrEmit.dll</HintPath>
-    </Reference>
-    <Reference Include="GroBuf">
-      <HintPath>ExternalDependencies\GroBuf.dll</HintPath>
-    </Reference>
-    <Reference Include="Jil, Version=2.15.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Jil.2.15.4\lib\net45\Jil.dll</HintPath>
-    </Reference>
-    <Reference Include="Manatee.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=c267f67a39449c62, processorArchitecture=MSIL">
-      <HintPath>packages\Manatee.Json.9.7.2\lib\netstandard1.3\Manatee.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="MessagePack, Version=1.7.3.4, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
-      <HintPath>packages\MessagePack.1.7.3.4\lib\net45\MessagePack.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Reflection">
       <HintPath>ExternalDependencies\Mono.Reflection.dll</HintPath>
     </Reference>
-    <Reference Include="MsgPack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
-      <HintPath>packages\MsgPack.Cli.1.0.0-rc\lib\net46\MsgPack.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="NFX, Version=3.0.0.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\NFX.3.5.0.5\lib\NFX.dll</HintPath>
-    </Reference>
-    <Reference Include="protobuf-net, Version=2.3.7.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <HintPath>packages\protobuf-net.2.3.7\lib\net40\protobuf-net.dll</HintPath>
-    </Reference>
-    <Reference Include="Salar.Bois, Version=2.2.1.0, Culture=neutral, PublicKeyToken=c6a95817615ec2cb, processorArchitecture=MSIL">
-      <HintPath>packages\Salar.Bois.2.2.2.0\lib\net40\Salar.Bois.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587, processorArchitecture=MSIL">
-      <HintPath>packages\ServiceStack.Text.5.0.2\lib\net45\ServiceStack.Text.dll</HintPath>
-    </Reference>
-    <Reference Include="Sigil, Version=4.7.0.0, Culture=neutral, PublicKeyToken=2d06c3494341c8ab, processorArchitecture=MSIL">
-      <HintPath>packages\Sigil.4.7.0\lib\net45\Sigil.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Annotations, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.ComponentModel.Annotations.4.4.1\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.2.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Diagnostics.DiagnosticSource.4.4.1\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
-    </Reference>
-    <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.Net.Http, Version=4.1.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.Net.Http.4.3.3\lib\net46\System.Net.Http.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Threading.Tasks.Extensions.4.3.0\lib\portable-net45+win8+wp8+wpa81\System.Threading.Tasks.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="Wire, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Wire.0.8.2\lib\net45\Wire.dll</HintPath>
-    </Reference>
-    <Reference Include="ZeroFormatter, Version=1.6.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\ZeroFormatter.1.6.4\lib\net45\ZeroFormatter.dll</HintPath>
-    </Reference>
-    <Reference Include="ZeroFormatter.Interfaces, Version=1.6.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\ZeroFormatter.Interfaces.1.6.4\lib\net45\ZeroFormatter.Interfaces.dll</HintPath>
-    </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="RunTests.cmd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Compile Include="Serializers\BinaryFormatter.cs" />
-    <Compile Include="Serializers\Bois.cs" />
-    <Compile Include="Serializers\GroBuf.cs" />
-    <Compile Include="Serializers\ServiceStack.cs" />
-    <Compile Include="Serializers\ZeroFormatter.cs" />
-    <Compile Include="TypesToSerialize\FlatBufferBook.cs" />
-    <Compile Include="Serializers\FlatBuffer.cs" />
-    <Compile Include="Serializers\MessagePackSharp.cs" />
-    <Compile Include="Serializers\MsgPack_Cli.cs" />
-    <Compile Include="Serializers\Wire.cs" />
-    <Compile Include="Serializers\SlimSerializer.cs" />
-    <Compile Include="TypesToSerialize\ZeroFormatterBookShelf.cs" />
-    <Compile Include="TypesToSerialize\BookShelf.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Specialities\ProtInterfaces.cs" />
-    <Compile Include="Serializers\DataContract.cs" />
-    <Compile Include="Serializers\DataContractBinaryXml.cs" />
-    <Compile Include="Serializers\DataContractIndented.cs" />
-    <Compile Include="Serializers\FastJson.cs" />
-    <Compile Include="Serializers\JIL.cs" />
-    <Compile Include="Serializers\JsonNet.cs" />
-    <Compile Include="Serializers\Protobuf_net.cs" />
-    <Compile Include="Serializers\XmlSerializer.cs" />
-    <Compile Include="Specialities\ProtoBufInterface.cs" />
-    <Compile Include="TestBase.cs" />
-    <Compile Include="Test_O_N_Behavior.cs" />
-    <Compile Include="TypesToSerialize\BookShelf1.cs" />
-    <Compile Include="TypesToSerialize\BookShelf2.cs" />
-    <Compile Include="TypesToSerialize\LargeBookShelf.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <Content Include="Ngen.cmd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="TypesToSerialize\FlatBufferBook.fbs" />
-  </ItemGroup>
-  <ItemGroup>
-    <!-- <Analyzer Include="packages\ZeroFormatter.Analyzer.1.1.1\analyzers\dotnet\cs\ZeroFormatterAnalyzer.dll" /> -->
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
+

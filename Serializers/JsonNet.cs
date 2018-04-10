@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
@@ -16,6 +17,7 @@ namespace SerializerTests.Serializers
             FormatterFactory = () => new JsonSerializer();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
             var text = new StreamWriter(stream);
@@ -23,6 +25,7 @@ namespace SerializerTests.Serializers
             text.Flush();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override T Deserialize(Stream stream)
         {
             TextReader text = new StreamReader(stream);

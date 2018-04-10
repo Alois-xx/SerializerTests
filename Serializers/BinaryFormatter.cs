@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
@@ -10,11 +11,13 @@ namespace SerializerTests.Serializers
             FormatterFactory = () => new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
             Formatter.Serialize(stream, obj);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override T Deserialize(Stream stream)
         {
             return (T)Formatter.Deserialize(stream);

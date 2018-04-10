@@ -1,6 +1,7 @@
 ﻿using ServiceStack.Text;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
@@ -10,11 +11,13 @@ namespace SerializerTests.Serializers
         {
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
             JsonSerializer.SerializeToStream<T>(obj, stream);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override T Deserialize(Stream stream)
         {
             return JsonSerializer.DeserializeFromStream<T>(stream);

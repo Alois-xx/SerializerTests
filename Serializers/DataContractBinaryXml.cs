@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Xml;
+using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
@@ -15,6 +16,7 @@ namespace SerializerTests.Serializers
 
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         void SerializeBinaryXml(MemoryStream stream)
         {
             var binaryWriter = XmlDictionaryWriter.CreateBinaryWriter(stream);
@@ -22,6 +24,7 @@ namespace SerializerTests.Serializers
             binaryWriter.Flush();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         T DeserializeBinaryXml(MemoryStream stream)
         {
             var binaryReader = XmlDictionaryReader.CreateBinaryReader(stream, XmlDictionaryReaderQuotas.Max);

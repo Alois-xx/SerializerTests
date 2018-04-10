@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
@@ -11,11 +12,13 @@ namespace SerializerTests.Serializers
             FormatterFactory = () => new DataContractSerializer(typeof(T));
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
             Formatter.WriteObject(stream, obj);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override T Deserialize(Stream stream)
         {
             return (T)Formatter.ReadObject(stream);

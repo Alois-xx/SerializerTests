@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
@@ -13,6 +14,7 @@ namespace SerializerTests.Serializers
         {
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
             var text = new StreamWriter(stream);
@@ -21,8 +23,10 @@ namespace SerializerTests.Serializers
             text.Flush();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override T Deserialize(Stream stream)
         {
+            // FastJson does not support reading from stream ... but it is much slower anyway so this does not cost much
             TextReader text = new StreamReader(stream);
             string fullText = text.ReadToEnd();
             var lret = fastJSON.JSON.ToObject<T>(fullText);

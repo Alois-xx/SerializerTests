@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using Wire;
+using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
@@ -17,11 +18,14 @@ namespace SerializerTests.Serializers
             };
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
             Formatter.Serialize(obj, stream);
         }
 
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override T Deserialize(Stream stream)
         {
             return Formatter.Deserialize<T>(stream);

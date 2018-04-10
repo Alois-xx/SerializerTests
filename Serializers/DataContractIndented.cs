@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Xml;
+using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
@@ -14,6 +15,7 @@ namespace SerializerTests.Serializers
             FormatterFactory = () => new DataContractSerializer(typeof(T));
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         void SerializeXmlIndented(MemoryStream stream)
         {
             var xmlWriter = XmlWriter.Create(stream, new XmlWriterSettings { Indent = true });
@@ -21,6 +23,7 @@ namespace SerializerTests.Serializers
             xmlWriter.Flush();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         T DeserializeXmlIndented(MemoryStream stream)
         {
             var xmlReader = XmlReader.Create(stream);

@@ -2,6 +2,7 @@
 using MsgPack.Serialization;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
@@ -20,12 +21,14 @@ namespace SerializerTests.Serializers
             };
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
             // Creates serializer.
             Formatter.Pack(stream, obj);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override T Deserialize(Stream stream)
         {
             return (T) Formatter.Unpack(stream);

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace SerializerTests
 {
@@ -16,11 +17,13 @@ namespace SerializerTests
             FormatterFactory = () => RuntimeTypeModel.Create();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
             Formatter.Serialize(stream, obj);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected override T Deserialize(Stream stream)
         {
             return (T)Formatter.Deserialize(stream, null, typeof(T));

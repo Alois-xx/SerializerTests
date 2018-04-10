@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace SerializerTests
 {
@@ -70,11 +71,13 @@ namespace SerializerTests
         }
 
         protected Action<T> TouchData;
- 
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected abstract void Serialize(T obj, Stream stream);
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected abstract T Deserialize(Stream stream);
 
-        protected Func<MemoryStream,T> CustomDeserialize;
+        protected Func<MemoryStream, T> CustomDeserialize;
         protected Action<MemoryStream> CustomSerialize;
 
         MemoryStream myStream;
@@ -84,13 +87,13 @@ namespace SerializerTests
         {
             protected override void Dispose(bool disposing)
             {
-                
+
             }
         }
 
         protected MemoryStream GetMemoryStream()
         {
-            if( myStream == null )
+            if (myStream == null)
             {
                 myStream = new UndisposableMemoryStream();
             }
@@ -114,24 +117,35 @@ namespace SerializerTests
             return times;
         }
 
-        public (double firstS,double averageS, long serializedSize) TestSerialize(int nTimes, int nObjectsToCreate)
+        public (double firstS, double averageS, long serializedSize) TestSerialize(int nTimes, int nObjectsToCreate)
         {
             ObjectsToCreate = nObjectsToCreate;
             var times = Test(nTimes, () =>
             {
-                if (CustomSerialize == null)
-                {
-                    Serialize(TestData, GetMemoryStream());
-                }
-                else
-                {
-                    CustomSerialize(GetMemoryStream());
-                }
+                var dataStream = GetMemoryStream();
+                TestSerializeOnly(dataStream);
             });
 
             SaveMemoryStreamToDisk(GetMemoryStream(), nObjectsToCreate);
 
             return CalcTime(times, GetMemoryStream().Length);
+        }
+
+        /// <summary>
+        /// Make profiling easier by putting the actual to be measured code into a not inlined method
+        /// </summary>
+        /// <param name="dataStream"></param>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        void TestSerializeOnly(MemoryStream dataStream)
+        {
+            if (CustomSerialize == null)
+            {
+                Serialize(TestData, dataStream);
+            }
+            else
+            {
+                CustomSerialize(dataStream);
+            }
         }
 
         /// <summary>
@@ -141,6 +155,7 @@ namespace SerializerTests
         /// <param name="nTimes">Let test run n times.</param>
         /// <param name="nObjectsToCreate">Select from a previous serialize test run the file with the objects created.</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public (double firstS, double averageS, long dataSize) TestDeserialize(int nTimes, int nObjectsToCreate)
         {
             myStream = ReadMemoryStreamFromDisk(nObjectsToCreate);
@@ -148,24 +163,40 @@ namespace SerializerTests
             long size = myStream.Length;
             var times = Test(nTimes, () =>
             {
-                T deserialized = default(T);
-                if (CustomDeserialize == null)
-                {
-                    deserialized = Deserialize(GetMemoryStream());
-                }
-                else
-                {
-                    // call deserialize with custom overloads to check out e.g. XmlDictionaryWriter 
-                    deserialized = CustomDeserialize(GetMemoryStream());
-                }
-
-                TouchData?.Invoke(deserialized); // touch data to test out delayed deserializing or not at all serializing serializers
+                var dataStream = GetMemoryStream();
+                TestDeserializeOnlyAndTouch(dataStream, out T deserialized);
             });
 
             return CalcTime(times, size);
         }
 
- 
+        /// <summary>
+        /// Make profiling easier by putting the actual to be measured code into a not inlined method
+        /// </summary>
+        /// <param name="dataStream"></param>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void TestDeserializeOnlyAndTouch(MemoryStream dataStream, out T deserialized)
+        {
+
+            if (CustomDeserialize == null)
+            {
+                deserialized = Deserialize(dataStream);
+            }
+            else
+            {
+                // call deserialize with custom overloads to check out e.g. XmlDictionaryWriter 
+                deserialized = CustomDeserialize(dataStream);
+            }
+
+            TouchDataNoInline(ref deserialized);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void TouchDataNoInline(ref T deserialized)
+        {
+            TouchData?.Invoke(deserialized); // touch data to test out delayed deserializing or not at all serializing serializers
+        }
+
 
         (double firstS, double averageS, long serializedSize) CalcTime(List<double> timesInS, long serializedSize)
         {

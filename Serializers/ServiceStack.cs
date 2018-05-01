@@ -5,6 +5,10 @@ using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
+    /// <summary>
+    /// https://github.com/ServiceStack/ServiceStack.Text
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     class ServiceStack<T> : TestBase<T, Tracer> where T : class
     {
         public ServiceStack(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)

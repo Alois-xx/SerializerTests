@@ -3,6 +3,7 @@ using SerializerTests.TypesToSerialize;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace SerializerTests
         // capture first time init effects by executing serialize/deserialize with N=1 two times
         static int[] ObjectCountToTest = new int[]
         {
-            1, 1, 10, 100, 500, 1000, 10*1000, 50*1000, 100*1000, 200*1000, 300*1000, 400*1000, 500*1000, 600*1000, 700*1000, 800*1000, 900*1000, 1000*1000
+            1, 1, 10, 100, 500, 1000, 10*1000, 50*1000, 100*1000, 200*1000, 500*1000, 800*1000, 1000*1000
         };
 
 
@@ -83,19 +84,18 @@ namespace SerializerTests
             }
         }
 
-
         private void Print(ISerializeDeserializeTester formatter, int NBooks, (double firstS, double averageS, long serializedSize) times)
         {
             string typeName = formatter.GetType().Name;
             typeName = typeName.Substring(0, typeName.Length - 2); // omit generic arg `1 of typename
-            Console.WriteLine($"{typeName}<{formatter.GetType().GetGenericArguments()[0].Name}>\t{NBooks}\t{times.averageS:F3}\t{times.serializedSize}\t{formatter.FileVersion}");
+            Console.WriteLine($"{typeName}<{formatter.GetType().GetGenericArguments()[0].Name}>\t{NBooks}\t{times.averageS:F3}\t{times.serializedSize}\t{formatter.FileVersion}\t{GetNetCoreVersion() ?? System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription}");
         }
 
         private void Print(ISerializeDeserializeTester formatter, int NBooks, (double firstS, double averageS, long serializedSize) timesSerialize, (double firstS, double averageS, long dataSize) timesDeserialize)
         {
             string typeName = formatter.GetType().Name;
             typeName = typeName.Substring(0, typeName.Length - 2); // omit generic arg `1 of typename
-            Console.WriteLine($"{typeName}<{formatter.GetType().GetGenericArguments()[0].Name}>\t{NBooks}\t{timesSerialize.averageS:F3}\t{timesDeserialize.averageS:F3}\t{timesSerialize.serializedSize}\t{formatter.FileVersion}");
+            Console.WriteLine($"{typeName}<{formatter.GetType().GetGenericArguments()[0].Name}>\t{NBooks}\t{timesSerialize.averageS:F3}\t{timesDeserialize.averageS:F3}\t{timesSerialize.serializedSize}\t{formatter.FileVersion}\t{GetNetCoreVersion() ?? System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription}");
         }
 
         enum Format
@@ -110,14 +110,28 @@ namespace SerializerTests
             switch(format)
             {
                 case Format.Combined:
-                    return "Serializer\tObjects\t\"Time to serialize in s\"\t\"Time to deserialize in s\"\t\"Size in bytes\"\tFileVersion";
+                    return "Serializer\tObjects\t\"Time to serialize in s\"\t\"Time to deserialize in s\"\t\"Size in bytes\"\tFileVersion\tFramework";
                 case Format.Deserialize:
-                    return "Serializer\tObjects\t\"Time to deserialize in s\"\t\"Size in bytes\"\tFileVersion";
+                    return "Serializer\tObjects\t\"Time to deserialize in s\"\t\"Size in bytes\"\tFileVersion\tFramework";
                 case Format.Serialize:
-                    return "Serializer\tObjects\t\"Time to serialize in s\"\t\"Size in bytes\"\tFileVersion";
+                    return "Serializer\tObjects\t\"Time to serialize in s\"\t\"Size in bytes\"\tFileVersion\tFramework";
                 default:
                     throw new NotSupportedException($"Output format {format} is not supported.");
             }
+        }
+
+        /// <summary>
+        /// Taken from https://github.com/dotnet/BenchmarkDotNet/issues/448
+        /// </summary>
+        /// <returns></returns>
+        public static string GetNetCoreVersion()
+        {
+            var assembly = typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly;
+            var assemblyPath = assembly.CodeBase.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            int netCoreAppIndex = Array.IndexOf(assemblyPath, "Microsoft.NETCore.App");
+            if (netCoreAppIndex > 0 && netCoreAppIndex < assemblyPath.Length - 2)
+                return ".NET Core " + assemblyPath[netCoreAppIndex + 1];
+            return null;
         }
     }
 }

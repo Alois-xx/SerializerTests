@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This is a Stacktag file for WPA to analyze the performance of serializers under ETW profiling 
+     It allows easy comparison of .NET and .NET Core profiling data
+-->
+<Tag Name="">
+<Tag Name="Deserialize">
+	<Tag Name="BinaryFormatter">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.BinaryFormatter*::Deserialize*"/>
+	</Tag>
+	<Tag Name="XmlSerializer">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.XmlSerializer*::Deserialize*"/>
+	</Tag>
+	<Tag Name="FastJson">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.FastJson*::Deserialize*"/>
+	</Tag>
+	<Tag Name="DataContract Indented">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.DataContractIndented*::DeserializeXmlIndented*"/>
+	</Tag>
+	<Tag Name="ServiceStack">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.ServiceStack*::Deserialize*"/>
+	</Tag>
+	<Tag Name="Json.NET">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.JsonNet*::Deserialize*"/>
+	</Tag>
+	<Tag Name="MsgPack.Cli">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.MsgPack_Cli*::Deserialize*"/>
+	</Tag>
+	<Tag Name="TouchData">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.TestBase*::TouchDataNoInline*"/>
+	</Tag>
+	<Tag Name="DataContract">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.DataContract*::Deserialize*"/>
+	</Tag>
+	<Tag Name="DataContractBinaryXml">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.DataContractBinaryXml*::DeserializeBinaryXml*"/>
+	</Tag>
+	<Tag Name="Bois">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.Bois*::Deserialize*"/>
+	</Tag>
+	<Tag Name="SlimSerializer">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.SlimSerializer*::Deserialize*"/>
+	</Tag>
+	<Tag Name="Protobuf">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Protobuf_net*::Deserialize*"/>
+	</Tag>
+	<Tag Name="JIL">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.Jil*::Deserialize*"/>
+	</Tag>
+	<Tag Name="Wire">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.Wire*::Deserialize*"/>
+	</Tag>
+	<Tag Name="MessagePack Sharp">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.MessagePackSharp*::Deserialize*"/>
+	</Tag>
+	<Tag Name="GroBuf">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.GroBuf*::Deserialize*"/>
+	</Tag>
+	<Tag Name="ZeroFormatter">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.ZeroFormatter*::Deserialize*"/>
+		<Tag Name="Touch">
+			<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Program::TouchZeroFormatterShelf*"/>
+		</Tag>
+	</Tag>
+	<Tag Name="FlatBuffer">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.FlatBuffer*::Deserialize*"/>
+		<Tag Name="Touch">
+			<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Program::TouchFlat*"/>
+		</Tag>
+	</Tag>
+</Tag>
+<Tag Name="Serialize">
+	<Tag Name="BinaryFormatter">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.BinaryFormatter*::Serialize*"/>
+	</Tag>
+	<Tag Name="XmlSerializer">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.XmlSerializer*::Serialize*"/>
+	</Tag>
+	<Tag Name="FastJson">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.FastJson*::Serialize*"/>
+	</Tag>
+	<Tag Name="DataContract Indented">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.DataContractIndented*::SerializeXmlIndented*"/>
+	</Tag>
+	<Tag Name="ServiceStack">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.ServiceStack*::Serialize*"/>
+	</Tag>
+	<Tag Name="Json.NET">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.JsonNet*::Serialize*"/>
+	</Tag>
+	<Tag Name="MsgPack.Cli">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.MsgPack_Cli*::Serialize*"/>
+	</Tag>
+	<Tag Name="DataContract">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.DataContract*::Serialize*"/>
+	</Tag>
+	<Tag Name="DataContractBinaryXml">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.DataContractBinaryXml*::SerializeBinaryXml*"/>
+	</Tag>
+	<Tag Name="Bois">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.Bois*::Serialize*"/>
+	</Tag>
+	<Tag Name="SlimSerializer">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.SlimSerializer*::Serialize*"/>
+	</Tag>
+	<Tag Name="Protobuf">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Protobuf_net*::Serialize*"/>
+	</Tag>
+	<Tag Name="JIL">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.Jil*::Serialize*"/>
+	</Tag>
+	<Tag Name="Wire">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.Wire*::Serialize*"/>
+	</Tag>
+	<Tag Name="MessagePack Sharp">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.MessagePackSharp*::Serialize*"/>
+	</Tag>
+	<Tag Name="GroBuf">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.GroBuf*::Serialize*"/>
+	</Tag>
+	<Tag Name="ZeroFormatter">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.ZeroFormatter*::Serialize*"/>
+	</Tag>
+	<Tag Name="FlatBuffer">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.FlatBuffer*::Serialize*"/>
+	</Tag>
+</Tag>
+<Tag Name="Test Duration">
+	<Tag Name="Deserialize">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.TestBase*::DeserializeDuration*"/>
+	</Tag>
+	<Tag Name="Serialize">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.TestBase*::SerializeDuration*"/>
+	</Tag>
+</Tag>
+
+<Tag Name="TestInfrastructure">
+	<Tag Name="ReadMemoryStream">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.TestBase*::ReadMemoryStreamFromDisk*"/>
+	</Tag>
+	<Tag Name="GetTestData">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.TestBase*::get_TestData*"/>
+	</Tag>
+	<Tag Name="WriteFile">
+		<Entrypoint Module="*.dll" Method="System.IO.File.InternalWriteAllBytes*"/>
+	</Tag>
+	<Tag Name="TestDeserialize GCs and Allocations">
+		<Entrypoint Module="SerializerTests.dll" Method="SerializerTests.TestBase`2[System.__Canon,System.__Canon]::TestDeserialize*"/>
+	</Tag>
+	<Tag Name="TestSerialize GCs and Allocations">
+		<Entrypoint Module="SerializerTests.dll" Method="SerializerTests.TestBase`2[System.__Canon,System.__Canon]::TestSerialize*"/>
+	</Tag>
+
+</Tag>
+</Tag>

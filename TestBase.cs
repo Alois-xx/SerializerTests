@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace SerializerTests
 {
@@ -64,10 +65,19 @@ namespace SerializerTests
             }
         }
 
+        // The thread and events exist only to get a context switch event when a test starts
+        // so that our TestDuration thread starts waiting for an event 
+        // This way we can follow the test duration easily in a profiler without any extra ETW events and dependencies
+        static ManualResetEvent TestTriggerEvent = new ManualResetEvent(false);
+        static ManualResetEvent DeSerializeEvent = new ManualResetEvent(false);
+        static volatile bool IsSerialize = false;
+        Thread DurationThread = new Thread(TestDurationThread) { IsBackground = true };
+
         protected TestBase(Func<int, T> testData, Action<T> data)
         {
             CreateNTestData = testData;
             TouchData = data;
+            DurationThread.Start();
         }
 
         protected Action<T> TouchData;
@@ -101,16 +111,20 @@ namespace SerializerTests
             return myStream;
         }
 
-
         List<double> Test(int n, Action acc)
         {
             List<double> times = new List<double>();
             Stopwatch sw = new Stopwatch();
+
             for (int i = 0; i < n; i++)
             {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                ManualResetEvent ev = GetEvent(!acc.Method.Name.Contains("Deserialize"));
                 sw.Restart();
                 acc();
                 sw.Stop();
+                ev.Set(); // end waiting to get a nice context switch how long a test did really take in elapsed time
                 times.Add(sw.Elapsed.TotalSeconds);
             }
 
@@ -236,6 +250,45 @@ namespace SerializerTests
         public string FileVersion
         {
             get => FileVersionInfo.GetVersionInfo(typeof(F).Assembly.Location).FileVersion;
+        }
+
+        ManualResetEvent GetEvent(bool isSerialize)
+        {
+            IsSerialize = isSerialize;
+            TestTriggerEvent.Set();
+            return DeSerializeEvent;
+        }
+
+        static void TestDurationThread()
+        {
+            while (true)
+            {
+                TestTriggerEvent.WaitOne();
+                if (IsSerialize)
+                {
+                    SerializeDuration();
+                }
+                else
+                {
+                    DeserializeDuration();
+                }
+                // Set events to nonsignaled so our thread waits again until first in TriggerEvent
+                // and then for the De/Serialize event which is fired when the test has completed
+                DeSerializeEvent.Reset();
+                TestTriggerEvent.Reset();
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void DeserializeDuration()
+        {
+            DeSerializeEvent.WaitOne();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void SerializeDuration()
+        {
+            DeSerializeEvent.WaitOne();
         }
     }
 }

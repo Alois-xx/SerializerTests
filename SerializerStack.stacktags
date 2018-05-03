@@ -68,7 +68,19 @@
 		</Tag>
 	</Tag>
 </Tag>
+	<Tag Name="Reflection SetValue">
+		<Entrypoint Module="*.dll" Method="System.Reflection.FieldInfo.SetValue*"/>
+	</Tag>
+	<Tag Name="Reflection GetValue">
+		<Entrypoint Module="*.dll" Method="System.Reflection.RtFieldInfo.GetValue*"/>
+	</Tag>
+	<Tag Name="Activator CreateInstance">
+		<Entrypoint Module="*.dll" Method="System.Activator.CreateInstance*"/>
+	</Tag>
 <Tag Name="Serialize">
+	<Tag Name="Reflection GetValue">
+		<Entrypoint Module="*" Method="System.Reflection.FieldInfo.GetValue*"/>
+	</Tag>
 	<Tag Name="BinaryFormatter">
 		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.BinaryFormatter*::Serialize*"/>
 	</Tag>
@@ -144,10 +156,10 @@
 		<Entrypoint Module="*.dll" Method="System.IO.File.InternalWriteAllBytes*"/>
 	</Tag>
 	<Tag Name="TestDeserialize GCs and Allocations">
-		<Entrypoint Module="SerializerTests.dll" Method="SerializerTests.TestBase`2[System.__Canon,System.__Canon]::TestDeserialize*"/>
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.TestBase`2[System.__Canon,System.__Canon]::TestDeserialize*"/>
 	</Tag>
 	<Tag Name="TestSerialize GCs and Allocations">
-		<Entrypoint Module="SerializerTests.dll" Method="SerializerTests.TestBase`2[System.__Canon,System.__Canon]::TestSerialize*"/>
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.TestBase`2[System.__Canon,System.__Canon]::TestSerialize*"/>
 	</Tag>
 
 </Tag>

@@ -134,6 +134,9 @@ namespace SerializerTests
         public (double firstS, double averageS, long serializedSize) TestSerialize(int nTimes, int nObjectsToCreate)
         {
             ObjectsToCreate = nObjectsToCreate;
+            GetMemoryStream().SetLength(100 * 1000 * 1000); // Set memory stream to largest serialized payload to prevent resizes during test
+            var tmp = this.TestData;                        // Create testdata before test starts
+
             var times = Test(nTimes, () =>
             {
                 var dataStream = GetMemoryStream();

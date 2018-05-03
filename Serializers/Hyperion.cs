@@ -1,0 +1,30 @@
+﻿using Hyperion;
+using System;
+using System.IO;
+using System.Runtime.CompilerServices;
+
+namespace SerializerTests.Serializers
+{
+    /// <summary>
+    /// https://github.com/akkadotnet/Hyperion/
+    /// </summary>
+    class Hyperion<T> : TestBase<T, Serializer> where T : class
+    {
+        public Hyperion(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        {
+            FormatterFactory = () => new Serializer(new SerializerOptions( /* preserveObjectReferences: true */));
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected override void Serialize(T obj, Stream stream)
+        {
+            Formatter.Serialize(obj, stream);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected override T Deserialize(Stream stream)
+        {
+            return Formatter.Deserialize<T>(stream);
+        }
+    }
+}

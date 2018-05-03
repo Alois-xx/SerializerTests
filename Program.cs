@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace SerializerTests
 {
@@ -69,11 +70,12 @@ namespace SerializerTests
             Args = new Queue<string>(args);
             SerializersToTest = new List<ISerializeDeserializeTester>
             {
-                new FlatBuffer<BookShelfFlat>(DataFlat, TouchFlat),
-                new Bois<BookShelf>(Data, TouchBookShelf),
-                new GroBuf<BookShelf>(Data, TouchBookShelf),
-                new Jil<BookShelf>(Data, TouchBookShelf),
                 new MessagePackSharp<BookShelf>(Data, TouchBookShelf),
+                new GroBuf<BookShelf>(Data, TouchBookShelf),            
+                new FlatBuffer<BookShelfFlat>(DataFlat, TouchFlat),
+                new Hyperion<BookShelf>(Data, TouchBookShelf),
+                new Bois<BookShelf>(Data, TouchBookShelf),
+                new Jil<BookShelf>(Data, TouchBookShelf),
                 new Wire<BookShelf>(Data, TouchBookShelf),
                 new Protobuf_net<BookShelf>(Data, TouchBookShelf),
                 new SlimSerializer<BookShelf>(Data, TouchBookShelf),
@@ -110,6 +112,11 @@ namespace SerializerTests
                 new ZeroFormatter<ZeroFormatterBookShelf1>(DataZeroFormatter1, null),
                 new ZeroFormatter<ZeroFormatterBookShelf2>(DataZeroFormatter2, null),
                 new ZeroFormatter<ZeroFormatterLargeBookShelf>(DataZeroFormatterLarge, null),
+
+                new Hyperion<BookShelf>(Data, null),
+                new Hyperion<BookShelf1>(Data1, null),
+                new Hyperion<BookShelf2>(Data2, null),
+                new Hyperion<LargeBookShelf>(DataLarge, null),
 
                 new Wire<BookShelf>(Data, null),
                 new Wire<BookShelf1>(Data1, null),
@@ -470,6 +477,29 @@ namespace SerializerTests
             {
                 Books = Enumerable.Range(1, nToCreate).Select(i => new LargeBook { Id = i, Title = $"Book {i}" }).ToList()
             };
+            return lret;
+        }
+
+        ReferenceBookShelf DataReferenceBookShelf(int nToCreate)
+        {
+            var lret = new ReferenceBookShelf();
+            StringBuilder sb = new StringBuilder();
+            for(int i=0;i<1000;i++)
+            {
+                sb.Append("This is a really long string");
+            }
+            string largeStrSameReference = sb.ToString();
+
+            for (int i = 1; i <= nToCreate; i++)
+            {
+                var book = new ReferenceBook()
+                {
+                    Container = lret,
+                    Name = largeStrSameReference,
+                    Price = i
+                };
+                lret.Books.Add(new DateTime(i, 1, 1), book);
+            }
             return lret;
         }
 

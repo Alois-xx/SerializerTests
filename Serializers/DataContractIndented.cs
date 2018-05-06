@@ -8,11 +8,12 @@ namespace SerializerTests.Serializers
 {
     class DataContractIndented<T> : TestBase<T, DataContractSerializer> where T : class
     {
-        public DataContractIndented(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public DataContractIndented(Func<int, T> testData, Action<T> dataToucher, bool refTracking = false) : base(testData, dataToucher, refTracking)
         {
             base.CustomSerialize = SerializeXmlIndented;
             base.CustomDeserialize = DeserializeXmlIndented;
-            FormatterFactory = () => new DataContractSerializer(typeof(T));
+            FormatterFactory = () => new DataContractSerializer(typeof(T), new DataContractSerializerSettings
+                                                                          { PreserveObjectReferences = RefTracking });
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

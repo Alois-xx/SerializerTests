@@ -7,9 +7,10 @@ namespace SerializerTests.Serializers
 {
     public class DataContract<T> : TestBase<T, DataContractSerializer> where T : class
     {
-        public DataContract(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public DataContract(Func<int, T> testData, Action<T> dataToucher, bool refTracking = false) : base(testData, dataToucher, refTracking)
         {
-            FormatterFactory = () => new DataContractSerializer(typeof(T));
+            FormatterFactory = () => new DataContractSerializer(typeof(T), new DataContractSerializerSettings
+                                                                          { PreserveObjectReferences = RefTracking } );
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

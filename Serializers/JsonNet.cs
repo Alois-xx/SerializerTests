@@ -6,15 +6,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using SerializerTests.TypesToSerialize;
 
 namespace SerializerTests.Serializers
 {
     // http://www.newtonsoft.com/json
     public class JsonNet<T> : TestBase<T,JsonSerializer> where T : class
     {
-        public JsonNet(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public JsonNet(Func<int, T> testData, Action<T> dataToucher, bool refTracking = false) : base(testData, dataToucher, refTracking)
         {
-            FormatterFactory = () => new JsonSerializer();
+            FormatterFactory = () => JsonSerializer.Create(new JsonSerializerSettings { PreserveReferencesHandling =
+                refTracking ?  PreserveReferencesHandling.All : PreserveReferencesHandling.None });
+        }
+
+        class Person
+        {
+            public DateTime BirthDate { get; set; }
+            public string Name { get; set; }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

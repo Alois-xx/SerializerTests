@@ -8,11 +8,12 @@ namespace SerializerTests.Serializers
 {
     public class DataContractBinaryXml<T> : TestBase<T, DataContractSerializer> where T : class
     {
-        public DataContractBinaryXml(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public DataContractBinaryXml(Func<int, T> testData, Action<T> dataToucher, bool refTracking = false) : base(testData, dataToucher, refTracking)
         {
             base.CustomSerialize = SerializeBinaryXml;
             base.CustomDeserialize = DeserializeBinaryXml;
-            FormatterFactory = () => new DataContractSerializer(typeof(T));
+            FormatterFactory = () => new DataContractSerializer(typeof(T), new DataContractSerializerSettings
+                                                                           { PreserveObjectReferences = RefTracking });
 
         }
 

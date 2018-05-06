@@ -10,9 +10,9 @@ namespace SerializerTests.Serializers
     /// </summary>
     class Hyperion<T> : TestBase<T, Serializer> where T : class
     {
-        public Hyperion(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public Hyperion(Func<int, T> testData, Action<T> dataToucher, bool refTracking = false) : base(testData, dataToucher, refTracking)
         {
-            FormatterFactory = () => new Serializer(new SerializerOptions( /* preserveObjectReferences: true */));
+            FormatterFactory = () => new Serializer(new SerializerOptions( preserveObjectReferences: RefTracking));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

@@ -19,6 +19,7 @@ The currently tested serializers are
 - SerivceStack
 - SlimSerializer
 - Wire
+- Hyperion (Wire Fork)
 - XmlSerializer
 - ZeroFormatter
 

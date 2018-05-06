@@ -50,28 +50,56 @@ namespace SerializerTests
     class Program
     {
         static string Help = "SerializerTests is a serializer performance testing framework to evaluate and compare different serializers for .NET by Alois Kraus" + Environment.NewLine +
-                             "SerializerTests [-Runs dd] -test [serialize, deserialize, combined, firstCall]" + Environment.NewLine +
-                             " -Runs      Default is 5. The result is averaged where the first run is excluded from the average" + Environment.NewLine  +
-                             " -test sc   sc can be serialize, deserialize, combined or firstcall to test a scenario for many different serializers" + Environment.NewLine +
-                             " -notouch   Do not touch the deserialized objects to test lazy deserialization" + Environment.NewLine + 
-                             "            To execute deserialize you must first have called the serialize to generate serialized test data on disk to be read during deserialize" + Environment.NewLine;
+                             "SerializerTests [-Runs dd] -test [serialize, deserialize, combined, firstCall] [-reftracking] [-maxobj dd]" + Environment.NewLine +
+                             " -Runs           Default is 5. The result is averaged where the first run is excluded from the average" + Environment.NewLine +
+                             " -test xx        xx can be serialize, deserialize, combined or firstcall to test a scenario for many different serializers" + Environment.NewLine +
+                             " -reftracking    If set a list with many identical references is serialized." + Environment.NewLine +
+                             " -maxobj dd      Sets an upper limit how many objects are serialized. By default 1 up to 1 million objects are serialized" + Environment.NewLine +
+                             " -serializer xxx Execute the test only for a specific serializer with the name xxx where multiple ones can be used with ," + Environment.NewLine +
+                             " -list           List all registered serializers" + Environment.NewLine +
+                             " -notouch        Do not touch the deserialized objects to test lazy deserialization" + Environment.NewLine +
+                             "                 To execute deserialize you must first have called the serialize to generate serialized test data on disk to be read during deserialize" + Environment.NewLine +
+                             "Examples" + Environment.NewLine +
+                             "Compare protobuf against MessagePackSharp for serialize and deserialize performance" + Environment.NewLine +
+                             " SerializerTests -Runs 1 -test combined -serializer protobuf,MessagePackSharp" + Environment.NewLine +
+                             "Test how serializers perform when reference tracking is enabled. Currently that are BinaryFormatter,Protobuf_net and DataContract" + Environment.NewLine + 
+                             " Although Wire,Hyperion,Json.NET claim to have but it is not completely working." + Environment.NewLine +
+                             " SerializerTests -Runs 1 -test combined -reftracking" + Environment.NewLine +
+                             "Speed up tests by testing only up to 300K serialized objects" + Environment.NewLine +
+                             " SerializerTests -test combined -maxobj 300000" + Environment.NewLine;
+
+
         private Queue<string> Args;
 
         List<ISerializeDeserializeTester> SerializersToTest;
         List<ISerializeDeserializeTester> StartupSerializersToTest;
+        List<ISerializeDeserializeTester> SerializersObjectReferencesToTest;
 
         int Runs = 5;
         bool IsNGenWarn = true;
         bool IsTouch = true;
+        bool TestReferenceTracking = false;
+        int MaxObjectCount = 1000 * 1000;
+        string[] SerializerFilters = new string [] { "" };
 
 
         public Program(string[] args)
         {
             Args = new Queue<string>(args);
+        }
+
+        private void CreateSerializersToTest()
+        {
+            // used when on command line -serializer is used
+            Func<ISerializeDeserializeTester, bool> filter = (s) =>
+            {
+                return SerializerFilters.Any(f => s.GetType().Name.IndexOf(f, StringComparison.OrdinalIgnoreCase) == 0);
+            };
+
             SerializersToTest = new List<ISerializeDeserializeTester>
             {
                 new MessagePackSharp<BookShelf>(Data, TouchBookShelf),
-                new GroBuf<BookShelf>(Data, TouchBookShelf),            
+                new GroBuf<BookShelf>(Data, TouchBookShelf),
                 new FlatBuffer<BookShelfFlat>(DataFlat, TouchFlat),
                 new Hyperion<BookShelf>(Data, TouchBookShelf),
                 new Bois<BookShelf>(Data, TouchBookShelf),
@@ -90,6 +118,10 @@ namespace SerializerTests
                 new MsgPack_Cli<BookShelf>(Data, TouchBookShelf),
                 new BinaryFormatter<BookShelf>(Data, TouchBookShelf),
             };
+
+            // if on command line a filter was specified filter the serializers to test according to filter by type name 
+            SerializersToTest = SerializersToTest.Where(filter).ToList();
+            
 
             StartupSerializersToTest = new List<ISerializeDeserializeTester>
             {
@@ -174,6 +206,32 @@ namespace SerializerTests
                 new MsgPack_Cli<LargeBookShelf>(DataLarge, null),
             };
 
+            StartupSerializersToTest = StartupSerializersToTest.Where(filter).ToList();
+
+            SerializersObjectReferencesToTest = new List<ISerializeDeserializeTester>
+            {
+                // FlatBuffer does not support object references
+                new MessagePackSharp<ReferenceBookShelf>(DataReferenceBookShelf, null),
+                new GroBuf<ReferenceBookShelf>(DataReferenceBookShelf, null),
+                new Hyperion<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking: TestReferenceTracking),
+                new Bois<ReferenceBookShelf>(DataReferenceBookShelf, null),
+                //new Jil<ReferenceBookShelf>(DataReferenceBookShelf, null),  // Jil does not support a dictionary with DateTime as key
+                new Wire<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking: TestReferenceTracking),
+                new Protobuf_net<ReferenceBookShelf>(DataReferenceBookShelf, null),  // Reference tracking in protobuf can be enabled at attributed in the types!
+                new SlimSerializer<ReferenceBookShelf>(DataReferenceBookShelf, null),
+                new ZeroFormatter<ReferenceBookShelf>(DataReferenceBookShelf, null),
+                new ServiceStack<ReferenceBookShelf>(DataReferenceBookShelf, null),
+                // new FastJson<ReferenceBookShelf>(DataReferenceBookShelf, null), // DateTime strings are not round trip capable because FastJSON keeps the time only until ms but the rest is not serialized!
+                new DataContractIndented<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking:TestReferenceTracking),
+                new DataContractBinaryXml<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking:TestReferenceTracking),
+                new DataContract<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking:TestReferenceTracking),
+                // new XmlSerializer<ReferenceBookShelf>(DataReferenceBookShelf, null),  // XmlSerializer does not support Dictionaries https://stackoverflow.com/questions/2911514/why-doesnt-xmlserializer-support-dictionary
+                new JsonNet<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking:TestReferenceTracking),
+                new MsgPack_Cli<ReferenceBookShelf>(DataReferenceBookShelf, null),
+                new BinaryFormatter<ReferenceBookShelf>(DataReferenceBookShelf, null),
+            };
+
+            SerializersObjectReferencesToTest = SerializersObjectReferencesToTest.Where(filter).ToList();
         }
 
         static void Main(string[] args)
@@ -218,8 +276,28 @@ namespace SerializerTests
                         string n = NextLower();
                         Runs = int.Parse(n);
                         break;
+                    case "-reftracking":
+                        MaxObjectCount = 300*1000;
+                        TestReferenceTracking = true;
+                        break;
+                    case "-serializer":
+                        string serializers = NextLower() ?? "";
+                        SerializerFilters = serializers.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                        break;
+                    case "-list":
+                        CreateSerializersToTest();
+                        Console.WriteLine("Registered Serializers");
+                        foreach (var test in SerializersToTest)
+                        {
+                            Console.WriteLine($"{test.GetType().Name.TrimEnd('1').TrimEnd('`') }");
+                        }
+                        return;
                     case "-notouch":
                         IsTouch = false;
+                        break;
+                    case "-maxobj":
+                        string maxobj = NextLower();
+                        MaxObjectCount = int.Parse(maxobj);
                         break;
                     case "-test":
                         testCase = NextLower();
@@ -234,6 +312,7 @@ namespace SerializerTests
 
             PreChecks();
 
+            CreateSerializersToTest();
 
             if (testCase?.Equals("serialize") == true)
             {
@@ -281,22 +360,31 @@ namespace SerializerTests
         }
 
 
+        /// <summary>
+        /// Return right set of serializers depending on requested test
+        /// </summary>
+        private List<ISerializeDeserializeTester> TestSerializers
+        {
+            get {  return TestReferenceTracking ? SerializersObjectReferencesToTest : SerializersToTest;  }
+        }
+
+
         private void Deserialize()
         {
-            var tester = new Test_O_N_Behavior(SerializersToTest);
-            tester.TestDeserialize(nRuns: Runs);
+            var tester = new Test_O_N_Behavior(TestSerializers);
+            tester.TestDeserialize(maxNObjects: MaxObjectCount, nRuns: Runs);
         }
 
         private void Serialize()
         {
-            var tester = new Test_O_N_Behavior(SerializersToTest);
-            tester.TestSerialize(nRuns: Runs);
+            var tester = new Test_O_N_Behavior(TestSerializers);
+            tester.TestSerialize(maxNObjects:MaxObjectCount, nRuns: Runs);
         }
 
         private void Combined()
         {
-            var tester = new Test_O_N_Behavior(SerializersToTest);
-            tester.TestCombined(nRuns: Runs);
+            var tester = new Test_O_N_Behavior(TestSerializers);
+            tester.TestCombined(maxNObjects: MaxObjectCount, nRuns: Runs);
         }
 
 
@@ -306,7 +394,7 @@ namespace SerializerTests
         private void FirstCall()
         {
             var tester = new Test_O_N_Behavior(StartupSerializersToTest);
-            tester.TestSerialize(nObjects: 1, nRuns:1);
+            tester.TestSerialize(maxNObjects: 1, nRuns:1);
         }
 
         string NextLower()
@@ -484,7 +572,7 @@ namespace SerializerTests
         {
             var lret = new ReferenceBookShelf();
             StringBuilder sb = new StringBuilder();
-            for(int i=0;i<1000;i++)
+            for(int i=0;i<10;i++)
             {
                 sb.Append("This is a really long string");
             }
@@ -494,11 +582,11 @@ namespace SerializerTests
             {
                 var book = new ReferenceBook()
                 {
-                    Container = lret,
+                    Container = null,
                     Name = largeStrSameReference,
                     Price = i
                 };
-                lret.Books.Add(new DateTime(i, 1, 1), book);
+                lret.Books.Add(new DateTime(DateTime.MinValue.Ticks+i, DateTimeKind.Utc), book);
             }
             return lret;
         }

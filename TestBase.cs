@@ -25,6 +25,11 @@ namespace SerializerTests
 
         protected Func<int, T> CreateNTestData;
 
+        /// <summary>
+        /// If true and serializer supports it Reference tracking is enabled for this test
+        /// </summary>
+        protected bool RefTracking;
+
         int ObjectsToCreate
         {
             get;
@@ -73,8 +78,15 @@ namespace SerializerTests
         static volatile bool IsSerialize = false;
         Thread DurationThread = new Thread(TestDurationThread) { IsBackground = true };
 
-        protected TestBase(Func<int, T> testData, Action<T> data)
+        /// <summary>
+        /// Create Test
+        /// </summary>
+        /// <param name="testData">Delegate to create test data to serialize</param>
+        /// <param name="data">Data toucher after deserialization</param>
+        /// <param name="refTracking">If true serializer is instantiated with Reference Tracking</param>
+        protected TestBase(Func<int, T> testData, Action<T> data, bool refTracking=false)
         {
+            RefTracking = refTracking;
             CreateNTestData = testData;
             TouchData = data;
             DurationThread.Start();
@@ -211,7 +223,7 @@ namespace SerializerTests
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void TouchDataNoInline(ref T deserialized)
         {
-            TouchData?.Invoke(deserialized); // touch data to test out delayed deserializing or not at all serializing serializers
+            TouchData?.Invoke(deserialized); // touch data to test delayed deserialization
         }
 
 

@@ -25,20 +25,20 @@ namespace SerializerTests
             SerializersToTest = serializersToTest;
         }
   
-        public  void TestSerialize(int nObjects = 1000 * 1000, int nRuns = 5)
+        public  void TestSerialize(int maxNObjects = 1000 * 1000, int nRuns = 5)
         {
             Console.WriteLine(GetHeader(Format.Serialize));
             foreach (var formatter in SerializersToTest)
             {
                 int NBooks = 0;
 
-                for (int i = 0; i < ObjectCountToTest.Length && ObjectCountToTest[i] <= nObjects; i++)
+                for (int i = 0; i < ObjectCountToTest.Length && ObjectCountToTest[i] <= maxNObjects; i++)
                 {
                     NBooks = ObjectCountToTest[i];
                     var times = formatter.TestSerialize(nTimes: nRuns, nObjectsToCreate: NBooks);
                     Print(formatter, NBooks, times);
 
-                    if (nObjects == 1)
+                    if (maxNObjects == 1)
                     {
                         break;
                     }
@@ -47,18 +47,18 @@ namespace SerializerTests
             }
         }
 
-        public  void TestDeserialize(int nObjects=1000*1000, int nRuns=5)
+        public  void TestDeserialize(int maxNObjects=1000*1000, int nRuns=5)
         {
             Console.WriteLine(GetHeader(Format.Deserialize));
             foreach (var formatter in SerializersToTest)
             {
                 int NBooks = 0;
-                for (int i = 0; i < ObjectCountToTest.Length && ObjectCountToTest[i] <= nObjects; i++)
+                for (int i = 0; i < ObjectCountToTest.Length && ObjectCountToTest[i] <= maxNObjects; i++)
                 {
                     NBooks = ObjectCountToTest[i];
                     var times = formatter.TestDeserialize(nTimes: nRuns, nObjectsToCreate: NBooks);
                     Print(formatter, NBooks, times);
-                    if (nObjects == 1)
+                    if (maxNObjects == 1)
                     {
                         break;
                     }
@@ -66,14 +66,14 @@ namespace SerializerTests
             }
         }
 
-        public void TestCombined(int nObjects = 1000 * 1000, int nRuns = 5)
+        public void TestCombined(int maxNObjects = 1000 * 1000, int nRuns = 5)
         {
             Console.WriteLine(GetHeader(Format.Combined));
             foreach (var formatter in SerializersToTest)
             {
                 int NBooks = 0;
 
-                for (int i = 0; i < ObjectCountToTest.Length && ObjectCountToTest[i] <= nObjects; i++)
+                for (int i = 0; i < ObjectCountToTest.Length && ObjectCountToTest[i] <= maxNObjects; i++)
                 {
                     NBooks = ObjectCountToTest[i];
                     var timesSerialize = formatter.TestSerialize(nTimes: nRuns, nObjectsToCreate: NBooks);

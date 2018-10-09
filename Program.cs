@@ -117,6 +117,7 @@ namespace SerializerTests
                 new JsonNet<BookShelf>(Data, TouchBookShelf),
                 new MsgPack_Cli<BookShelf>(Data, TouchBookShelf),
                 new BinaryFormatter<BookShelf>(Data, TouchBookShelf),
+				new Utf8JsonSerializer<BookShelf>(Data, TouchBookShelf)
             };
 
             // if on command line a filter was specified filter the serializers to test according to filter by type name 
@@ -204,7 +205,12 @@ namespace SerializerTests
                 new MsgPack_Cli<BookShelf1>(Data1, null),
                 new MsgPack_Cli<BookShelf2>(Data2, null),
                 new MsgPack_Cli<LargeBookShelf>(DataLarge, null),
-            };
+
+	            new Utf8JsonSerializer<BookShelf>(Data, null),
+	            new Utf8JsonSerializer<BookShelf1>(Data1, null),
+	            new Utf8JsonSerializer<BookShelf2>(Data2, null),
+	            new Utf8JsonSerializer<LargeBookShelf>(DataLarge, null),
+			};
 
             StartupSerializersToTest = StartupSerializersToTest.Where(filter).ToList();
 
@@ -229,7 +235,8 @@ namespace SerializerTests
                 new JsonNet<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking:TestReferenceTracking),
                 new MsgPack_Cli<ReferenceBookShelf>(DataReferenceBookShelf, null),
                 new BinaryFormatter<ReferenceBookShelf>(DataReferenceBookShelf, null),
-            };
+				new Utf8JsonSerializer<ReferenceBookShelf>(DataReferenceBookShelf, null)
+			};
 
             SerializersObjectReferencesToTest = SerializersObjectReferencesToTest.Where(filter).ToList();
         }

@@ -8,3 +8,6 @@
 /packages
 /.vs
 /Properties/launchSettings.json
+/Startup_NoNGen.csv
+/Startup_NGen.csv
+/SerializationPerf.csv

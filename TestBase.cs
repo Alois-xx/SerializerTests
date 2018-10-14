@@ -104,20 +104,11 @@ namespace SerializerTests
 
         MemoryStream myStream;
 
-        // ServiceStack.Text closes the stream which is in my opinion an error. Work around that here.
-        class UndisposableMemoryStream : MemoryStream
-        {
-            protected override void Dispose(bool disposing)
-            {
-
-            }
-        }
-
         protected MemoryStream GetMemoryStream()
         {
             if (myStream == null)
             {
-                myStream = new UndisposableMemoryStream();
+                myStream = new MemoryStream();
             }
             myStream.Position = 0;
             return myStream;

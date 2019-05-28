@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 namespace SerializerTests.Serializers
 {
     /// <summary>
+    /// Project was abandoned by maintainer in favor of MessagePack-CSharp see https://github.com/neuecc/ZeroFormatter/issues/104
     /// https://github.com/neuecc/ZeroFormatter
     /// </summary>
     /// <typeparam name="T"></typeparam>

@@ -76,7 +76,29 @@ namespace SerializerTests
         static ManualResetEvent TestTriggerEvent = new ManualResetEvent(false);
         static ManualResetEvent DeSerializeEvent = new ManualResetEvent(false);
         static volatile bool IsSerialize = false;
-        Thread DurationThread = new Thread(TestDurationThread) { IsBackground = true };
+
+        Thread DurationThread = null;
+        bool bThreadExit = false;
+
+        void StartDurationThread()
+        {
+            StopDurationThread();
+            DurationThread = new Thread(TestDurationThread) { IsBackground = true };
+            bThreadExit = false;
+            DurationThread.Start(this);
+        }
+
+        void StopDurationThread()
+        {
+            if( DurationThread != null )
+            {
+                bThreadExit = true;
+                TestTriggerEvent.Set();
+                DeSerializeEvent.Set();
+                DurationThread.Join();
+            }
+        }
+
 
         /// <summary>
         /// Create Test
@@ -89,7 +111,6 @@ namespace SerializerTests
             RefTracking = refTracking;
             CreateNTestData = testData;
             TouchData = data;
-            DurationThread.Start();
         }
 
         protected Action<T> TouchData;
@@ -117,6 +138,7 @@ namespace SerializerTests
         List<double> Test(int n, Action acc)
         {
             List<double> times = new List<double>();
+            StartDurationThread();
             Stopwatch sw = new Stopwatch();
 
             for (int i = 0; i < n; i++)
@@ -131,6 +153,7 @@ namespace SerializerTests
                 times.Add(sw.Elapsed.TotalSeconds);
             }
 
+            StopDurationThread();
             return times;
         }
 
@@ -139,13 +162,13 @@ namespace SerializerTests
             ObjectsToCreate = nObjectsToCreate;
             GetMemoryStream().Capacity = 100 * 1000 * 1000; // Set memory stream to largest serialized payload to prevent resizes during test
             var tmp = this.TestData;                        // Create testdata before test starts
-
+            StartDurationThread();
             var times = Test(nTimes, () =>
             {
                 var dataStream = GetMemoryStream();
                 TestSerializeOnly(dataStream);
             });
-
+            StopDurationThread();
             SaveMemoryStreamToDisk(GetMemoryStream(), nObjectsToCreate);
 
             return CalcTime(times, GetMemoryStream().Length);
@@ -232,7 +255,8 @@ namespace SerializerTests
         {
             string typeName = this.GetType().Name;
             typeName = typeName.Substring(0, typeName.Length - 2);
-            typeName += "_" + this.GetType().GetGenericArguments()[0].Name;
+            Type[] genericArgs = this.GetType().GetGenericArguments();
+            typeName += "_" + (genericArgs.Length > 0 ? genericArgs[0].Name : this.GetType().Name);
             string outputFileName = $"{FileBaseName}{typeName}_{nObjectsCreated}.bin";
             return outputFileName;
         }
@@ -265,11 +289,21 @@ namespace SerializerTests
             return DeSerializeEvent;
         }
 
-        static void TestDurationThread()
+        static void TestDurationThread(object o)
         {
+            TestBase<T, F> testbase = (TestBase<T, F>)o;
+
             while (true)
             {
+                if (testbase.bThreadExit)
+                {
+                    break;
+                }
                 TestTriggerEvent.WaitOne();
+                if(testbase.bThreadExit)
+                {
+                    break;
+                }
                 if (IsSerialize)
                 {
                     SerializeDuration();

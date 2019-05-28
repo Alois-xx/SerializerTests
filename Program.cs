@@ -63,7 +63,7 @@ namespace SerializerTests
                              "Compare protobuf against MessagePackSharp for serialize and deserialize performance" + Environment.NewLine +
                              " SerializerTests -Runs 1 -test combined -serializer protobuf,MessagePackSharp" + Environment.NewLine +
                              "Test how serializers perform when reference tracking is enabled. Currently that are BinaryFormatter,Protobuf_net and DataContract" + Environment.NewLine + 
-                             " Although Wire,Hyperion,Json.NET claim to have but it is not completely working." + Environment.NewLine +
+                             " Although Json.NET claim to have but it is not completely working." + Environment.NewLine +
                              " SerializerTests -Runs 1 -test combined -reftracking" + Environment.NewLine +
                              "Speed up tests by testing only up to 300K serialized objects" + Environment.NewLine +
                              " SerializerTests -test combined -maxobj 300000" + Environment.NewLine;
@@ -98,26 +98,39 @@ namespace SerializerTests
 
             SerializersToTest = new List<ISerializeDeserializeTester>
             {
-                new MessagePackSharp<BookShelf>(Data, TouchBookShelf),
-                new GroBuf<BookShelf>(Data, TouchBookShelf),
+#if NETCOREAPP3_0
+                new NetCoreJsonSerializer<NetCorePropertyBookShelf>(DataNetCore, Touch),
+                new SimdJsonSharpSerializer<BookShelf>(Data, Touch),
+#endif
+				new Utf8JsonSerializer<BookShelf>(Data, Touch),
+                new MessagePackSharp<BookShelf>(Data, Touch),
+                new GroBuf<BookShelf>(Data, Touch),
                 new FlatBuffer<BookShelfFlat>(DataFlat, TouchFlat),
-                new Hyperion<BookShelf>(Data, TouchBookShelf),
-                new Bois<BookShelf>(Data, TouchBookShelf),
-                new Jil<BookShelf>(Data, TouchBookShelf),
-                new Wire<BookShelf>(Data, TouchBookShelf),
-                new Protobuf_net<BookShelf>(Data, TouchBookShelf),
-                new SlimSerializer<BookShelf>(Data, TouchBookShelf),
-                new ZeroFormatter<ZeroFormatterBookShelf>(DataZeroFormatter, TouchZeroFormatterShelf),
-                new ServiceStack<BookShelf>(Data, TouchBookShelf),
-                new FastJson<BookShelf>(Data, TouchBookShelf),
-                new DataContractIndented<BookShelf>(Data, TouchBookShelf),
-                new DataContractBinaryXml<BookShelf>(Data, TouchBookShelf),
-                new DataContract<BookShelf>(Data, TouchBookShelf),
-                new XmlSerializer<BookShelf>(Data, TouchBookShelf),
-                new JsonNet<BookShelf>(Data, TouchBookShelf),
-                new MsgPack_Cli<BookShelf>(Data, TouchBookShelf),
-                new BinaryFormatter<BookShelf>(Data, TouchBookShelf),
-				new Utf8JsonSerializer<BookShelf>(Data, TouchBookShelf)
+#if NET472
+                // Hyperion does not work on .NET Core 3.0  https://github.com/akkadotnet/Hyperion/issues/111
+                // new Hyperion<BookShelf>(Data, Touch),
+                // https://github.com/rogeralsing/Wire/issues/146
+                // new Wire<BookShelf>(Data, Touch),
+#endif
+                new Bois<BookShelf>(Data, Touch),
+                new Jil<BookShelf>(Data, Touch),
+                new Protobuf_net<BookShelf>(Data, Touch),
+                new SlimSerializer<BookShelf>(Data, Touch),
+
+
+#if NET472  
+                // ZeroFormatter crashes on .NET Core 3 during serialize with: System.BadImageFormatException: 'Bad IL format.'
+                // new ZeroFormatter<ZeroFormatterBookShelf>(DataZeroFormatter, Touch),
+#endif
+                new ServiceStack<BookShelf>(Data, Touch),
+                new FastJson<BookShelf>(Data, Touch),
+                //new DataContractIndented<BookShelf>(Data, TouchBookShelf),
+                new DataContractBinaryXml<BookShelf>(Data, Touch),
+                new DataContract<BookShelf>(Data, Touch),
+                new XmlSerializer<BookShelf>(Data, Touch),
+                new JsonNet<BookShelf>(Data, Touch),
+                new MsgPack_Cli<BookShelf>(Data, Touch),
+                new BinaryFormatter<BookShelf>(Data, Touch),
             };
 
             // if on command line a filter was specified filter the serializers to test according to filter by type name 
@@ -141,21 +154,28 @@ namespace SerializerTests
                 new GroBuf<BookShelf2>(Data2, null),
                 new GroBuf<LargeBookShelf>(DataLarge, null),
 
-                new ZeroFormatter<ZeroFormatterBookShelf>(DataZeroFormatter, null),
-                new ZeroFormatter<ZeroFormatterBookShelf1>(DataZeroFormatter1, null),
-                new ZeroFormatter<ZeroFormatterBookShelf2>(DataZeroFormatter2, null),
-                new ZeroFormatter<ZeroFormatterLargeBookShelf>(DataZeroFormatterLarge, null),
+#if NET472  
+                // ZeroFormatter crashes on .NET Core 3 during serialize with: System.BadImageFormatException: 'Bad IL format.'
+                //new ZeroFormatter<ZeroFormatterBookShelf>(DataZeroFormatter, null),
+                //new ZeroFormatter<ZeroFormatterBookShelf1>(DataZeroFormatter1, null),
+                //new ZeroFormatter<ZeroFormatterBookShelf2>(DataZeroFormatter2, null),
+                //new ZeroFormatter<ZeroFormatterLargeBookShelf>(DataZeroFormatterLarge, null),
+#endif
 
-                new Hyperion<BookShelf>(Data, null),
-                new Hyperion<BookShelf1>(Data1, null),
-                new Hyperion<BookShelf2>(Data2, null),
-                new Hyperion<LargeBookShelf>(DataLarge, null),
 
-                new Wire<BookShelf>(Data, null),
-                new Wire<BookShelf1>(Data1, null),
-                new Wire<BookShelf2>(Data2, null),
-                new Wire<LargeBookShelf>(DataLarge, null),
+#if NET472
+                // Hyperion does not work on .NET Core 3.0  https://github.com/akkadotnet/Hyperion/issues/111
+                //new Hyperion<BookShelf>(Data, null),
+                //new Hyperion<BookShelf1>(Data1, null),
+                //new Hyperion<BookShelf2>(Data2, null),
+                //new Hyperion<LargeBookShelf>(DataLarge, null),
 
+                // Wire crashes on Deserializaiton on .NET Core 3.0 https://github.com/rogeralsing/Wire/issues/146
+                //new Wire<BookShelf>(Data, null),
+                //new Wire<BookShelf1>(Data1, null),
+                //new Wire<BookShelf2>(Data2, null),
+                //new Wire<LargeBookShelf>(DataLarge, null),
+#endif
                 new SlimSerializer<BookShelf>(Data, null),
                 new SlimSerializer<BookShelf1>(Data1, null),
                 new SlimSerializer<BookShelf2>(Data2, null),
@@ -219,13 +239,21 @@ namespace SerializerTests
                 // FlatBuffer does not support object references
                 new MessagePackSharp<ReferenceBookShelf>(DataReferenceBookShelf, null),
                 new GroBuf<ReferenceBookShelf>(DataReferenceBookShelf, null),
-                new Hyperion<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking: TestReferenceTracking),
+
+#if NET472
+                // Hyperion does not work on .NET Core 3.0  https://github.com/akkadotnet/Hyperion/issues/111
+                //new Hyperion<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking: TestReferenceTracking),
+                // Wire crashes on Deserializaiton on .NET Core 3.0 https://github.com/rogeralsing/Wire/issues/146
+                //new Wire<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking: TestReferenceTracking),
+#endif
                 new Bois<ReferenceBookShelf>(DataReferenceBookShelf, null),
                 //new Jil<ReferenceBookShelf>(DataReferenceBookShelf, null),  // Jil does not support a dictionary with DateTime as key
-                new Wire<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking: TestReferenceTracking),
-                new Protobuf_net<ReferenceBookShelf>(DataReferenceBookShelf, null),  // Reference tracking in protobuf can be enabled at attributed in the types!
+                new Protobuf_net<ReferenceBookShelf>(DataReferenceBookShelf, null),  // Reference tracking in protobuf can be enabled via attributes in the types!
                 new SlimSerializer<ReferenceBookShelf>(DataReferenceBookShelf, null),
-                new ZeroFormatter<ReferenceBookShelf>(DataReferenceBookShelf, null),
+#if NET472  
+                // ZeroFormatter crashes on .NET Core 3 during serialize with: System.BadImageFormatException: 'Bad IL format.'
+                //new ZeroFormatter<ReferenceBookShelf>(DataReferenceBookShelf, null),
+#endif
                 new ServiceStack<ReferenceBookShelf>(DataReferenceBookShelf, null),
                 // new FastJson<ReferenceBookShelf>(DataReferenceBookShelf, null), // DateTime strings are not round trip capable because FastJSON keeps the time only until ms but the rest is not serialized!
                 new DataContractIndented<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking:TestReferenceTracking),
@@ -446,6 +474,15 @@ namespace SerializerTests
             return lret;
         }
 
+        NetCorePropertyBookShelf DataNetCore(int nToCreate)
+        {
+            var lret = new NetCorePropertyBookShelf("private member value")
+            {
+                Books = Enumerable.Range(1, nToCreate).Select(i => new NetCoreBook { Id = i, Title = $"Book {i}" }).ToList()
+            };
+            return lret;
+        }
+
         BookShelfFlat DataFlat(int nToCreate)
         {
             var builder = new FlatBufferBuilder(1024);
@@ -465,6 +502,20 @@ namespace SerializerTests
             builder.Finish(lret.Value);
             var bookshelf = BookShelfFlat.GetRootAsBookShelfFlat(builder.DataBuffer);
             return bookshelf;
+        }
+
+        void Touch(NetCorePropertyBookShelf data)
+        {
+            if (IsTouch) return;
+
+            string tmpTitle = null;
+            int tmpId = 0;
+            for (int i = 0; i < data.Books.Count; i++)
+            {
+                var book = data.Books[i];
+                tmpTitle = book.Title;
+                tmpId = book.Id;
+            }
         }
 
         /// <summary>
@@ -521,7 +572,7 @@ namespace SerializerTests
             return lret;
         }
 
-        void TouchZeroFormatterShelf(ZeroFormatterBookShelf data)
+        void Touch(ZeroFormatterBookShelf data)
         {
             if (!IsTouch) return;
 
@@ -535,7 +586,7 @@ namespace SerializerTests
         }
 
 
-        void TouchBookShelf(BookShelf data)
+        void Touch(BookShelf data)
         {
             if (!IsTouch) return;
 

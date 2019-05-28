@@ -3,13 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
-using NFX.Serialization.Slim;
+using Azos.Serialization.Slim;
 using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
     /// <summary>
-    /// https://github.com/aumcode/nfx/tree/master/Source/NFX/Serialization/Slim
+    /// https://github.com/azist/azos/tree/master/src/Azos/Serialization/Slim
     /// </summary>
     /// <typeparam name="T"></typeparam>
     class SlimSerializer<T> : TestBase<T, SlimSerializer> where T:class

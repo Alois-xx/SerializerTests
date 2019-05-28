@@ -6,7 +6,7 @@ set CurDir=%CD%_%SimpleTime%
 mkdir "%CurDir%"
 echo Profiling results will be copied to directory %CurDir%
 
-cd bin\Release\net471
+cd bin\Release\net472
 cmd /C RunTests.cmd
 move Startup_NGen.csv "%CurDir%"
 move Startup_NoNGen.csv "%CurDir%"
@@ -20,7 +20,7 @@ if "%1" EQU "-profile" (
 	move C:\temp\NET_SerializationTests_Profiler.csv "%CurDir%"
 )
 
-cd ..\netcoreapp2
+cd ..\netcoreapp3.0
 cmd /C RunTests_Core.cmd
 move Startup_NoNGen_Core.csv "%CurDir%"
 move SerializationPerf_Core.csv "%CurDir%"

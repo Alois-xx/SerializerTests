@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Utf8Json;
 
@@ -16,12 +17,14 @@ namespace SerializerTests.Serializers
 		{
 		}
 
-		protected override void Serialize(T obj, Stream stream)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected override void Serialize(T obj, Stream stream)
 		{
 			JsonSerializer.Serialize(stream, obj);
 		}
 
-		protected override T Deserialize(Stream stream)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected override T Deserialize(Stream stream)
 		{
 			return JsonSerializer.Deserialize<T>(stream);
 		}

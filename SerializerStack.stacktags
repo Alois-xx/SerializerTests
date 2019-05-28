@@ -4,7 +4,16 @@
 -->
 <Tag Name="">
 <Tag Name="Deserialize">
-	<Tag Name="BinaryFormatter">
+  <Tag Name="Utf8JsonSerializer">
+    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.Utf8JsonSerializer*::Deserialize*"/>
+  </Tag>
+  <Tag Name="SimdJsonSharp">
+    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.SimdJsonSharpSerializer*::Deserialize*"/>
+  </Tag>
+  <Tag Name=".NET Core JsonSerializer">
+    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.NetCoreJsonSerializer*::Deserialize*"/>
+  </Tag>
+  <Tag Name="BinaryFormatter">
 		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.BinaryFormatter*::Deserialize*"/>
 	</Tag>
 	<Tag Name="XmlSerializer">
@@ -78,6 +87,15 @@
 		<Entrypoint Module="*.dll" Method="System.Activator.CreateInstance*"/>
 	</Tag>
 <Tag Name="Serialize">
+  <Tag Name="Utf8JsonSerializer">
+    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.Utf8JsonSerializer*::Serialize*"/>
+  </Tag>
+  <Tag Name="SimdJsonSharp">
+    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.SimdJsonSharpSerializer*::Serialize*"/>
+  </Tag>
+  <Tag Name=".NET Core JsonSerializer">
+    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.NetCoreJsonSerializer*::Serialize*"/>
+  </Tag>  
 	<Tag Name="Reflection GetValue">
 		<Entrypoint Module="*" Method="System.Reflection.FieldInfo.GetValue*"/>
 	</Tag>

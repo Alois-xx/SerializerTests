@@ -13,5 +13,5 @@ if "%1" EQU "-profile" (
 	SerializerTests.exe -test firstcall -nongenwarn > Startup_NoNGen.csv
 	cmd /C Ngen.cmd -install
 	SerializerTests.exe -test firstcall -nongenwarn > Startup_NGen.csv
-	SerializerTests.exe -test combined -Runs 5 > SerializationPerf.csv
+	SerializerTests.exe -test combined -Runs 10 > SerializationPerf.csv
 )

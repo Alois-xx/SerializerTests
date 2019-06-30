@@ -7,6 +7,6 @@ if "%1" EQU "-profile" (
 	"%perftools%\xxprofile" -stop c:\temp\NETCore_SerializeTests.etl
 ) ELSE (
 	dotnet SerializerTests.dll -test firstcall -nongenwarn > Startup_NoNGen_Core.csv
-	dotnet SerializerTests.dll -test combined -Runs 5 -nongenwarn > SerializationPerf_Core.csv
+	dotnet SerializerTests.dll -test combined -Runs 10 -nongenwarn > SerializationPerf_Core.csv
 )
 

@@ -98,6 +98,7 @@ namespace SerializerTests
 
             SerializersToTest = new List<ISerializeDeserializeTester>
             {
+                new ApexSerializer<BookShelf>(Data, Touch),
 #if NETCOREAPP3_0
                 new NetCoreJsonSerializer<NetCorePropertyBookShelf>(DataNetCore, Touch),
                 new SimdJsonSharpSerializer<BookShelf>(Data, Touch),
@@ -139,6 +140,11 @@ namespace SerializerTests
 
             StartupSerializersToTest = new List<ISerializeDeserializeTester>
             {
+                new ApexSerializer<BookShelf>(Data, null),
+                new ApexSerializer<BookShelf1>(Data1, null),
+                new ApexSerializer<BookShelf2>(Data2, null),
+                new ApexSerializer<LargeBookShelf>(DataLarge, null),
+
                 new ServiceStack<BookShelf>(Data, null),
                 new ServiceStack<BookShelf1>(Data1, null),
                 new ServiceStack<BookShelf2>(Data2, null),
@@ -230,12 +236,13 @@ namespace SerializerTests
 	            new Utf8JsonSerializer<BookShelf1>(Data1, null),
 	            new Utf8JsonSerializer<BookShelf2>(Data2, null),
 	            new Utf8JsonSerializer<LargeBookShelf>(DataLarge, null),
-			};
+            };
 
             StartupSerializersToTest = StartupSerializersToTest.Where(filter).ToList();
 
             SerializersObjectReferencesToTest = new List<ISerializeDeserializeTester>
             {
+                new ApexSerializer<ReferenceBookShelf>(DataReferenceBookShelf, null),
                 // FlatBuffer does not support object references
                 new MessagePackSharp<ReferenceBookShelf>(DataReferenceBookShelf, null),
                 new GroBuf<ReferenceBookShelf>(DataReferenceBookShelf, null),
@@ -264,7 +271,7 @@ namespace SerializerTests
                 new MsgPack_Cli<ReferenceBookShelf>(DataReferenceBookShelf, null),
                 new BinaryFormatter<ReferenceBookShelf>(DataReferenceBookShelf, null),
 				new Utf8JsonSerializer<ReferenceBookShelf>(DataReferenceBookShelf, null)
-			};
+            };
 
             SerializersObjectReferencesToTest = SerializersObjectReferencesToTest.Where(filter).ToList();
         }

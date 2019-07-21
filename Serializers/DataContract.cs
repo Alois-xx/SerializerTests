@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
+    [SerializerType("https://docs.microsoft.com/en-us/dotnet/api/system.runtime.serialization.datacontractserializer",
+                    SerializerTypes.Xml | SerializerTypes.SupportsVersioning)]
     public class DataContract<T> : TestBase<T, DataContractSerializer> where T : class
     {
         public DataContract(Func<int, T> testData, Action<T> dataToucher, bool refTracking = false) : base(testData, dataToucher, refTracking)

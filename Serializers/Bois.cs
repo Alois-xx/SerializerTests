@@ -10,9 +10,11 @@ using System.Runtime.CompilerServices;
 namespace SerializerTests.Serializers
 {
     /// <summary>
-    /// https://github.com/salarcode/Bois
+    /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [SerializerType("https://github.com/salarcode/Bois",
+                    SerializerTypes.Binary)]
     class Bois<T> : TestBase<T, BoisSerializer>
     {
         new BoisSerializer Formatter = new BoisSerializer();

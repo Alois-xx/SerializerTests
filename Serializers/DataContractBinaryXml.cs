@@ -6,6 +6,8 @@ using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
+    [SerializerType("https://docs.microsoft.com/en-us/dotnet/api/system.runtime.serialization.datacontractserializer",
+                    SerializerTypes.Binary | SerializerTypes.Xml | SerializerTypes.SupportsVersioning)]
     public class DataContractBinaryXml<T> : TestBase<T, DataContractSerializer> where T : class
     {
         public DataContractBinaryXml(Func<int, T> testData, Action<T> dataToucher, bool refTracking = false) : base(testData, dataToucher, refTracking)

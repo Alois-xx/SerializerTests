@@ -250,7 +250,7 @@ namespace SerializerTests
 #if NET472
                 // Hyperion does not work on .NET Core 3.0  https://github.com/akkadotnet/Hyperion/issues/111
                 //new Hyperion<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking: TestReferenceTracking),
-                // Wire crashes on Deserializaiton on .NET Core 3.0 https://github.com/rogeralsing/Wire/issues/146
+                // Wire crashes on Deserialization on .NET Core 3.0 https://github.com/rogeralsing/Wire/issues/146
                 //new Wire<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking: TestReferenceTracking),
 #endif
                 new Bois<ReferenceBookShelf>(DataReferenceBookShelf, null),

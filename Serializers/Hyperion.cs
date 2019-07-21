@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 namespace SerializerTests.Serializers
 {
     /// <summary>
+    /// Not active anymore since it does not work with .NET Core 3
     /// https://github.com/akkadotnet/Hyperion/
     /// </summary>
     class Hyperion<T> : TestBase<T, Serializer> where T : class

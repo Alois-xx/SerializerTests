@@ -7,9 +7,11 @@ using System.Runtime.CompilerServices;
 namespace SerializerTests.Serializers
 {
     /// <summary>
-    /// https://github.com/msgpack/msgpack-cli
+    /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [SerializerType("https://github.com/msgpack/msgpack-cli",
+                    SerializerTypes.Binary | SerializerTypes.ProtocolMessagePack | SerializerTypes.SupportsVersioning)]
     class MsgPack_Cli<T> : TestBase<T, MessagePackSerializer> where T : class
     {
         public MsgPack_Cli(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)

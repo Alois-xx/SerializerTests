@@ -6,9 +6,11 @@ using System.Runtime.CompilerServices;
 namespace SerializerTests.Serializers
 {
     /// <summary>
-    /// https://google.github.io/flatbuffers/
+    /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [SerializerType("https://google.github.io/flatbuffers/",
+                    SerializerTypes.Binary | SerializerTypes.SupportsVersioning)]
     class FlatBuffer<T> : TestBase<BookShelfFlat, ByteBuffer>
     {
         public FlatBuffer(Func<int, BookShelfFlat> testData, Action<BookShelfFlat> toucher):base(testData, toucher)

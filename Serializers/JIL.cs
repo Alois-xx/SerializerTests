@@ -8,7 +8,12 @@ using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
-    // https://github.com/kevin-montrose/Jil
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [SerializerType("https://github.com/kevin-montrose/Jil",
+                    SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
     class Jil<T> : TestBase<T, Jil.JSON> where T : class
     {
         public Jil(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)

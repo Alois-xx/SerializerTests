@@ -8,22 +8,23 @@ This test framework compares the most popular and fastest serializers for .NET w
 
 The project compiles to .NET 4.7 and .NET Core 3.0 where you can check out the serialization performance in your favorite .NET Framework. 
 The currently tested Serializers are
+- Apex (https://github.com/dbolin/Apex.Serialization)
 - BinaryFormatter
-- Bois
+- Bois (https://github.com/salarcode/Bois)
 - DataContract
-- FastJson
-- FlatBuffer
-- GroBuf
-- JIL
-- Json.NET
+- FastJson ( https://github.com/mgholam/fastJSON/)
+- FlatBuffer (https://google.github.io/flatbuffers/)
+- GroBuf (https://github.com/skbkontur/GroBuf)
+- JIL (https://github.com/kevin-montrose/Jil)
+- Json.NET (http://www.newtonsoft.com/json)
 - JsonSerializer (.NET Core 3.0)
-- MessagePackSharp
-- MsgPack.Cli
-- Protobuf.NET
-- SerivceStack
-- SimdJsonSharp
-- SlimSerializer (Now part of Azos)
-- UTF8Json
+- MessagePackSharp (https://github.com/neuecc/MessagePack-CSharp)
+- MsgPack.Cli (https://github.com/msgpack/msgpack-cli)
+- Protobuf.NET (https://github.com/mgravell/protobuf-net)
+- SerivceStack (https://github.com/ServiceStack/ServiceStack.Text)
+- SimdJsonSharp ( https://github.com/EgorBo/SimdJsonSharp)
+- SlimSerializer (Now part of Azos) (https://github.com/azist/azos/tree/master/src/Azos/Serialization/Slim)
+- UTF8Json (https://github.com/neuecc/Utf8Json)
 - XmlSerializer
 
 

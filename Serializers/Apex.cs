@@ -7,6 +7,12 @@ using System.Text;
 
 namespace SerializerTests.Serializers
 {
+    /// <summary>
+    ///
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [SerializerType("https://github.com/dbolin/Apex.Serialization",
+                    SerializerTypes.Binary)]
     public sealed class ApexSerializer<T> : TestBase<T, IBinary> where T : class
     {
         public ApexSerializer(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)

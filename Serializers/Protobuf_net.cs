@@ -9,7 +9,12 @@ using System.Runtime.CompilerServices;
 
 namespace SerializerTests
 {
-    // https://github.com/mgravell/protobuf-net
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [SerializerType("https://github.com/mgravell/protobuf-net",
+                    SerializerTypes.Binary | SerializerTypes.ProtocolProtobuf | SerializerTypes.SupportsVersioning)]
     public class Protobuf_net<T> : TestBase<T, RuntimeTypeModel> where T : class
     {
         public Protobuf_net(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)

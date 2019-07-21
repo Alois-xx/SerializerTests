@@ -7,11 +7,13 @@ using Utf8Json;
 
 namespace SerializerTests.Serializers
 {
-	/// <summary>
-	/// https://github.com/neuecc/Utf8Json
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	class Utf8JsonSerializer<T> : TestBase<T, IJsonFormatter<T>> where T : class
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [SerializerType("https://github.com/neuecc/Utf8Json", 
+                     SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
+    class Utf8JsonSerializer<T> : TestBase<T, IJsonFormatter<T>> where T : class
 	{
 		public Utf8JsonSerializer(Func<int, T> testData, Action<T> data, bool refTracking = false) : base(testData, data, refTracking)
 		{

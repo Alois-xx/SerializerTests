@@ -5,9 +5,11 @@ using System.Runtime.CompilerServices;
 namespace SerializerTests.Serializers
 {
     /// <summary>
-    /// https://github.com/mgholam/fastJSON/
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [SerializerType("https://github.com/mgholam/fastJSON/",
+                    SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
     class FastJson<T> : TestBase<T, fastJSON.JSONParameters> where T : class
     {
         public FastJson(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)

@@ -9,9 +9,11 @@ using System.Runtime.CompilerServices;
 namespace SerializerTests.Serializers
 {
     /// <summary>
-    /// https://github.com/azist/azos/tree/master/src/Azos/Serialization/Slim
+    /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [SerializerType("https://github.com/azist/azos/tree/master/src/Azos/Serialization/Slim",
+                    SerializerTypes.Binary)]
     class SlimSerializer<T> : TestBase<T, SlimSerializer> where T:class
     {
        

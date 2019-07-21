@@ -17,6 +17,8 @@ namespace SerializerTests
         (double firstS, double averageS, long dataSize) TestDeserialize(int nTimes, int nObjectsToCreate);
 
         string FileVersion { get;  }
+
+        void ReleaseMemory();
     }
 
     public abstract class TestBase<T, F> : ISerializeDeserializeTester where F : class
@@ -329,6 +331,16 @@ namespace SerializerTests
         static void SerializeDuration()
         {
             DeSerializeEvent.WaitOne();
+        }
+
+        /// <summary>
+        /// At the end of the test release the memory stream or we will keep too much memory for a long time
+        /// </summary>
+        public void ReleaseMemory()
+        {
+            myStream.Dispose();
+            myStream = null;
+            DefaultTestData = default;
         }
     }
 }

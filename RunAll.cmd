@@ -3,11 +3,12 @@ set CurDir=%CD%
 set SimpleTime=%Time::=_%
 set SimpleTime=%SimpleTime: =_%
 set CurDir=%CD%_%SimpleTime%
+set Runs=1
 mkdir "%CurDir%"
 echo Profiling results will be copied to directory %CurDir%
 
 cd bin\Release\net472
-cmd /C RunTests.cmd
+cmd /C RunTests.cmd !Runs!
 move Startup_NGen.csv "%CurDir%"
 move Startup_NoNGen.csv "%CurDir%"
 move SerializationPerf.csv "%CurDir%"
@@ -21,7 +22,7 @@ if "%1" EQU "-profile" (
 )
 
 cd ..\netcoreapp3.0
-cmd /C RunTests_Core.cmd
+cmd /C RunTests_Core.cmd !Runs!
 move Startup_NoNGen_Core.csv "%CurDir%"
 move SerializationPerf_Core.csv "%CurDir%"
 
@@ -34,7 +35,7 @@ if "%1" EQU "-profile" (
 
 cd "%CurDir%"
 copy SerializationPerf.csv SerializationPerf_Combined.csv
-type SerializationPerf_Core.csv >> SerializationPerf_Combined.csv
+type SerializationPerf_Core.csv  | findstr /v Objects >> SerializationPerf_Combined.csv
 @popd
 
 

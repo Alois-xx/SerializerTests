@@ -10,7 +10,12 @@ using SerializerTests.TypesToSerialize;
 
 namespace SerializerTests.Serializers
 {
-    // http://www.newtonsoft.com/json
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [SerializerType("http://www.newtonsoft.com/json",
+                    SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
     public class JsonNet<T> : TestBase<T,JsonSerializer> where T : class
     {
         public JsonNet(Func<int, T> testData, Action<T> dataToucher, bool refTracking = false) : base(testData, dataToucher, refTracking)

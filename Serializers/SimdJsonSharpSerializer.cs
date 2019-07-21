@@ -12,13 +12,12 @@ using System.Text.Json;
 namespace SerializerTests.Serializers
 {
     /// <summary>
-    /// https://github.com/EgorBo/SimdJsonSharp
-    /// based on 
-    /// https://github.com/lemire/simdjson
     /// It is not a real deserializer but an AVX2 enabled ultra fast JSON parser which according to its inventor Daniel Lemire is able to parse GB/s of JSON documents.
     /// See this academic paper on how the SIMD Parser works: https://arxiv.org/abs/1902.08318 (Press Download as PDF to view its contents). Fascinating!
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [SerializerType("https://github.com/EgorBo/SimdJsonSharp based on https://github.com/lemire/simdjson", 
+                    SerializerTypes.Json)]
     class SimdJsonSharpSerializer<T> : TestBase<BookShelf, ParsedJson>
     {
         static byte[] myTitle = Encoding.UTF8.GetBytes("Title");

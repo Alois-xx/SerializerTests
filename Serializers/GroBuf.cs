@@ -10,7 +10,12 @@ using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
-    // https://github.com/skbkontur/GroBuf
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [SerializerType("https://github.com/skbkontur/GroBuf",
+                    SerializerTypes.Binary)]
     public class GroBuf<T> : TestBase<T, Serializer> where T : class
     {
         new Serializer Formatter = new Serializer(new AllFieldsExtractor(), options: GroBufOptions.WriteEmptyObjects);

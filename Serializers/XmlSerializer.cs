@@ -9,6 +9,12 @@ using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [SerializerType("https://docs.microsoft.com/en-us/dotnet/api/system.xml.serialization.xmlserializer", 
+                    SerializerTypes.Xml | SerializerTypes.SupportsVersioning)]
     public class XmlSerializer<T> : TestBase<T, System.Xml.Serialization.XmlSerializer> where T : class
     {
         public XmlSerializer(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)

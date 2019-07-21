@@ -15,6 +15,8 @@ namespace SerializerTests.Serializers
     /// Was added as part of .NET Core 3.0
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [SerializerType("https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0 See Fast built-in JSON support",
+                    SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
     class NetCoreJsonSerializer<T> : TestBase<T, JsonSerializerOptions>
     {
         public NetCoreJsonSerializer(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)

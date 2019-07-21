@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace SerializerTests.Serializers
 {
+    [SerializerType("https://docs.microsoft.com/en-us/dotnet/api/system.runtime.serialization.formatters.binary.binaryformatter",
+                    SerializerTypes.Binary|SerializerTypes.SupportsVersioning)]
     public class BinaryFormatter<T> : TestBase<T, System.Runtime.Serialization.Formatters.Binary.BinaryFormatter> where T : class
     {
         public BinaryFormatter(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)

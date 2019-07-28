@@ -12,20 +12,21 @@ using System.Text.Json;
 namespace SerializerTests.Serializers
 {
     /// <summary>
+    /// This one calls into the Native SimdJson library by Daniel Lemire.
     /// It is not a real deserializer but an AVX2 enabled ultra fast JSON parser which according to its inventor Daniel Lemire is able to parse GB/s of JSON documents.
     /// See this academic paper on how the SIMD Parser works: https://arxiv.org/abs/1902.08318 (Press Download as PDF to view its contents). Fascinating!
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/EgorBo/SimdJsonSharp based on https://github.com/lemire/simdjson", 
                     SerializerTypes.Json)]
-    class SimdJsonSharpSerializer<T> : TestBase<BookShelf, ParsedJson>
+    class SimdJsonSharpSerializerN<T> : TestBase<BookShelf, ParsedJsonN>
     {
         static byte[] myTitle = Encoding.UTF8.GetBytes("Title");
         static byte[] myId = Encoding.UTF8.GetBytes("Id");
 
-        ParsedJsonIterator myIterator = default;
+        ParsedJsonIteratorN myIterator = default;
 
-        public SimdJsonSharpSerializer(Func<int, BookShelf> testData, Action<BookShelf> dataToucher) : base(testData, dataToucher)
+        public SimdJsonSharpSerializerN(Func<int, BookShelf> testData, Action<BookShelf> dataToucher) : base(testData, dataToucher)
         {
         }
 
@@ -36,11 +37,13 @@ namespace SerializerTests.Serializers
             Utf8Json.JsonSerializer.Serialize(stream, obj); 
         }
 
+        static readonly byte[] BooksProperty = Encoding.UTF8.GetBytes("Books");
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         unsafe protected override BookShelf Deserialize(Stream stream)
         {
             // A small Json like {"Books":[{"Title":"Book 1","Id":1}]} 
-            // will be translated to the followng JsonTokenTypes by the iterator:
+            // will be translated to the following JsonTokenTypes by the iterator:
             //   String =     "Books"
             //   StartArray   [
             //   StartObject  { 
@@ -53,23 +56,24 @@ namespace SerializerTests.Serializers
             //   EndObject     }
 
             BookShelf lret = new BookShelf() { Books = new List<Book>() };
+            ReadOnlySpan<byte> booksPropertySpan = BooksProperty;
 
             if (stream is MemoryStream mem)
             {
                 byte[] buffer = mem.GetBuffer();
                 fixed (byte* ptr = buffer)
                 {
-                    using (ParsedJson doc = SimdJson.ParseJson(ptr, (int)stream.Length))
+                    using (ParsedJsonN doc = SimdJsonN.ParseJson(ptr, (int)stream.Length))
                     {
                         // open iterator:
-                        myIterator = new ParsedJsonIterator(doc);
+                        myIterator = new ParsedJsonIteratorN(doc);
                         try
                         {
-                            while (myIterator.MoveForward() && myIterator.GetTokenType() == JsonTokenType.String)
+                            while (myIterator.MoveForward() && myIterator.IsString)
                             {
-                                if (myIterator.GetUtf16String() == "Books")
+                                if ( new Span<byte>(myIterator.GetUtf8String(), (int) myIterator.GetUtf8StringLength()).SequenceEqual(booksPropertySpan))
                                 {
-                                    if (myIterator.MoveForward() && myIterator.GetTokenType() == JsonTokenType.StartArray)
+                                    if (myIterator.MoveForward() && myIterator.IsObjectOrArray && myIterator.Down())
                                     {
                                         ReadBooks(lret.Books);
                                     }
@@ -92,46 +96,48 @@ namespace SerializerTests.Serializers
             int nTokens = 0;
             int bookId = 0;
             string bookTitle = null;
-            ref ParsedJsonIterator refIt = ref myIterator;
+            ref ParsedJsonIteratorN refIt = ref myIterator;
 
             Span<sbyte> titleSpan = new Span<sbyte>(Unsafe.As<sbyte[]>(myTitle));
             Span<sbyte> idSpan = new Span<sbyte>(Unsafe.As<sbyte[]>(myId));
 
-            while (refIt.MoveForward() && refIt.GetTokenType() == JsonTokenType.StartObject)
+            while (refIt.IsObject && refIt.Down())
             {
-                JsonTokenType curType = JsonTokenType.None;
-                while (refIt.MoveForward() && (curType = refIt.GetTokenType()) != JsonTokenType.EndObject)
+                if (refIt.IsString)
                 {
-                    if (refIt.IsString)
+                    var propName = new Span<sbyte>(refIt.GetUtf8String(), (int)refIt.GetUtf8StringLength());
+
+                    if (propName.SequenceEqual(titleSpan))
                     {
-                        var currentString = new Span<sbyte>(refIt.GetUtf8String(), refIt.GetUtf8StringLength());
-
-                        if (currentString.SequenceEqual(titleSpan))
+                        if (refIt.Next() && refIt.IsString)
                         {
-                            if (refIt.MoveForward() && refIt.IsString)
-                            {
-                                bookTitle = refIt.GetUtf16String();
-                                nTokens++;
-                            }
-                            else
-                            {
-                                throw new InvalidDataException($"Expected string as title but got {refIt.GetTokenType()}");
-                            }
+                            bookTitle = refIt.GetUtf16String();
+                            nTokens++;
                         }
-
-                        if (currentString.SequenceEqual(idSpan))
+                        else
                         {
-                            if (refIt.MoveForward() && refIt.IsInteger)
-                            {
-                                bookId = (int)refIt.GetInteger();
-                                nTokens++;
-                            }
-                            else
-                            {
-                                throw new InvalidDataException($"Expected integers as book id but got {refIt.GetTokenType()}");
-                            }
+                            throw new InvalidDataException($"Expected string as title but got {refIt.CurrentType}");
                         }
                     }
+                    else
+                    {
+                        throw new InvalidDataException($"Expected string as title but got {propName.ToString()}");
+                    }
+
+                    if( refIt.MoveForward() && refIt.IsString )
+                    {
+                        propName = new Span<sbyte>(refIt.GetUtf8String(), (int)refIt.GetUtf8StringLength());
+
+                        if (propName.SequenceEqual(idSpan) && refIt.MoveForward() && refIt.IsInteger)
+                        {
+                            bookId = (int)refIt.GetInteger();
+                            nTokens++;
+                        }
+                        else
+                        {
+                            throw new InvalidDataException($"Expected integers as book id but got {refIt.CurrentType}");
+                        }
+                    }                 
                 }
 
                 if (nTokens == 2)
@@ -139,15 +145,16 @@ namespace SerializerTests.Serializers
                     books.Add(new Book() { Id = bookId, Title = bookTitle });
                     nTokens = 0;
                 }
-            }
-        }
-    }
 
-    static class SpanExtensions
-    {
-        public static bool AreEqual(this Span<sbyte> str1, Span<sbyte> str2)
-        {
-            return str1.SequenceEqual(str2);
+                while(refIt.Next()) // skip rest
+                {
+                }
+                refIt.Up();
+                if( !refIt.Next() )
+                {
+                    break;
+                }
+            }
         }
     }
 }

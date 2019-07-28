@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace SerializerTests.Serializers
@@ -26,13 +27,13 @@ namespace SerializerTests.Serializers
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
-            JsonSerializer.WriteAsync(obj, typeof(T), stream).Wait();
+            JsonSerializer.SerializeAsync(stream, obj).Wait();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected override T Deserialize(Stream stream)
         {
-            return (T) JsonSerializer.ReadAsync(stream, typeof(T)).Result;
+            return (T) JsonSerializer.DeserializeAsync(stream, typeof(T)).Result;
         }
     }
 }

@@ -102,6 +102,7 @@ namespace SerializerTests
 #if NETCOREAPP3_0
                 new NetCoreJsonSerializer<NetCorePropertyBookShelf>(DataNetCore, Touch),
                 new SimdJsonSharpSerializer<BookShelf>(Data, Touch),
+                new SimdJsonSharpSerializerN<BookShelf>(Data, Touch),
 #endif
 				new Utf8JsonSerializer<BookShelf>(Data, Touch),
                 new MessagePackSharp<BookShelf>(Data, Touch),

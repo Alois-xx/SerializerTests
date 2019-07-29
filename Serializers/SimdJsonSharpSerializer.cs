@@ -40,7 +40,7 @@ namespace SerializerTests.Serializers
         unsafe protected override BookShelf Deserialize(Stream stream)
         {
             // A small Json like {"Books":[{"Title":"Book 1","Id":1}]} 
-            // will be translated to the followng JsonTokenTypes by the iterator:
+            // will be translated to the following JsonTokenTypes by the iterator:
             //   String =     "Books"
             //   StartArray   [
             //   StartObject  { 
@@ -65,7 +65,7 @@ namespace SerializerTests.Serializers
                         myIterator = new ParsedJsonIterator(doc);
                         try
                         {
-                            while (myIterator.MoveForward() && myIterator.GetTokenType() == JsonTokenType.String)
+                            while (myIterator.MoveForward() && myIterator.GetTokenType() == JsonTokenType.Comment)
                             {
                                 if (myIterator.GetUtf16String() == "Books")
                                 {

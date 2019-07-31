@@ -42,7 +42,7 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/salarcode/Bois",
 	    SerializerTypes.Binary)]
-    class Bois_LZ4<T> : TestBase<T, BoisSerializer>
+    class Bois_LZ4<T> : TestBase<T, BoisLz4Serializer>
     {
 	    new BoisLz4Serializer Formatter = new BoisLz4Serializer();
 	    public Bois_LZ4(Func<int, T> testData, Action<T> toucher) : base(testData, toucher)

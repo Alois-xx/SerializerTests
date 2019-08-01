@@ -51,10 +51,10 @@ namespace SerializerTests
     {
         static string Help = "SerializerTests is a serializer performance testing framework to evaluate and compare different serializers for .NET by Alois Kraus" + Environment.NewLine +
                              "SerializerTests [-Runs dd] -test [serialize, deserialize, combined, firstCall] [-reftracking] [-maxobj dd]" + Environment.NewLine +
+                             " -N 1,2,10000    Set the number of objects to de/serialize which is repeated -Runs times to get stable results." + Environment.NewLine +
                              " -Runs           Default is 5. The result is averaged where the first run is excluded from the average" + Environment.NewLine +
                              " -test xx        xx can be serialize, deserialize, combined or firstcall to test a scenario for many different serializers" + Environment.NewLine +
                              " -reftracking    If set a list with many identical references is serialized." + Environment.NewLine +
-                             " -maxobj dd      Sets an upper limit how many objects are serialized. By default 1 up to 1 million objects are serialized" + Environment.NewLine +
                              " -serializer xxx Execute the test only for a specific serializer with the name xxx where multiple ones can be used with ," + Environment.NewLine +
                              " -list           List all registered serializers" + Environment.NewLine +
                              " -notouch        Do not touch the deserialized objects to test lazy deserialization" + Environment.NewLine +
@@ -65,8 +65,8 @@ namespace SerializerTests
                              "Test how serializers perform when reference tracking is enabled. Currently that are BinaryFormatter,Protobuf_net and DataContract" + Environment.NewLine + 
                              " Although Json.NET claim to have but it is not completely working." + Environment.NewLine +
                              " SerializerTests -Runs 1 -test combined -reftracking" + Environment.NewLine +
-                             "Speed up tests by testing only up to 300K serialized objects" + Environment.NewLine +
-                             " SerializerTests -test combined -maxobj 300000" + Environment.NewLine;
+                             "Test SimdJsonSharpSerializer serializer with 3 million objects for serialize and deserialize." + Environment.NewLine +
+                             " SerializerTests -test combined -N 3000000 -serializer SimdJsonSharpSerializer" + Environment.NewLine;
 
 
         private Queue<string> Args;
@@ -79,7 +79,7 @@ namespace SerializerTests
         bool IsNGenWarn = true;
         bool IsTouch = true;
         bool TestReferenceTracking = false;
-        int MaxObjectCount = 1000 * 1000;
+        int[] NObjectsToDeSerialize = null;
         string[] SerializerFilters = new string [] { "" };
 
 
@@ -327,7 +327,6 @@ namespace SerializerTests
                         Runs = int.Parse(n);
                         break;
                     case "-reftracking":
-                        MaxObjectCount = 300*1000;
                         TestReferenceTracking = true;
                         break;
                     case "-serializer":
@@ -345,9 +344,12 @@ namespace SerializerTests
                     case "-notouch":
                         IsTouch = false;
                         break;
-                    case "-maxobj":
-                        string maxobj = NextLower();
-                        MaxObjectCount = int.Parse(maxobj);
+                    case "-n":
+                        NObjectsToDeSerialize = NextLower()?.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)?.Select(int.Parse).ToArray();
+                        if( NObjectsToDeSerialize == null )
+                        {
+                            throw new NotSupportedException("Missing object count after -N option");
+                        }
                         break;
                     case "-test":
                         testCase = NextLower();
@@ -422,19 +424,19 @@ namespace SerializerTests
         private void Deserialize()
         {
             var tester = new Test_O_N_Behavior(TestSerializers);
-            tester.TestDeserialize(maxNObjects: MaxObjectCount, nRuns: Runs);
+            tester.TestDeserialize(NObjectsToDeSerialize, nRuns: Runs);
         }
 
         private void Serialize()
         {
             var tester = new Test_O_N_Behavior(TestSerializers);
-            tester.TestSerialize(maxNObjects:MaxObjectCount, nRuns: Runs);
+            tester.TestSerialize(NObjectsToDeSerialize, nRuns: Runs);
         }
 
         private void Combined()
         {
             var tester = new Test_O_N_Behavior(TestSerializers);
-            tester.TestCombined(maxNObjects: MaxObjectCount, nRuns: Runs);
+            tester.TestCombined(NObjectsToDeSerialize, nRuns: Runs);
         }
 
 
@@ -444,7 +446,7 @@ namespace SerializerTests
         private void FirstCall()
         {
             var tester = new Test_O_N_Behavior(StartupSerializersToTest);
-            tester.TestSerialize(maxNObjects: 1, nRuns:1);
+            tester.TestSerialize(new int[] { 1 }, nRuns:1);
         }
 
         string NextLower()
@@ -463,7 +465,7 @@ namespace SerializerTests
             foreach (ProcessModule module in Process.GetCurrentProcess().Modules)
             {
                 string file = module.ModuleName;
-                if( file == "SerializerTests.ni.exe" )
+                if( file == "SerializerTests.ni.exe" || file == "coreclr.dll")
                 {
                     lret = true;
                 }

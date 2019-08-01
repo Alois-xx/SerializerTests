@@ -115,6 +115,7 @@ namespace SerializerTests
                 // new Wire<BookShelf>(Data, Touch),
 #endif
                 new Bois<BookShelf>(Data, Touch),
+                new Bois_LZ4<BookShelf>(Data, Touch),
                 new Jil<BookShelf>(Data, Touch),
                 new Protobuf_net<BookShelf>(Data, Touch),
                 new SlimSerializer<BookShelf>(Data, Touch),
@@ -155,6 +156,11 @@ namespace SerializerTests
                 new Bois<BookShelf1>(Data1, null),
                 new Bois<BookShelf2>(Data2, null),
                 new Bois<LargeBookShelf>(DataLarge, null),
+
+                new Bois_LZ4<BookShelf>(Data, null),
+                new Bois_LZ4<BookShelf1>(Data1, null),
+                new Bois_LZ4<BookShelf2>(Data2, null),
+                new Bois_LZ4<LargeBookShelf>(DataLarge, null),
 
                 new GroBuf<BookShelf>(Data, null),
                 new GroBuf<BookShelf1>(Data1, null),
@@ -255,6 +261,7 @@ namespace SerializerTests
                 //new Wire<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking: TestReferenceTracking),
 #endif
                 new Bois<ReferenceBookShelf>(DataReferenceBookShelf, null),
+                new Bois_LZ4<ReferenceBookShelf>(DataReferenceBookShelf, null),
                 //new Jil<ReferenceBookShelf>(DataReferenceBookShelf, null),  // Jil does not support a dictionary with DateTime as key
                 new Protobuf_net<ReferenceBookShelf>(DataReferenceBookShelf, null),  // Reference tracking in protobuf can be enabled via attributes in the types!
                 new SlimSerializer<ReferenceBookShelf>(DataReferenceBookShelf, null),

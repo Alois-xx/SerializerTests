@@ -98,7 +98,6 @@ namespace SerializerTests
 
             SerializersToTest = new List<ISerializeDeserializeTester>
             {
-                new Revenj<BookShelf>(Data, Touch),
                 new ApexSerializer<BookShelf>(Data, Touch),
 #if NETCOREAPP3_0
                 new NetCoreJsonSerializer<NetCorePropertyBookShelf>(DataNetCore, Touch),

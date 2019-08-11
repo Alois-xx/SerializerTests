@@ -15,7 +15,7 @@ namespace SerializerTests.Serializers
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/skbkontur/GroBuf",
-                    SerializerTypes.Binary| SerializerTypes.SupportsVersioning)]
+                    SerializerTypes.Binary)]
     public class GroBuf<T> : TestBase<T, Serializer> where T : class
     {
         new Serializer Formatter = new Serializer(new AllFieldsExtractor(), options: GroBufOptions.WriteEmptyObjects);

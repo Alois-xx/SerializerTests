@@ -40,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Apex.Serialization" Version="1.0.0" />
+    <PackageReference Include="Apex.Serialization" Version="1.3.0" />
     <PackageReference Include="Azos" Version="1.0.508" />
     <PackageReference Include="fastJSON" Version="2.2.4" />
     <PackageReference Include="GroBuf" Version="1.4.8" />

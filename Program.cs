@@ -98,6 +98,7 @@ namespace SerializerTests
 
             SerializersToTest = new List<ISerializeDeserializeTester>
             {
+                new NopSerializer<BookShelf>(Data, null),
                 new ApexSerializer<BookShelf>(Data, Touch),
 #if NETCOREAPP3_0
                 new NetCoreJsonSerializer<NetCorePropertyBookShelf>(DataNetCore, Touch),

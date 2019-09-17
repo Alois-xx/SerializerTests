@@ -4,6 +4,9 @@
 -->
 <Tag Name="">
 <Tag Name="Deserialize">
+  <Tag Name="NopSerializer">
+    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.NopSerializer*::Deserialize*"/>
+  </Tag>
   <Tag Name="Utf8JsonSerializer">
     <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.Utf8JsonSerializer*::Deserialize*"/>
   </Tag>
@@ -87,6 +90,9 @@
 		<Entrypoint Module="*.dll" Method="System.Activator.CreateInstance*"/>
 	</Tag>
 <Tag Name="Serialize">
+  <Tag Name="NopSerializer">
+    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.NopSerializer*::Serialize*"/>
+  </Tag>
   <Tag Name="Utf8JsonSerializer">
     <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.Utf8JsonSerializer*::Serialize*"/>
   </Tag>

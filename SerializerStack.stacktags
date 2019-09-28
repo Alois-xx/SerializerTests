@@ -4,6 +4,9 @@
 -->
 <Tag Name="">
 <Tag Name="Deserialize">
+  <Tag Name="Apex">
+    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.ApexSerializer*::Deserialize*"/>
+  </Tag>
   <Tag Name="NopSerializer">
     <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.NopSerializer*::Deserialize*"/>
   </Tag>
@@ -90,6 +93,9 @@
 		<Entrypoint Module="*.dll" Method="System.Activator.CreateInstance*"/>
 	</Tag>
 <Tag Name="Serialize">
+  <Tag Name="Apex">
+    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.ApexSerializer*::Serialize*"/>
+  </Tag>
   <Tag Name="NopSerializer">
     <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.NopSerializer*::Serialize*"/>
   </Tag>

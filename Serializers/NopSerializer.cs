@@ -44,6 +44,7 @@ namespace SerializerTests.Serializers
                 }
 
                 myUtf8Data = utf8Data.ToArray();
+                stream.Write(myUtf8Data, 0, myUtf8Data.Length);
             }
             else
             {

@@ -55,7 +55,7 @@ namespace SerializerTests
                              " -Runs           Default is 5. The result is averaged where the first run is excluded from the average" + Environment.NewLine +
                              " -test xx        xx can be serialize, deserialize, combined or firstcall to test a scenario for many different serializers" + Environment.NewLine +
                              " -reftracking    If set a list with many identical references is serialized." + Environment.NewLine +
-                             " -serializer xxx Execute the test only for a specific serializer with the name xxx where multiple ones can be used with ," + Environment.NewLine +
+                             " -serializer xxx Execute the test only for a specific serializer with the name xxx. Use , to separate multiple filters. Prefix name with # to force a full string match instead of a substring match." + Environment.NewLine +
                              " -list           List all registered serializers" + Environment.NewLine +
                              " -notouch        Do not touch the deserialized objects to test lazy deserialization" + Environment.NewLine +
                              "                 To execute deserialize you must first have called the serialize to generate serialized test data on disk to be read during deserialize" + Environment.NewLine +
@@ -66,7 +66,7 @@ namespace SerializerTests
                              " Although Json.NET claim to have but it is not completely working." + Environment.NewLine +
                              " SerializerTests -Runs 1 -test combined -reftracking" + Environment.NewLine +
                              "Test SimdJsonSharpSerializer serializer with 3 million objects for serialize and deserialize." + Environment.NewLine +
-                             " SerializerTests -test combined -N 3000000 -serializer SimdJsonSharpSerializer" + Environment.NewLine;
+                             " SerializerTests -test combined -N 3000000 -serializer #SimdJsonSharpSerializer" + Environment.NewLine;
 
 
         private Queue<string> Args;
@@ -82,6 +82,7 @@ namespace SerializerTests
         int[] NObjectsToDeSerialize = null;
         string[] SerializerFilters = new string [] { "" };
 
+        const int StartupSerializerCount = 4;
 
         public Program(string[] args)
         {
@@ -93,7 +94,19 @@ namespace SerializerTests
             // used when on command line -serializer is used
             Func<ISerializeDeserializeTester, bool> filter = (s) =>
             {
-                return SerializerFilters.Any(f => s.GetType().Name.IndexOf(f, StringComparison.OrdinalIgnoreCase) == 0);
+                return SerializerFilters.Any(filterStr =>
+                {
+                    string simpleType = GetSimpleTypeName(s.GetType());
+
+                    if (filterStr.StartsWith("#")) // Exact type match needed
+                    {
+                        return String.Equals(filterStr.Substring(1), simpleType, StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        return simpleType.IndexOf(filterStr, StringComparison.OrdinalIgnoreCase) == 0;
+                    }
+                });
             };
 
             SerializersToTest = new List<ISerializeDeserializeTester>
@@ -312,6 +325,16 @@ namespace SerializerTests
             }
         }
 
+        /// <summary>
+        /// Return only the non generic type name
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        static string GetSimpleTypeName(Type type)
+        {
+            return type.Name.TrimEnd('1').TrimEnd('`');
+        }
+
         private void Run()
         {
             string testCase = null;
@@ -339,7 +362,7 @@ namespace SerializerTests
                         Console.WriteLine("Registered Serializers");
                         foreach (var test in SerializersToTest)
                         {
-                            Console.WriteLine($"{test.GetType().Name.TrimEnd('1').TrimEnd('`') }");
+                            Console.WriteLine($"{GetSimpleTypeName(test.GetType()) }");
                         }
                         return;
                     case "-notouch":
@@ -442,12 +465,37 @@ namespace SerializerTests
 
 
         /// <summary>
-        /// Test for each serializer 5 different types the first call effect
+        /// To measure things accurately we spawn a new process for every serializer and then create for 4 different types a serializer where some data is serialized
         /// </summary>
         private void FirstCall()
         {
-            var tester = new Test_O_N_Behavior(StartupSerializersToTest);
-            tester.TestSerialize(new int[] { 1 }, nRuns:1);
+            if (StartupSerializersToTest.Count == StartupSerializerCount) // we always create 4 serializer with different types for startup tests
+            {
+                var tester = new Test_O_N_Behavior(StartupSerializersToTest);
+                tester.TestSerialize(new int[] { 1 }, nRuns: 1);
+            }
+            else
+            {
+                for(int i=0;i<StartupSerializersToTest.Count;i+= StartupSerializerCount)
+                {
+                    var serializer = StartupSerializersToTest[i];
+                      // Spawn new process for each serializer to measure each serializer overhead in isolation 
+                      var startArgs = new ProcessStartInfo(Assembly.GetEntryAssembly().Location.Replace(".dll",".exe"), String.Join(" ", Environment.GetCommandLineArgs().Skip(1)) + $" -serializer #{GetSimpleTypeName(serializer.GetType())}")
+                    {
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                    };
+                    Process proc = Process.Start(startArgs);
+                    // trim newline of newly started process
+                    string output = proc.StandardOutput.ReadToEnd().Trim(Environment.NewLine.ToCharArray());
+                    if( i > 0) // trim header since we need it only once
+                    {
+                        output = output.Substring(output.IndexOf('\n') + 1);
+                    }
+                    Console.WriteLine(output);
+                    proc.WaitForExit();
+                }
+            }
         }
 
         string NextLower()

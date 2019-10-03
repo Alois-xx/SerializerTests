@@ -42,6 +42,7 @@
   <ItemGroup>
     <PackageReference Include="Apex.Serialization" Version="1.3.0" />
     <PackageReference Include="Azos" Version="1.0.508" />
+    <PackageReference Include="Ceras" Version="4.1.7" />
     <PackageReference Include="fastJSON" Version="2.2.4" />
     <PackageReference Include="GroBuf" Version="1.4.8" />
     <PackageReference Include="Hyperion" Version="0.9.8" />

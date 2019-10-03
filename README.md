@@ -2,6 +2,7 @@
 .NET Serializer testing framework
 
 This test framework compares the most popular and fastest serializers for .NET which was the input for 
+- https://aloiskraus.wordpress.com/2019/09/29/net-serialization-benchmark-2019-roundup/
 - https://aloiskraus.wordpress.com/2017/04/23/the-definitive-serialization-performance-guide/
 - https://aloiskraus.wordpress.com/2018/05/06/serialization-performance-update-with-net-4-7-2/
 
@@ -11,6 +12,7 @@ The currently tested Serializers are
 - Apex (https://github.com/dbolin/Apex.Serialization)
 - BinaryFormatter
 - Bois (https://github.com/salarcode/Bois)
+- Cera (https://github.com/rikimaru0345/Ceras)
 - DataContract
 - FastJson ( https://github.com/mgholam/fastJSON/)
 - FlatBuffer (https://google.github.io/flatbuffers/)

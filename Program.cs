@@ -111,8 +111,12 @@ namespace SerializerTests
 
             SerializersToTest = new List<ISerializeDeserializeTester>
             {
+
                 new NopSerializer<BookShelf>(Data, null),
                 new ApexSerializer<BookShelf>(Data, Touch),
+
+                new Ceras<BookShelf>(Data, Touch),
+
 #if NETCOREAPP3_0
                 new NetCoreJsonSerializer<NetCorePropertyBookShelf>(DataNetCore, Touch),
                 new SimdJsonSharpSerializer<BookShelf>(Data, Touch),
@@ -156,6 +160,12 @@ namespace SerializerTests
 
             StartupSerializersToTest = new List<ISerializeDeserializeTester>
             {
+                new Ceras<BookShelf>(Data, null),
+                new Ceras<BookShelf1>(Data1, null),
+                new Ceras<BookShelf2>(Data2, null),
+                new Ceras<LargeBookShelf>(DataLarge, null),
+
+
                 new ApexSerializer<BookShelf>(Data, null),
                 new ApexSerializer<BookShelf1>(Data1, null),
                 new ApexSerializer<BookShelf2>(Data2, null),

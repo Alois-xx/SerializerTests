@@ -106,6 +106,10 @@ namespace SerializerTests
         string GetSerializerDetails(ISerializeDeserializeTester formatter)
         {
             var description = (SerializerTypeAttribute)formatter.GetType().GetCustomAttribute(typeof(SerializerTypeAttribute));
+            if( description == null)
+            {
+                throw new MissingMemberException($"The serializer {formatter.GetType().Name} has no SerializerTypeAttribute! Please add missing metadata!");
+            }
             var str = description.ProjectHomeUrl;
             string dataFormat = description.SerializerTypeDescription.HasFlag(SerializerTypes.Binary) ? "Binary" : "Text";
             string subDataFormat = description.SerializerTypeDescription.HasFlag(SerializerTypes.Json) ? "Json" :

@@ -12,7 +12,7 @@ The currently tested Serializers are
 - Apex (https://github.com/dbolin/Apex.Serialization)
 - BinaryFormatter
 - Bois (https://github.com/salarcode/Bois)
-- Cera (https://github.com/rikimaru0345/Ceras)
+- Ceras (https://github.com/rikimaru0345/Ceras)
 - DataContract
 - FastJson ( https://github.com/mgholam/fastJSON/)
 - FlatBuffer (https://google.github.io/flatbuffers/)

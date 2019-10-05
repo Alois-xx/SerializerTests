@@ -137,9 +137,18 @@ namespace SerializerTests
             return myStream;
         }
 
-        List<double> Test(int n, Action acc)
+        bool IgnoreSerializeTimes
+        {
+            get
+            {
+                return this.GetType().GetCustomAttributes(typeof(IgnoreSerializeTimeAttribute), true).Length > 0;
+            }
+        }
+
+        List<double> Test(int n, Action acc, bool isSerialize)
         {
             List<double> times = new List<double>();
+            bool bIgnoreSerializeTime = IgnoreSerializeTimes;
             StartDurationThread();
             Stopwatch sw = new Stopwatch();
 
@@ -147,12 +156,13 @@ namespace SerializerTests
             {
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
-                ManualResetEvent ev = GetEvent(!acc.Method.Name.Contains("Deserialize"));
+                ManualResetEvent ev = GetEvent(isSerialize);
                 sw.Restart();
                 acc();
                 sw.Stop();
                 ev.Set(); // end waiting to get a nice context switch how long a test did really take in elapsed time
-                times.Add(sw.Elapsed.TotalSeconds);
+                // When we serialize and the serializer time should be ignored set it to 0
+                times.Add( (isSerialize && bIgnoreSerializeTime) ? 0.0d : sw.Elapsed.TotalSeconds);
             }
 
             StopDurationThread();
@@ -169,7 +179,7 @@ namespace SerializerTests
             {
                 var dataStream = GetMemoryStream();
                 TestSerializeOnly(dataStream);
-            });
+            }, isSerialize:true);
             StopDurationThread();
             SaveMemoryStreamToDisk(GetMemoryStream(), nObjectsToCreate);
 
@@ -210,7 +220,7 @@ namespace SerializerTests
             {
                 var dataStream = GetMemoryStream();
                 TestDeserializeOnlyAndTouch(dataStream, out T deserialized);
-            });
+            }, isSerialize:false);
 
             return CalcTime(times, size);
         }

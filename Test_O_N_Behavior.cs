@@ -16,7 +16,7 @@ namespace SerializerTests
         // capture first time init effects by executing serialize/deserialize with N=1 two times
         static int[] ObjectCountToTest = new int[]
         {
-            1, 1, 10, 100, 500, 1000, 10*1000, 50*1000, 100*1000, 200*1000, 500*1000, 800*1000, 1000*1000
+            1, 1, 10, 100, 500, 1000, 10_000, 50_000, 100_000, 200_000, 500_000, 800_000, 1000_000
         };
 
 

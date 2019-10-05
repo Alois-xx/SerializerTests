@@ -13,6 +13,7 @@ namespace SerializerTests.Serializers
     /// /// </summary>
     /// <typeparam name="T"></typeparam>
     [SerializerType("", SerializerTypes.Binary)]
+    [IgnoreSerializeTimeAttribute("The data is prepared in the Serialize method for the deserialize call. Ignore it to not confuse users.")]
     class NopSerializer<T> : TestBase<T, Program> where T : class
     {
         int myCount = 0;

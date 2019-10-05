@@ -18,6 +18,7 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/EgorBo/SimdJsonSharp based on https://github.com/lemire/simdjson", 
                     SerializerTypes.Json)]
+    [IgnoreSerializeTimeAttribute("Utf8Json is used for serialize hence the serialize time is ignored.")]
     class SimdJsonSharpSerializer<T> : TestBase<BookShelf, ParsedJson>
     {
         static byte[] myTitle = Encoding.UTF8.GetBytes("Title");

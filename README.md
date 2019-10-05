@@ -3,8 +3,8 @@
 
 This test framework compares the most popular and fastest serializers for .NET which was the input for 
 - https://aloiskraus.wordpress.com/2019/09/29/net-serialization-benchmark-2019-roundup/
-- https://aloiskraus.wordpress.com/2017/04/23/the-definitive-serialization-performance-guide/
 - https://aloiskraus.wordpress.com/2018/05/06/serialization-performance-update-with-net-4-7-2/
+- https://aloiskraus.wordpress.com/2017/04/23/the-definitive-serialization-performance-guide/
 
 
 The project compiles to .NET 4.7 and .NET Core 3.0 where you can check out the serialization performance in your favorite .NET Framework. 

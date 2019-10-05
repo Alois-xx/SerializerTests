@@ -45,4 +45,17 @@ namespace SerializerTests
             SerializerTypeDescription = serializerTypeDescription;
         }
     }
+
+    /// <summary>
+    /// When added to a serializer the serialize time is set to 0 because it is e.g. a serializer which only 
+    /// can deserialize and the preparation is done in its serialize method
+    /// </summary>
+    class IgnoreSerializeTimeAttribute : Attribute
+    {
+        public IgnoreSerializeTimeAttribute(string reason)
+        {
+            
+        }
+
+    }
 }

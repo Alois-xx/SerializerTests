@@ -4,7 +4,6 @@
 
 /bin
 /obj
-/obj
 /packages
 /.vs
 /Properties/launchSettings.json
@@ -13,3 +12,4 @@
 /SerializationPerf.csv
 /Properties/PublishProfiles/FolderProfile.pubxml.user
 /Properties/PublishProfiles/FolderProfile.pubxml
+*.bin

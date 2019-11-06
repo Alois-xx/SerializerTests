@@ -25,7 +25,9 @@ The currently tested Serializers are
 - Protobuf.NET (https://github.com/mgravell/protobuf-net)
 - SerivceStack (https://github.com/ServiceStack/ServiceStack.Text)
 - SimdJsonSharp ( https://github.com/EgorBo/SimdJsonSharp)
+- SpanJson (https://github.com/Tornhoof/SpanJson)
 - SlimSerializer (Now part of Azos) (https://github.com/azist/azos/tree/master/src/Azos/Serialization/Slim)
+- Swifter.Json (https://github.com/Dogwei/Swifter.Json)
 - UTF8Json (https://github.com/neuecc/Utf8Json)
 - XmlSerializer
 

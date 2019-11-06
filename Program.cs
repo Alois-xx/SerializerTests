@@ -121,6 +121,8 @@ namespace SerializerTests
                 new NetCoreJsonSerializer<NetCorePropertyBookShelf>(DataNetCore, Touch),
                 new SimdJsonSharpSerializer<BookShelf>(Data, Touch),
                 new SimdJsonSharpSerializerN<BookShelf>(Data, Touch),
+                new SpanJson<BookShelf>(Data, Touch),
+                new SwifterJson<BookShelf>(Data, Touch),
 #endif
 				new Utf8JsonSerializer<BookShelf>(Data, Touch),
                 new MessagePackSharp<BookShelf>(Data, Touch),

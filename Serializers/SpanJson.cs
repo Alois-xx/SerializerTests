@@ -19,7 +19,7 @@ namespace SerializerTests.Serializers
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
-            JsonSerializer.Generic.Utf8.SerializeAsync(obj, stream);
+            JsonSerializer.Generic.Utf8.SerializeAsync(obj, stream).GetAwaiter().GetResult();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

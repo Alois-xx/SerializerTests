@@ -19,7 +19,7 @@ namespace SerializerTests.Serializers
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
-            JsonFormatter.SerializeObjectAsync(obj, stream, Encoding.UTF8);
+            JsonFormatter.SerializeObjectAsync(obj, stream, Encoding.UTF8).Wait();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

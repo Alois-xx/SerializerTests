@@ -30,7 +30,7 @@ namespace SerializerTests.Specialities
             var deser = (Base)ProtobufTypeModels.MainModel.Deserialize(mem, null, typeof(Base));
 
 
-            var model = TypeModel.Create();
+            var model = RuntimeTypeModel.Create();
             var t1 = model.Add(typeof(IAbstraction), true);
 
             t1.AddSubType(100, typeof(ImplA));
@@ -59,7 +59,7 @@ namespace SerializerTests.Specialities
         [ProtoMember(1)]
         public string Name { get; set; }
 
-        [ProtoMember(2, AsReference = true)]
+        [ProtoMember(2)]
         public List<IAbstraction> Instances = new List<IAbstraction>();
     }
 
@@ -89,7 +89,7 @@ namespace SerializerTests.Specialities
     /// </summary>
     public static class ProtobufTypeModels
     {
-        public static readonly RuntimeTypeModel MainModel = TypeModel.Create();
+        public static readonly RuntimeTypeModel MainModel = RuntimeTypeModel.Create();
         
     }
 

@@ -1,4 +1,4 @@
-﻿#if NETCOREAPP3_0
+﻿#if ( NETCOREAPP3_1 || NETCOREAPP3_0 )
 
 namespace SerializerTests.Serializers
 {
@@ -19,7 +19,7 @@ namespace SerializerTests.Serializers
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
-            JsonFormatter.SerializeObjectAsync(obj, stream, Encoding.UTF8).Wait();
+            JsonFormatter.SerializeObjectAsync(obj, stream, Encoding.UTF8).AsTask().Wait();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

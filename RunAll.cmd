@@ -1,4 +1,5 @@
 @pushd .
+setlocal enabledelayedexpansion
 set CurDir=%CD%
 set SimpleTime=%Time::=_%
 set SimpleTime=%SimpleTime: =_%
@@ -7,7 +8,7 @@ set Runs=1
 mkdir "%CurDir%"
 echo Profiling results will be copied to directory %CurDir%
 
-cd bin\Release\net472
+cd bin\Release\net48
 cmd /C RunTests.cmd !Runs!
 move Startup_NGen.csv "%CurDir%"
 move Startup_NoNGen.csv "%CurDir%"
@@ -21,10 +22,17 @@ if "%1" EQU "-profile" (
 	move C:\temp\NET_SerializationTests_Profiler.csv "%CurDir%"
 )
 
-cd ..\netcoreapp3.0
+cd ..\net50
 cmd /C RunTests_Core.cmd !Runs!
 move Startup_NoNGen_Core.csv "%CurDir%"
 move SerializationPerf_Core.csv "%CurDir%"
+
+cd ..\netcoreapp3.1
+cmd /C RunTests_Core.cmd !Runs!
+move  Startup_NoNGen_Core.csv  Startup_NoNGen_Core3.1.csv
+move SerializationPerf_Core.csv SerializationPerf_Core3.1.csv
+move Startup_NoNGen_Core3.1.csv "%CurDir%"
+move SerializationPerf_Core3.1.csv "%CurDir%"
 
 if "%1" EQU "-profile" (
 	cmd /C RunTests_Core.cmd -profile
@@ -36,6 +44,8 @@ if "%1" EQU "-profile" (
 cd "%CurDir%"
 copy SerializationPerf.csv SerializationPerf_Combined.csv
 type SerializationPerf_Core.csv  | findstr /v Objects >> SerializationPerf_Combined.csv
+type SerializationPerf_Core3.1.csv  | findstr /v Objects >> SerializationPerf_Combined.csv
+echo Test Results are located at %CurDir%\SerializationPerf_Combined.csv
 @popd
 
 

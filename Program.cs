@@ -40,9 +40,9 @@ namespace SerializerTests
 
         2. Add your serializer to the list of serializers to be tested to the list of serializers in Deserialize, Serialize and FirstCall
 
-        3. Recompile and run first the serialization test to create the test data on disk for the deserialization run.
-
-        4. Publish the results on your own blog.
+        3. Compile it in Release 
+        4. Call RunAll.cmd from the source folder to execute tests for .NET Framework, .NET Core 3.1 and .NET 5.0
+        5. Publish the results on your own blog.
     }
     */
 
@@ -113,11 +113,15 @@ namespace SerializerTests
             {
 
                 new NopSerializer<BookShelf>(Data, null),
+                // Apex Serializer works only on .NET Core 3.0! .NET Core 3.1 and 5.0 break with some internal FileNotFoundExeptions which breaks serialization/deserialization
+                // InvalidOperationException: Type SerializerTests.TypesToSerialize.BookShelf was encountered during deserialization but was not marked as serializable. Use Binary.MarkSerializable before creating any serializers if this type is intended to be serialized.
+#if  NETCOREAPP3_0
                 new ApexSerializer<BookShelf>(Data, Touch),
+#endif
 
                 new Ceras<BookShelf>(Data, Touch),
 
-#if NETCOREAPP3_0
+#if ( NETCOREAPP3_1 || NETCOREAPP3_0 )
                 new NetCoreJsonSerializer<NetCorePropertyBookShelf>(DataNetCore, Touch),
                 new SimdJsonSharpSerializer<BookShelf>(Data, Touch),
                 new SimdJsonSharpSerializerN<BookShelf>(Data, Touch),
@@ -141,7 +145,7 @@ namespace SerializerTests
                 new SlimSerializer<BookShelf>(Data, Touch),
 
 
-#if NET472  
+#if NET472
                 // ZeroFormatter crashes on .NET Core 3 during serialize with: System.BadImageFormatException: 'Bad IL format.'
                 // new ZeroFormatter<ZeroFormatterBookShelf>(DataZeroFormatter, Touch),
 #endif
@@ -167,11 +171,12 @@ namespace SerializerTests
                 new Ceras<BookShelf2>(Data2, null),
                 new Ceras<LargeBookShelf>(DataLarge, null),
 
-
+#if NETCOREAPP3_0
                 new ApexSerializer<BookShelf>(Data, null),
                 new ApexSerializer<BookShelf1>(Data1, null),
                 new ApexSerializer<BookShelf2>(Data2, null),
                 new ApexSerializer<LargeBookShelf>(DataLarge, null),
+#endif
 
                 new ServiceStack<BookShelf>(Data, null),
                 new ServiceStack<BookShelf1>(Data1, null),
@@ -193,7 +198,7 @@ namespace SerializerTests
                 new GroBuf<BookShelf2>(Data2, null),
                 new GroBuf<LargeBookShelf>(DataLarge, null),
 
-#if NET472  
+#if NET472
                 // ZeroFormatter crashes on .NET Core 3 during serialize with: System.BadImageFormatException: 'Bad IL format.'
                 //new ZeroFormatter<ZeroFormatterBookShelf>(DataZeroFormatter, null),
                 //new ZeroFormatter<ZeroFormatterBookShelf1>(DataZeroFormatter1, null),
@@ -275,7 +280,11 @@ namespace SerializerTests
 
             SerializersObjectReferencesToTest = new List<ISerializeDeserializeTester>
             {
+                 // Apex Serializer works only on .NET Core 3.0 3.1 and 5.0 break with some internal FileNotFoundExeptions which apparently break serialization/deserialization
+                // InvalidOperationException: Type SerializerTests.TypesToSerialize.BookShelf was encountered during deserialization but was not marked as serializable. Use Binary.MarkSerializable before creating any serializers if this type is intended to be serialized.
+#if NETCOREAPP3_0
                 new ApexSerializer<ReferenceBookShelf>(DataReferenceBookShelf, null),
+#endif
                 // FlatBuffer does not support object references
                 new MessagePackSharp<ReferenceBookShelf>(DataReferenceBookShelf, null),
                 new GroBuf<ReferenceBookShelf>(DataReferenceBookShelf, null),
@@ -291,7 +300,7 @@ namespace SerializerTests
                 //new Jil<ReferenceBookShelf>(DataReferenceBookShelf, null),  // Jil does not support a dictionary with DateTime as key
                 new Protobuf_net<ReferenceBookShelf>(DataReferenceBookShelf, null),  // Reference tracking in protobuf can be enabled via attributes in the types!
                 new SlimSerializer<ReferenceBookShelf>(DataReferenceBookShelf, null),
-#if NET472  
+#if NET472
                 // ZeroFormatter crashes on .NET Core 3 during serialize with: System.BadImageFormatException: 'Bad IL format.'
                 //new ZeroFormatter<ReferenceBookShelf>(DataReferenceBookShelf, null),
 #endif

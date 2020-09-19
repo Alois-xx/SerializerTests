@@ -1,5 +1,4 @@
-﻿
-#if NETCOREAPP3_0
+﻿#if ( NETCOREAPP3_1 || NETCOREAPP3_0 )
 using SerializerTests.TypesToSerialize;
 using SimdJsonSharp;
 using System;

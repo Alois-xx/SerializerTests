@@ -25,8 +25,8 @@ namespace SerializerTests.TypesToSerialize
         [DataMember(Order = 1), Key(1), Index(1)]
         public virtual float Price { get; set; }
 
-        // Protocol buffers supports reference tracking only at object declaration level
-        [DataMember(Order = 2), Key(2), Index(2), ProtoMember(2, AsReference = true)] 
+        // Protocol buffers no longer supports reference tracking only at object declaration level!
+        [DataMember(Order = 2), Key(2), Index(2), ProtoMember(2)] 
         public virtual string Name { get; set; }
     }
 }

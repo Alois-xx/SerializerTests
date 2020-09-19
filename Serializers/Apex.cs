@@ -1,4 +1,5 @@
-﻿using Apex.Serialization;
+﻿#if NETCOREAPP3_0
+using Apex.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -33,3 +34,4 @@ namespace SerializerTests.Serializers
         }
     }
 }
+#endif

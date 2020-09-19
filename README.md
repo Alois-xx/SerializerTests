@@ -49,7 +49,7 @@ I have commented out only the serializer invocations in Program.cs so you can ad
 # Running
 - Clone Repo
 - Build Release 
-- Eecute RunAll.cmd from source directory
+- Execute RunAll.cmd from source directory
 
 You will get a combined CSV file for all tested serializers on your machine for .NET 5.0, .NET Core 3.1 and .NET 4.8.
 Then you can verify the data yourself. If you want to plug in your own data types see Program.cs how to extend/modify the test suite.

@@ -7,9 +7,8 @@ This test framework compares the most popular and fastest serializers for .NET w
 - https://aloiskraus.wordpress.com/2017/04/23/the-definitive-serialization-performance-guide/
 
 
-The project compiles to .NET 4.7 and .NET Core 3.0 where you can check out the serialization performance in your favorite .NET Framework. 
+The project compiles to .NET 5.0, .NET Core 3.1 and .NET 4.8 where you can check out the serialization performance in your favorite .NET Framework. 
 The currently tested Serializers are
-- Apex (https://github.com/dbolin/Apex.Serialization)
 - BinaryFormatter
 - Bois (https://github.com/salarcode/Bois)
 - Ceras (https://github.com/rikimaru0345/Ceras)
@@ -19,7 +18,7 @@ The currently tested Serializers are
 - GroBuf (https://github.com/skbkontur/GroBuf)
 - JIL (https://github.com/kevin-montrose/Jil)
 - Json.NET (http://www.newtonsoft.com/json)
-- JsonSerializer (.NET Core 3.0)
+- JsonSerializer (.NET)
 - MessagePackSharp (https://github.com/neuecc/MessagePack-CSharp)
 - MsgPack.Cli (https://github.com/msgpack/msgpack-cli)
 - Protobuf.NET (https://github.com/mgravell/protobuf-net)
@@ -37,10 +36,20 @@ Now you can test at your own if that is really the case. If I have forgot a grea
 please drop me a note and I will include it. 
 
 #### Legacy Serializers
+- Apex works only up to .NET Core 3.0. Later .NET versions break
+  (https://github.com/dbolin/Apex.Serialization)
 - SlimSerializer (part of NFX Project)
 - Wire
 - Hyperion (Wire Fork)
 - ZeroFormatter
 
-These are either no longer compatible with .NET Core 3 or were superseded by newer ones. Were possible
+These are either no longer compatible with .NET Core 3.1 .NET 5.0 or were superseded by newer ones. Were possible
 I have commented out only the serializer invocations in Program.cs so you can add them again if you are curious. 
+
+# Running
+- Clone Repo
+- Build Release 
+- Eecute RunAll.cmd from source directory
+
+You will get a combined CSV file for all tested serializers on your machine for .NET 5.0, .NET Core 3.1 and .NET 4.8.
+Then you can verify the data yourself. If you want to plug in your own data types see Program.cs how to extend/modify the test suite.

@@ -121,13 +121,18 @@ namespace SerializerTests
 
                 new Ceras<BookShelf>(Data, Touch),
 
-#if ( NETCOREAPP3_1 || NETCOREAPP3_0 )
-                new NetCoreJsonSerializer<NetCorePropertyBookShelf>(DataNetCore, Touch),
+#if NET5_0
+                new SystemTextJson<BookShelf>(Data, Touch),
+#endif
+#if (NETCOREAPP3_1 || NETCOREAPP3_0) && !NET5_0
+                new SystemTextJson<NetCorePropertyBookShelf>(DataNetCore, Touch),
+#endif
+#if NETCOREAPP3_1 || NETCOREAPP3_0 
                 new SimdJsonSharpSerializer<BookShelf>(Data, Touch),
                 new SpanJson<BookShelf>(Data, Touch),
                 new SwifterJson<BookShelf>(Data, Touch),
 #endif
-				new Utf8JsonSerializer<BookShelf>(Data, Touch),
+                new Utf8JsonSerializer<BookShelf>(Data, Touch),
                 new MessagePackSharp<BookShelf>(Data, Touch),
                 new GroBuf<BookShelf>(Data, Touch),
                 new FlatBuffer<BookShelfFlat>(DataFlat, TouchFlat),

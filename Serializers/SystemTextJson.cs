@@ -1,14 +1,11 @@
-﻿#if ( NETCOREAPP3_1 || NETCOREAPP3_0 )
+﻿#if ( NETCOREAPP3_1 || NETCOREAPP3_0 ||  NET5_0)
 
 using SerializerTests.TypesToSerialize;
 using SimdJsonSharp;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace SerializerTests.Serializers
 {
@@ -18,22 +15,30 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0 See Fast built-in JSON support",
                     SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
-    class NetCoreJsonSerializer<T> : TestBase<T, JsonSerializerOptions>
+    class SystemTextJson<T> : TestBase<T, JsonSerializerOptions>
     {
-        public NetCoreJsonSerializer(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        // Enable support for public fields which are only supported since .NET 5.0
+        JsonSerializerOptions myOptions =
+#if NET5_0
+            new JsonSerializerOptions { IncludeFields = true };
+#elif (NETCOREAPP3_1 || NETCOREAPP3_0) && !NET5_0
+      new JsonSerializerOptions {  };
+#endif
+
+        public SystemTextJson(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
-            JsonSerializer.SerializeAsync(stream, obj).Wait();
+            JsonSerializer.SerializeAsync(stream, obj, myOptions).Wait();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected override T Deserialize(Stream stream)
         {
-            return (T) JsonSerializer.DeserializeAsync(stream, typeof(T)).Result;
+            return (T) JsonSerializer.DeserializeAsync(stream, typeof(T), myOptions).Result;
         }
     }
 }

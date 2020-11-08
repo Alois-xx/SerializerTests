@@ -1,4 +1,4 @@
-﻿using FlatBuffers;
+﻿using Google.FlatBuffers;
 using SerializerTests.Serializers;
 using SerializerTests.TypesToSerialize;
 using System;
@@ -57,6 +57,7 @@ namespace SerializerTests
                              " -reftracking    If set a list with many identical references is serialized." + Environment.NewLine +
                              " -serializer xxx Execute the test only for a specific serializer with the name xxx. Use , to separate multiple filters. Prefix name with # to force a full string match instead of a substring match." + Environment.NewLine +
                              " -list           List all registered serializers" + Environment.NewLine +
+                             " -BookDataSize d Optional byte array payload in bytes to check how good the serializer can deal with large blob payloads (e.g. images)." + Environment.NewLine +
                              " -notouch        Do not touch the deserialized objects to test lazy deserialization" + Environment.NewLine +
                              "                 To execute deserialize you must first have called the serialize to generate serialized test data on disk to be read during deserialize" + Environment.NewLine +
                              "Examples" + Environment.NewLine +
@@ -76,6 +77,7 @@ namespace SerializerTests
         List<ISerializeDeserializeTester> SerializersObjectReferencesToTest;
 
         int Runs = 5;
+        public int BookDataSize = 0;
         bool IsNGenWarn = true;
         bool IsTouch = true;
         bool TestReferenceTracking = false;
@@ -120,17 +122,22 @@ namespace SerializerTests
 #endif
 
                 new Ceras<BookShelf>(Data, Touch),
+               
 
 #if NET5_0
+                // .NET 5 supports public fields 
                 new SystemTextJson<BookShelf>(Data, Touch),
+
+                // Crash at 500K object with a JsonDeserializeException: Json deserialize failed method in .NET Core
+                // new SwifterJson<BookShelf>(Data, Touch),
 #endif
 #if (NETCOREAPP3_1 || NETCOREAPP3_0) && !NET5_0
+                // .NET Core 3/3.1 do not support public fields so we needed to resort back to public properties
                 new SystemTextJson<NetCorePropertyBookShelf>(DataNetCore, Touch),
 #endif
 #if NETCOREAPP3_1 || NETCOREAPP3_0 
                 new SimdJsonSharpSerializer<BookShelf>(Data, Touch),
                 new SpanJson<BookShelf>(Data, Touch),
-                new SwifterJson<BookShelf>(Data, Touch),
 #endif
                 new Utf8JsonSerializer<BookShelf>(Data, Touch),
                 new MessagePackSharp<BookShelf>(Data, Touch),
@@ -403,6 +410,9 @@ namespace SerializerTests
                     case "-test":
                         testCase = NextLower();
                         break;
+                    case "-bookdatasize":
+                        BookDataSize = int.Parse(NextLower());
+                        break;
                     case "-nongenwarn":
                         IsNGenWarn = false;
                         break;
@@ -414,6 +424,12 @@ namespace SerializerTests
             PreChecks();
 
             CreateSerializersToTest();
+
+            // Set optional payload size to be able to generate data files with the payload size in the file name
+            foreach(var x in SerializersToTest.Concat(StartupSerializersToTest).Concat(SerializersObjectReferencesToTest))
+            {
+                x.OptionalBytePayloadSize = BookDataSize;
+            }
 
             if (testCase?.Equals("serialize") == true)
             {
@@ -560,7 +576,13 @@ namespace SerializerTests
         {
             var lret = new BookShelf("private member value")
             {
-                Books = Enumerable.Range(1, nToCreate).Select(i => new Book { Id = i, Title = $"Book {i}" }).ToList()
+                Books = Enumerable.Range(1, nToCreate).Select(i => new Book 
+                { 
+                    Id = i, 
+                    Title = $"Book {i}",
+                    BookData = new byte[BookDataSize]
+                }
+                ).ToList()
             };
             return lret;
         }
@@ -579,11 +601,23 @@ namespace SerializerTests
             var builder = new FlatBufferBuilder(1024);
 
             Offset<BookFlat>[] books = new Offset<BookFlat>[nToCreate];
+            
 
             for(int i=1;i<=nToCreate;i++)
             {
                 var title = builder.CreateString($"Book {i}");
-                var bookOffset = BookFlat.CreateBookFlat(builder, title, i);
+                builder.StartVector(1, BookDataSize, 0);
+                var bytes = new byte[BookDataSize];
+                for(int j=0;j<BookDataSize;j++)
+                {
+                    bytes[j] = (byte) (j % 26 + 'a');
+                }
+                if (bytes.Length > 0)
+                {
+                    builder.Put(bytes);
+                }
+                VectorOffset bookbyteArrayOffset = builder.EndVector();
+                var bookOffset = BookFlat.CreateBookFlat(builder, title, i, bookbyteArrayOffset);
                 books[i - 1] = bookOffset;
             }
 

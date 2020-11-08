@@ -1,4 +1,4 @@
-﻿#if ( NETCOREAPP3_1 || NETCOREAPP3_0 )
+﻿#if ( NET5_0 )
 
 namespace SerializerTests.Serializers
 {

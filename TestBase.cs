@@ -18,6 +18,8 @@ namespace SerializerTests
 
         string FileVersion { get;  }
 
+        int OptionalBytePayloadSize { get; set; }
+
         void ReleaseMemory();
     }
 
@@ -26,6 +28,11 @@ namespace SerializerTests
         string FileBaseName = "Serialized_";
 
         protected Func<int, T> CreateNTestData;
+
+        /// <summary>
+        /// Configurable payload byte array to Book objects which is reflected in serialized file names
+        /// </summary>
+        public int OptionalBytePayloadSize { get; set; }
 
         /// <summary>
         /// If true and serializer supports it Reference tracking is enabled for this test
@@ -172,7 +179,7 @@ namespace SerializerTests
         public (double firstS, double averageS, long serializedSize) TestSerialize(int nTimes, int nObjectsToCreate)
         {
             ObjectsToCreate = nObjectsToCreate;
-            GetMemoryStream().Capacity = 100 * 1000 * 1000; // Set memory stream to largest serialized payload to prevent resizes during test
+            GetMemoryStream().Capacity = 1000 * 1000 * 1000; // Set memory stream to largest serialized payload to prevent resizes during test
             var tmp = this.TestData;                        // Create testdata before test starts
             StartDurationThread();
             var times = Test(nTimes, () =>
@@ -269,7 +276,7 @@ namespace SerializerTests
             typeName = typeName.Substring(0, typeName.Length - 2);
             Type[] genericArgs = this.GetType().GetGenericArguments();
             typeName += "_" + (genericArgs.Length > 0 ? genericArgs[0].Name : this.GetType().Name);
-            string outputFileName = $"{FileBaseName}{typeName}_{nObjectsCreated}.bin";
+            string outputFileName = $"{FileBaseName}{typeName}_{nObjectsCreated}_OptionalpayloadBytes_{OptionalBytePayloadSize}";
             return outputFileName;
         }
 

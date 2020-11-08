@@ -49,6 +49,7 @@
     <PackageReference Include="GroBuf" Version="1.6.1" />
     <PackageReference Include="Hyperion" Version="0.9.16" />
     <PackageReference Include="Jil" Version="2.17.0" />
+    <PackageReference Include="KdSoft.FlatBuffers" Version="1.12.0" />
     <PackageReference Include="MessagePack" Version="2.2.60" />
     <PackageReference Include="MsgPack.Cli" Version="1.0.1" />
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
@@ -63,12 +64,6 @@
     <PackageReference Include="SimdJsonSharp.Managed" Version="1.5.0" Condition=" '$(TargetFramework)' == 'net50' OR '$(TargetFramework)' == 'netcoreapp3.1' OR '$(TargetFramework)' == 'netcoreapp3.0' " />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="FlatBuffers">
-      <HintPath>ExternalDependencies\FlatBuffers.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Reflection">
-      <HintPath>ExternalDependencies\Mono.Reflection.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net50' OR '$(TargetFramework)' == 'netcoreapp3.1' OR '$(TargetFramework)' == 'netcoreapp3.0'">
     <PackageReference Include="SpanJson">

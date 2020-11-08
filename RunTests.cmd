@@ -9,12 +9,13 @@ if "%1" EQU "-profile" (
 	"%perftools%\xxprofile" -stop c:\temp\Net_SerializationTests.etl
 ) ELSE (
 	REM uninstall any previous ngenned dlls
+	set PayloadDataSize=%2
 	cmd /C NGen.cmd 
-	SerializerTests.exe -test firstcall -nongenwarn > Startup_NoNGen.csv
+	SerializerTests.exe -test firstcall -nongenwarn -bookdatasize !PayloadDataSize! > Startup_NoNGen.csv
 	cmd /C Ngen.cmd -install
-	SerializerTests.exe -test firstcall -nongenwarn > Startup_NGen.csv
+	SerializerTests.exe -test firstcall -nongenwarn -bookdatasize !PayloadDataSize! > Startup_NGen.csv
 	set Runs=%1
 	if "!Runs!" EQU "" set Runs=3
 	echo Running Test !Runs! Times
-	SerializerTests.exe -test combined -Runs !Runs! > SerializationPerf.csv
+	SerializerTests.exe -test combined -Runs !Runs! -bookdatasize !PayloadDataSize! > SerializationPerf.csv
 )

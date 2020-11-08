@@ -1,4 +1,4 @@
-﻿using FlatBuffers;
+﻿using Google.FlatBuffers;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -20,7 +20,7 @@ namespace SerializerTests.Serializers
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(BookShelfFlat obj, Stream stream)
         {
-            stream.Write(obj.ByteBuffer.Data, obj.ByteBuffer.Position, obj.ByteBuffer.Length - obj.ByteBuffer.Position);
+            stream.Write(obj.ByteBuffer.ToFullArray(), obj.ByteBuffer.Position, obj.ByteBuffer.Length - obj.ByteBuffer.Position);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

@@ -16,7 +16,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Binary)]
     public sealed class ApexSerializer<T> : TestBase<T, IBinary> where T : class
     {
-        public ApexSerializer(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public ApexSerializer(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
             FormatterFactory = () => Binary.Create(new Settings { SerializationMode = RefTracking ? Mode.Graph : Mode.Tree });
         }

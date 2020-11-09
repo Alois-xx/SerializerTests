@@ -9,7 +9,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Xml | SerializerTypes.SupportsVersioning)]
     public class DataContract<T> : TestBase<T, DataContractSerializer> where T : class
     {
-        public DataContract(Func<int, T> testData, Action<T> dataToucher, bool refTracking = false) : base(testData, dataToucher, refTracking)
+        public DataContract(Func<int, T> testData, Action<T,int,int> touchAndVerify, bool refTracking = false) : base(testData, touchAndVerify, refTracking)
         {
             FormatterFactory = () => new DataContractSerializer(typeof(T), new DataContractSerializerSettings
                                                                           { PreserveObjectReferences = RefTracking } );

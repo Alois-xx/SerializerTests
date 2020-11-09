@@ -32,5 +32,7 @@ namespace SerializerTests.TypesToSerialize
         public string Title { get; set; }
 
         public int Id { get; set; }
+
+        public byte[] BookData { get; set; }
     }
 }

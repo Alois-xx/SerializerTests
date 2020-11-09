@@ -8,7 +8,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Binary|SerializerTypes.SupportsVersioning)]
     public class BinaryFormatter<T> : TestBase<T, System.Runtime.Serialization.Formatters.Binary.BinaryFormatter> where T : class
     {
-        public BinaryFormatter(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public BinaryFormatter(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
             FormatterFactory = () => new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
         }

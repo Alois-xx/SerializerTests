@@ -17,7 +17,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Binary | SerializerTypes.ProtocolMessagePack | SerializerTypes.SupportsVersioning)]
     public class MessagePackSharp<T> : TestBase<T, MessagePack.IFormatterResolver> where T : class
     {
-        public MessagePackSharp(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public MessagePackSharp(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
             FormatterFactory = () => MessagePack.Resolvers.StandardResolver.Instance;
         }

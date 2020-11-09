@@ -20,7 +20,7 @@ namespace SerializerTests.Serializers
         List<uint> myStartIdxAndLength = new List<uint>();
         byte[] myUtf8Data = null;
 
-        public NopSerializer(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public NopSerializer(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 

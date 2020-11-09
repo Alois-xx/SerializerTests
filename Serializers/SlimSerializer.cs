@@ -17,7 +17,7 @@ namespace SerializerTests.Serializers
     class SlimSerializer<T> : TestBase<T, SlimSerializer> where T:class
     {
        
-        public SlimSerializer(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public SlimSerializer(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         { 
             FormatterFactory = () =>
             {

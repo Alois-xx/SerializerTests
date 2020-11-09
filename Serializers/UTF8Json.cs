@@ -15,7 +15,7 @@ namespace SerializerTests.Serializers
                      SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
     class Utf8JsonSerializer<T> : TestBase<T, IJsonFormatter<T>> where T : class
 	{
-		public Utf8JsonSerializer(Func<int, T> testData, Action<T> data, bool refTracking = false) : base(testData, data, refTracking)
+		public Utf8JsonSerializer(Func<int, T> testData, Action<T,int,int> touchAndVerify, bool refTracking = false) : base(testData, touchAndVerify, refTracking)
 		{
 		}
 

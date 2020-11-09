@@ -1,5 +1,5 @@
 ﻿
-#if ( NETCOREAPP3_1 || NETCOREAPP3_0 )
+#if (NETCOREAPP3_1 || NETCOREAPP3_0)
 using SerializerTests.TypesToSerialize;
 using SimdJsonSharp;
 using System;
@@ -26,7 +26,7 @@ namespace SerializerTests.Serializers
 
         ParsedJsonIterator myIterator = default;
 
-        public SimdJsonSharpSerializer(Func<int, BookShelf> testData, Action<BookShelf> dataToucher) : base(testData, dataToucher)
+        public SimdJsonSharpSerializer(Func<int, BookShelf> testData, Action<BookShelf,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 

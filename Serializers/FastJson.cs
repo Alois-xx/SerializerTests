@@ -12,7 +12,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
     class FastJson<T> : TestBase<T, fastJSON.JSONParameters> where T : class
     {
-        public FastJson(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public FastJson(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 

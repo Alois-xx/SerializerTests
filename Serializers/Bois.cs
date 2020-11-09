@@ -19,7 +19,7 @@ namespace SerializerTests.Serializers
     class Bois<T> : TestBase<T, BoisSerializer>
     {
         new BoisSerializer Formatter = new BoisSerializer();
-        public Bois(Func<int, T> testData, Action<T> toucher) : base(testData, toucher)
+        public Bois(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 
@@ -45,7 +45,7 @@ namespace SerializerTests.Serializers
     class Bois_LZ4<T> : TestBase<T, BoisLz4Serializer>
     {
 	    new BoisLz4Serializer Formatter = new BoisLz4Serializer();
-	    public Bois_LZ4(Func<int, T> testData, Action<T> toucher) : base(testData, toucher)
+	    public Bois_LZ4(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
 	    {
 	    }
 

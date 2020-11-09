@@ -13,7 +13,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Binary | SerializerTypes.SupportsVersioning)]
     class FlatBuffer<T> : TestBase<BookShelfFlat, ByteBuffer>
     {
-        public FlatBuffer(Func<int, BookShelfFlat> testData, Action<BookShelfFlat> toucher):base(testData, toucher)
+        public FlatBuffer(Func<int, BookShelfFlat> testData, Action<BookShelfFlat,int,int> touchAndVerify):base(testData, touchAndVerify)
         {
         }
 

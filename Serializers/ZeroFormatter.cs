@@ -16,7 +16,7 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     internal class ZeroFormatter<T> : TestBase<T, ZeroFormattableAttribute>
     {
-        public ZeroFormatter(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public ZeroFormatter(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 

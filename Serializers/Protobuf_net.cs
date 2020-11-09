@@ -17,7 +17,7 @@ namespace SerializerTests
                     SerializerTypes.Binary | SerializerTypes.ProtocolProtobuf | SerializerTypes.SupportsVersioning)]
     public class Protobuf_net<T> : TestBase<T, RuntimeTypeModel> where T : class
     {
-        public Protobuf_net(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public Protobuf_net(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
             FormatterFactory = () => RuntimeTypeModel.Create();
         }

@@ -12,7 +12,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Json)]
     class SpanJson<T> : TestBase<T, SpanJsonOptions>
     {
-        public SpanJson(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public SpanJson(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 

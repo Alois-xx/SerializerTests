@@ -113,16 +113,16 @@ namespace SerializerTests
         /// Create Test
         /// </summary>
         /// <param name="testData">Delegate to create test data to serialize</param>
-        /// <param name="data">Data toucher after deserialization</param>
+        /// <param name="touchAndVerify">Data toucher after deserialization</param>
         /// <param name="refTracking">If true serializer is instantiated with Reference Tracking</param>
-        protected TestBase(Func<int, T> testData, Action<T> data, bool refTracking=false)
+        protected TestBase(Func<int, T> testData, Action<T,int,int> touchAndVerify, bool refTracking=false)
         {
             RefTracking = refTracking;
             CreateNTestData = testData;
-            TouchData = data;
+            TouchAndVerify = touchAndVerify;
         }
 
-        protected Action<T> TouchData;
+        protected Action<T,int,int> TouchAndVerify;
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected abstract void Serialize(T obj, Stream stream);
@@ -226,8 +226,10 @@ namespace SerializerTests
             var times = Test(nTimes, () =>
             {
                 var dataStream = GetMemoryStream();
-                TestDeserializeOnlyAndTouch(dataStream, out T deserialized);
+                TestDeserializeOnlyAndTouch(dataStream, nObjectsToCreate, out T deserialized);
             }, isSerialize:false);
+
+
 
             return CalcTime(times, size);
         }
@@ -237,7 +239,7 @@ namespace SerializerTests
         /// </summary>
         /// <param name="dataStream"></param>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void TestDeserializeOnlyAndTouch(MemoryStream dataStream, out T deserialized)
+        private void TestDeserializeOnlyAndTouch(MemoryStream dataStream, int nExpectedObjects, out T deserialized)
         {
 
             if (CustomDeserialize == null)
@@ -250,13 +252,13 @@ namespace SerializerTests
                 deserialized = CustomDeserialize(dataStream);
             }
 
-            TouchDataNoInline(ref deserialized);
+            TouchDataNoInline(ref deserialized, nExpectedObjects);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void TouchDataNoInline(ref T deserialized)
+        private void TouchDataNoInline(ref T deserialized, int nExpectedObjects)
         {
-            TouchData?.Invoke(deserialized); // touch data to test delayed deserialization
+            TouchAndVerify?.Invoke(deserialized, nExpectedObjects, OptionalBytePayloadSize); // touch data and verify if deserialized contents are there
         }
 
 

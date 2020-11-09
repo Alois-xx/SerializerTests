@@ -12,7 +12,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Json)]
     class SwifterJson<T> : TestBase<T, JsonFormatter>
     {
-        public SwifterJson(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public SwifterJson(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 

@@ -13,7 +13,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
     class ServiceStack<T> : TestBase<T, Tracer> where T : class
     {
-        public ServiceStack(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public ServiceStack(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 

@@ -58,7 +58,7 @@ namespace SerializerTests
                              " -serializer xxx Execute the test only for a specific serializer with the name xxx. Use , to separate multiple filters. Prefix name with # to force a full string match instead of a substring match." + Environment.NewLine +
                              " -list           List all registered serializers" + Environment.NewLine +
                              " -BookDataSize d Optional byte array payload in bytes to check how good the serializer can deal with large blob payloads (e.g. images)." + Environment.NewLine +
-                             " -notouch        Do not touch the deserialized objects to test lazy deserialization" + Environment.NewLine +
+                             " -Verify         Verify deserialized data if all contents could be read." + Environment.NewLine +
                              "                 To execute deserialize you must first have called the serialize to generate serialized test data on disk to be read during deserialize" + Environment.NewLine +
                              "Examples" + Environment.NewLine +
                              "Compare protobuf against MessagePackSharp for serialize and deserialize performance" + Environment.NewLine +
@@ -79,7 +79,7 @@ namespace SerializerTests
         int Runs = 5;
         public int BookDataSize = 0;
         bool IsNGenWarn = true;
-        bool IsTouch = true;
+        bool VerifyAndTouch = false;
         bool TestReferenceTracking = false;
         int[] NObjectsToDeSerialize = null;
         string[] SerializerFilters = new string [] { "" };
@@ -118,30 +118,28 @@ namespace SerializerTests
                 // Apex Serializer works only on .NET Core 3.0! .NET Core 3.1 and 5.0 break with some internal FileNotFoundExeptions which breaks serialization/deserialization
                 // InvalidOperationException: Type SerializerTests.TypesToSerialize.BookShelf was encountered during deserialization but was not marked as serializable. Use Binary.MarkSerializable before creating any serializers if this type is intended to be serialized.
 #if  NETCOREAPP3_0
-                new ApexSerializer<BookShelf>(Data, Touch),
+                new ApexSerializer<BookShelf>(Data, TouchAndVerify),
 #endif
 
-                new Ceras<BookShelf>(Data, Touch),
+                new Ceras<BookShelf>(Data, TouchAndVerify),
                
 
 #if NET5_0
                 // .NET 5 supports public fields 
-                new SystemTextJson<BookShelf>(Data, Touch),
-
-                // Crash at 500K object with a JsonDeserializeException: Json deserialize failed method in .NET Core
-                // new SwifterJson<BookShelf>(Data, Touch),
+                new SystemTextJson<BookShelf>(Data, TouchAndVerify),
+                new SwifterJson<BookShelf>(Data, TouchAndVerify),
 #endif
 #if (NETCOREAPP3_1 || NETCOREAPP3_0) && !NET5_0
                 // .NET Core 3/3.1 do not support public fields so we needed to resort back to public properties
-                new SystemTextJson<NetCorePropertyBookShelf>(DataNetCore, Touch),
+                new SystemTextJson<NetCorePropertyBookShelf>(DataNetCore, TouchAndVerify),
 #endif
 #if NETCOREAPP3_1 || NETCOREAPP3_0 
-                new SimdJsonSharpSerializer<BookShelf>(Data, Touch),
-                new SpanJson<BookShelf>(Data, Touch),
+                new SimdJsonSharpSerializer<BookShelf>(Data, TouchAndVerify),
+                new SpanJson<BookShelf>(Data, TouchAndVerify),
 #endif
-                new Utf8JsonSerializer<BookShelf>(Data, Touch),
-                new MessagePackSharp<BookShelf>(Data, Touch),
-                new GroBuf<BookShelf>(Data, Touch),
+                new Utf8JsonSerializer<BookShelf>(Data, TouchAndVerify),
+                new MessagePackSharp<BookShelf>(Data, TouchAndVerify),
+                new GroBuf<BookShelf>(Data, TouchAndVerify),
                 new FlatBuffer<BookShelfFlat>(DataFlat, TouchFlat),
 #if NET472
                 // Hyperion does not work on .NET Core 3.0  https://github.com/akkadotnet/Hyperion/issues/111
@@ -149,26 +147,26 @@ namespace SerializerTests
                 // https://github.com/rogeralsing/Wire/issues/146
                 // new Wire<BookShelf>(Data, Touch),
 #endif
-                new Bois<BookShelf>(Data, Touch),
-                new Bois_LZ4<BookShelf>(Data, Touch),
-                new Jil<BookShelf>(Data, Touch),
-                new Protobuf_net<BookShelf>(Data, Touch),
-                new SlimSerializer<BookShelf>(Data, Touch),
+                new Bois<BookShelf>(Data, TouchAndVerify),
+                new Bois_LZ4<BookShelf>(Data, TouchAndVerify),
+                new Jil<BookShelf>(Data, TouchAndVerify),
+                new Protobuf_net<BookShelf>(Data, TouchAndVerify),
+                new SlimSerializer<BookShelf>(Data, TouchAndVerify),
 
 
 #if NET472
                 // ZeroFormatter crashes on .NET Core 3 during serialize with: System.BadImageFormatException: 'Bad IL format.'
                 // new ZeroFormatter<ZeroFormatterBookShelf>(DataZeroFormatter, Touch),
 #endif
-                new ServiceStack<BookShelf>(Data, Touch),
-                new FastJson<BookShelf>(Data, Touch),
+                new ServiceStack<BookShelf>(Data, TouchAndVerify),
+                new FastJson<BookShelf>(Data, TouchAndVerify),
                 //new DataContractIndented<BookShelf>(Data, TouchBookShelf),
-                new DataContractBinaryXml<BookShelf>(Data, Touch),
-                new DataContract<BookShelf>(Data, Touch),
-                new XmlSerializer<BookShelf>(Data, Touch),
-                new JsonNet<BookShelf>(Data, Touch),
-                new MsgPack_Cli<BookShelf>(Data, Touch),
-                new BinaryFormatter<BookShelf>(Data, Touch),
+                new DataContractBinaryXml<BookShelf>(Data, TouchAndVerify),
+                new DataContract<BookShelf>(Data, TouchAndVerify),
+                new XmlSerializer<BookShelf>(Data, TouchAndVerify),
+                new JsonNet<BookShelf>(Data, TouchAndVerify),
+                new MsgPack_Cli<BookShelf>(Data, TouchAndVerify),
+                new BinaryFormatter<BookShelf>(Data, TouchAndVerify),
             };
 
             // if on command line a filter was specified filter the serializers to test according to filter by type name 
@@ -397,8 +395,8 @@ namespace SerializerTests
                             Console.WriteLine($"{GetSimpleTypeName(test.GetType()) }");
                         }
                         return;
-                    case "-notouch":
-                        IsTouch = false;
+                    case "-verify":
+                        VerifyAndTouch = true;
                         break;
                     case "-n":
                         NObjectsToDeSerialize = NextLower()?.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)?.Select(int.Parse).ToArray();
@@ -470,7 +468,7 @@ namespace SerializerTests
                 Console.WriteLine( "Warning: Not NGenned! Results may not be accurate in your target deployment.");
                 Console.WriteLine(@"Please execute Ngen.cmd install to Ngen all dlls.");
                 Console.WriteLine(@"To uninstall call Ngen.cmd uninstall");
-                Console.WriteLine(@"The script will take care that the assemblies are really uninstalled. NGen is a bit tricky there.");
+                Console.WriteLine(@"The script will take care that the assemblies are really uninstalled.");
             }
 
             WarnIfDebug();
@@ -580,7 +578,7 @@ namespace SerializerTests
                 { 
                     Id = i, 
                     Title = $"Book {i}",
-                    BookData = new byte[BookDataSize]
+                    BookData = CreateAndFillByteBuffer(),
                 }
                 ).ToList()
             };
@@ -591,7 +589,13 @@ namespace SerializerTests
         {
             var lret = new NetCorePropertyBookShelf("private member value")
             {
-                Books = Enumerable.Range(1, nToCreate).Select(i => new NetCoreBook { Id = i, Title = $"Book {i}" }).ToList()
+                Books = Enumerable.Range(1, nToCreate).Select(i =>
+                new NetCoreBook
+                {
+                    Id = i,
+                    Title = $"Book {i}",
+                    BookData = CreateAndFillByteBuffer(),
+                }).ToList()
             };
             return lret;
         }
@@ -601,17 +605,12 @@ namespace SerializerTests
             var builder = new FlatBufferBuilder(1024);
 
             Offset<BookFlat>[] books = new Offset<BookFlat>[nToCreate];
-            
 
             for(int i=1;i<=nToCreate;i++)
             {
                 var title = builder.CreateString($"Book {i}");
                 builder.StartVector(1, BookDataSize, 0);
-                var bytes = new byte[BookDataSize];
-                for(int j=0;j<BookDataSize;j++)
-                {
-                    bytes[j] = (byte) (j % 26 + 'a');
-                }
+                byte[] bytes = CreateAndFillByteBuffer();
                 if (bytes.Length > 0)
                 {
                     builder.Put(bytes);
@@ -629,17 +628,76 @@ namespace SerializerTests
             return bookshelf;
         }
 
-        void Touch(NetCorePropertyBookShelf data)
+        byte[] CreateAndFillByteBuffer()
         {
-            if (IsTouch) return;
+            byte[] optionalPayload = new byte[BookDataSize];
+
+            for (int j = 0; j < optionalPayload.Length; j++)
+            {
+                optionalPayload[j] = (byte)(j % 26 + 'a');
+            }
+
+            return optionalPayload;
+        }
+
+        void TouchAndVerify(BookShelf data, int nExpectedBooks, int optionalPayloadDataSize)
+        {
+            if (!VerifyAndTouch)
+            {
+                return;
+            }
 
             string tmpTitle = null;
             int tmpId = 0;
+
+            if (nExpectedBooks != data.Books.Count)
+            {
+                throw new InvalidOperationException($"Number of deserialized Books was {data.Books.Count} but expected {nExpectedBooks}. This Serializer seem to have lost data.");
+            }
+
+            for (int i = 0; i < data.Books.Count; i++)
+            {
+                tmpTitle = data.Books[i].Title;
+                tmpId = data.Books[i].Id;
+                if (data.Books[i].Id != i + 1)
+                {
+                    throw new InvalidOperationException($"Book Id was {data.Books[i].Id} but exepcted {i + 1}");
+                }
+                if (optionalPayloadDataSize > 0 && data.Books[i].BookData.Length != optionalPayloadDataSize)
+                {
+                    throw new InvalidOperationException($"BookData length was {data.Books[i].BookData.Length} but expected {optionalPayloadDataSize}");
+                }
+            }
+        }
+
+        void TouchAndVerify(NetCorePropertyBookShelf data, int nExpectedBooks, int optionalPayloadDataSize)
+        {
+            if (!VerifyAndTouch)
+            {
+                return;
+            }
+
+            string tmpTitle = null;
+            int tmpId = 0;
+
+            if( nExpectedBooks != data.Books.Count)
+            {
+                throw new InvalidOperationException($"Number of deserialized Books was {data.Books.Count} but expected {nExpectedBooks}. This Serializer seem to have lost data.");
+            }
+
             for (int i = 0; i < data.Books.Count; i++)
             {
                 var book = data.Books[i];
                 tmpTitle = book.Title;
                 tmpId = book.Id;
+                if( book.Id != i+1 )
+                {
+                    throw new InvalidOperationException($"Book Id was {book.Id} but exepcted {i + 1}");
+                }
+                if( optionalPayloadDataSize > 0 && book.BookData.Length != optionalPayloadDataSize)
+                {
+                    throw new InvalidOperationException($"BookData length was {book.BookData.Length} but expected {optionalPayloadDataSize}");
+                }
             }
         }
 
@@ -647,17 +705,33 @@ namespace SerializerTests
         /// Call all setters once to get a feeling for the deserialization overhead
         /// </summary>
         /// <param name="data"></param>
-        void TouchFlat(BookShelfFlat data)
+        void TouchFlat(BookShelfFlat data, int nExpectedBooks, int optionalPayloadDataSize)
         {
-           if (!IsTouch) return;
+            if (!VerifyAndTouch)
+            {
+                return;
+            }
 
-           string tmpTitle = null;
-           int tmpId = 0;
-           for(int i=0;i<data.BooksLength;i++)
+            string tmpTitle = null;
+            int tmpId = 0;
+            if (nExpectedBooks != data.BooksLength)
+            {
+                throw new InvalidOperationException($"Number of deserialized Books was {data.BooksLength} but expected {nExpectedBooks}. This Serializer seem to have lost data.");
+            }
+
+            for (int i=0;i<data.BooksLength;i++)
             {
                 var book = data.Books(i);
                 tmpTitle = book.Value.Title;
                 tmpId = book.Value.Id;
+                if (tmpId != i + 1)
+                {
+                    throw new InvalidOperationException($"Book Id was {tmpId} but exepcted {i + 1}");
+                }
+                if (optionalPayloadDataSize > 0 && book.Value.BookDataLength != optionalPayloadDataSize)
+                {
+                    throw new InvalidOperationException($"BookData length was {book.Value.BookDataLength} but expected {optionalPayloadDataSize}");
+                }
             }
         }
 
@@ -699,7 +773,7 @@ namespace SerializerTests
 
         void Touch(ZeroFormatterBookShelf data)
         {
-            if (!IsTouch) return;
+            if (!VerifyAndTouch) return;
 
             string tmpTitle = null;
             int tmpId = 0;
@@ -711,18 +785,7 @@ namespace SerializerTests
         }
 
 
-        void Touch(BookShelf data)
-        {
-            if (!IsTouch) return;
 
-            string tmpTitle = null;
-            int tmpId = 0;
-            for(int i=0;i<data.Books.Count;i++)
-            {
-                tmpTitle = data.Books[i].Title;
-                tmpId = data.Books[i].Id;
-            }
-        }
 
         BookShelf1 Data1(int nToCreate)
         {

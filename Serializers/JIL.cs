@@ -16,7 +16,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
     class Jil<T> : TestBase<T, Jil.JSON> where T : class
     {
-        public Jil(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public Jil(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 

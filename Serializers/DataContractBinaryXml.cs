@@ -10,7 +10,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Binary | SerializerTypes.Xml | SerializerTypes.SupportsVersioning)]
     public class DataContractBinaryXml<T> : TestBase<T, DataContractSerializer> where T : class
     {
-        public DataContractBinaryXml(Func<int, T> testData, Action<T> dataToucher, bool refTracking = false) : base(testData, dataToucher, refTracking)
+        public DataContractBinaryXml(Func<int, T> testData, Action<T,int,int> touchAndVerify, bool refTracking = false) : base(testData, touchAndVerify, refTracking)
         {
             base.CustomSerialize = SerializeBinaryXml;
             base.CustomDeserialize = DeserializeBinaryXml;

@@ -20,7 +20,7 @@ namespace SerializerTests.Serializers
     {
         new Serializer Formatter = new Serializer(new AllFieldsExtractor(), options: GroBufOptions.WriteEmptyObjects);
 
-        public GroBuf(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public GroBuf(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 

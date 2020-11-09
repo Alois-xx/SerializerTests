@@ -25,7 +25,7 @@ namespace SerializerTests.Serializers
       new JsonSerializerOptions {  };
 #endif
 
-        public SystemTextJson(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public SystemTextJson(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 

@@ -17,7 +17,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Xml | SerializerTypes.SupportsVersioning)]
     public class XmlSerializer<T> : TestBase<T, System.Xml.Serialization.XmlSerializer> where T : class
     {
-        public XmlSerializer(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public XmlSerializer(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
             FormatterFactory = () => new System.Xml.Serialization.XmlSerializer(typeof(T));
         }

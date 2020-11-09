@@ -14,7 +14,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Binary | SerializerTypes.ProtocolMessagePack | SerializerTypes.SupportsVersioning)]
     class MsgPack_Cli<T> : TestBase<T, MessagePackSerializer> where T : class
     {
-        public MsgPack_Cli(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public MsgPack_Cli(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
             FormatterFactory = () =>
             {

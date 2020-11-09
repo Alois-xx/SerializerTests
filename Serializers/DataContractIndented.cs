@@ -10,7 +10,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Xml | SerializerTypes.SupportsVersioning)]
     class DataContractIndented<T> : TestBase<T, DataContractSerializer> where T : class
     {
-        public DataContractIndented(Func<int, T> testData, Action<T> dataToucher, bool refTracking = false) : base(testData, dataToucher, refTracking)
+        public DataContractIndented(Func<int, T> testData, Action<T,int,int> touchAndVerify, bool refTracking = false) : base(testData, touchAndVerify, refTracking)
         {
             base.CustomSerialize = SerializeXmlIndented;
             base.CustomDeserialize = DeserializeXmlIndented;

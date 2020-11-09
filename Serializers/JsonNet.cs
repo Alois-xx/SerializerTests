@@ -18,7 +18,7 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
     public class JsonNet<T> : TestBase<T,JsonSerializer> where T : class
     {
-        public JsonNet(Func<int, T> testData, Action<T> dataToucher, bool refTracking = false) : base(testData, dataToucher, refTracking)
+        public JsonNet(Func<int, T> testData, Action<T,int,int> touchAndVerify, bool refTracking = false) : base(testData, touchAndVerify, refTracking)
         {
             FormatterFactory = () => JsonSerializer.Create(new JsonSerializerSettings { PreserveReferencesHandling =
                 refTracking ?  PreserveReferencesHandling.All : PreserveReferencesHandling.None });

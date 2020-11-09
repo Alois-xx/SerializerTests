@@ -14,7 +14,7 @@ namespace SerializerTests.Serializers
     {
         byte[] mySerializerBuffer = null;
 
-        public Ceras(Func<int, T> testData, Action<T> dataToucher) : base(testData, dataToucher)
+        public Ceras(Func<int, T> testData, Action<T,int,int> dataToucher) : base(testData, dataToucher)
         {
             FormatterFactory = () => new CerasSerializer();
         }

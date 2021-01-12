@@ -23,6 +23,7 @@
     <None Remove=".gitignore" />
     <None Remove="SerializationPerf.csv" />
     <None Remove="Serializers\flatc.exe" />
+    <None Remove="Serializers\protoc.exe" />
     <None Remove="Startup_NGen.csv" />
     <None Remove="Startup_NoNGen.csv" />
   </ItemGroup>
@@ -46,6 +47,7 @@
     <PackageReference Include="Azos" Version="1.5.4" />
     <PackageReference Include="Ceras" Version="4.1.7" />
     <PackageReference Include="fastJSON" Version="2.3.5.2" />
+    <PackageReference Include="Google.Protobuf" Version="3.14.0" />
     <PackageReference Include="GroBuf" Version="1.6.1" />
     <PackageReference Include="Hyperion" Version="0.9.16" />
     <PackageReference Include="Jil" Version="2.17.0" />

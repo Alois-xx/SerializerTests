@@ -22,6 +22,7 @@ The currently tested Serializers are
 - MessagePackSharp (https://github.com/neuecc/MessagePack-CSharp)
 - MsgPack.Cli (https://github.com/msgpack/msgpack-cli)
 - Protobuf.NET (https://github.com/mgravell/protobuf-net)
+- Google Protobuf (https://github.com/protocolbuffers/protobuf)
 - SerivceStack (https://github.com/ServiceStack/ServiceStack.Text)
 - SimdJsonSharp ( https://github.com/EgorBo/SimdJsonSharp)
 - SpanJson (https://github.com/Tornhoof/SpanJson)

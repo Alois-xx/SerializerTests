@@ -58,6 +58,9 @@
 	<Tag Name="Protobuf">
 		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Protobuf_net*::Deserialize*"/>
 	</Tag>
+	<Tag Name="Google Protobuf">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.GoogleProtobuf*::Deserialize*"/>
+	</Tag>
 	<Tag Name="JIL">
 		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.Jil*::Deserialize*"/>
 	</Tag>
@@ -146,6 +149,9 @@
 	</Tag>
 	<Tag Name="Protobuf">
 		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Protobuf_net*::Serialize*"/>
+	</Tag>
+	<Tag Name="Google Protobuf">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.GoogleProtobuf*::Serialize*"/>
 	</Tag>
 	<Tag Name="JIL">
 		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.Jil*::Serialize*"/>

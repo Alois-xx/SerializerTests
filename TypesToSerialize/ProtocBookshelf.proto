@@ -1,0 +1,87 @@
+﻿// Generate code by calling from the root folder the following command:
+// .\Serializers\protoc.exe --csharp_out=.\TypesToSerialize .\TypesToSerialize\ProtocBookshelf.proto 
+
+syntax = "proto3";
+
+option csharp_namespace = "SerializerTests.TypesToSerialize";
+
+message ProtocBook {
+    string Title = 1;
+    int32 Id = 2;
+    bytes BookData = 3;
+}
+
+message ProtocBookShelf {
+    repeated ProtocBook Books = 1;
+    string Secret = 2;
+}
+
+message ProtocBook1 {
+    string Title = 1;
+    int32 Id = 2;
+}
+
+message ProtocBookShelf1 {
+    repeated ProtocBook1 Books = 1;
+    string Secret = 2;
+}
+
+message ProtocBook2 {
+    string Title = 1;
+    int32 Id = 2;
+}
+
+message ProtocBookShelf2 {
+    repeated ProtocBook2 Books = 1;
+    string Secret = 2;
+}
+
+message ProtocLargeBook {
+    string Title = 1;
+    int32 Id = 2;
+    int32 Id3 = 3;
+    int32 Id4 = 4;
+    double Id5 = 5;
+    repeated float Id6 = 6;
+    repeated float Id7 = 7;
+    repeated float Id8 = 8;
+    repeated float Id9 = 9;
+    repeated Dict Id10 = 10;
+    repeated Dict Id11 = 11;
+    repeated Dict Id12 = 12;
+    repeated Dict Id13 = 13;
+    repeated Dict Id14 = 14;
+    repeated Dict Id15 = 15;
+    repeated Dict Id16 = 16;
+    repeated Dict Id17 = 17;
+    repeated Dict Id18 = 18;
+    repeated Dict Id19 = 19;
+    repeated Dict Id20 = 20;
+}
+
+message ProtocLargeBookShelf {
+    repeated ProtocLargeBook Books = 1;
+    string Secret = 2;
+    int32 Id = 3;
+    int32 Id4 = 4;
+    double Id5 = 5;
+    repeated float Id6 = 6;
+    repeated float Id7 = 7;
+    repeated float Id8 = 8;
+    repeated float Id9 = 9;
+    repeated Dict Id10 = 10;
+    repeated Dict Id11 = 11;
+    repeated Dict Id12 = 12;
+    repeated Dict Id13 = 13;
+    repeated Dict Id14 = 14;
+    repeated Dict Id15 = 15;
+    repeated Dict Id16 = 16;
+    repeated Dict Id17 = 17;
+    repeated Dict Id18 = 18;
+    repeated Dict Id19 = 19;
+    repeated Dict Id20 = 20;
+}
+
+message Dict {
+    map<string, string> dict = 1;
+}

@@ -1,4 +1,5 @@
 ﻿using Google.FlatBuffers;
+using Google.Protobuf;
 using SerializerTests.Serializers;
 using SerializerTests.TypesToSerialize;
 using System;
@@ -151,6 +152,7 @@ namespace SerializerTests
                 new Bois_LZ4<BookShelf>(Data, TouchAndVerify),
                 new Jil<BookShelf>(Data, TouchAndVerify),
                 new Protobuf_net<BookShelf>(Data, TouchAndVerify),
+                new GoogleProtobuf<ProtocBookShelf>(ProtocData, TouchAndVerify),
                 new SlimSerializer<BookShelf>(Data, TouchAndVerify),
 
 
@@ -268,6 +270,11 @@ namespace SerializerTests
                 new Protobuf_net<BookShelf1>(Data1, null),
                 new Protobuf_net<BookShelf2>(Data2, null),
                 new Protobuf_net<LargeBookShelf>(DataLarge, null),
+
+                new GoogleProtobuf<ProtocBookShelf>(ProtocData, null),
+                new GoogleProtobuf<ProtocBookShelf1>(ProtocData1, null),
+                new GoogleProtobuf<ProtocBookShelf2>(ProtocData2, null),
+                new GoogleProtobuf<ProtocLargeBookShelf>(ProtocDataLarge, null),
 
                 new MessagePackSharp<BookShelf>(Data, null),
                 new MessagePackSharp<BookShelf1>(Data1, null),
@@ -628,6 +635,65 @@ namespace SerializerTests
             return bookshelf;
         }
 
+        ProtocBookShelf ProtocData(int nToCreate)
+        {
+            var bookData = ByteString.CopyFrom(CreateAndFillByteBuffer());
+            var books = Enumerable.Range(1, nToCreate).Select(i =>
+                new ProtocBook
+                {
+                    Id = i,
+                    Title = $"Book {i}",
+                    BookData = bookData,
+                }).ToList();
+
+            var lret = new ProtocBookShelf();
+            lret.Books.AddRange(books);
+            return lret;
+        }
+
+        ProtocBookShelf1 ProtocData1(int nToCreate)
+        {
+            var books = Enumerable.Range(1, nToCreate).Select(i =>
+                new ProtocBook1
+                {
+                    Id = i,
+                    Title = $"Book {i}",
+                }).ToList();
+
+            var lret = new ProtocBookShelf1();
+            lret.Books.AddRange(books);
+            return lret;
+        }
+
+        ProtocBookShelf2 ProtocData2(int nToCreate)
+        {
+            var books = Enumerable.Range(1, nToCreate).Select(i =>
+                new ProtocBook2
+                {
+                    Id = i,
+                    Title = $"Book {i}",
+                }).ToList();
+
+            var lret = new ProtocBookShelf2();
+            lret.Books.AddRange(books);
+            return lret;
+        }
+
+
+        ProtocLargeBookShelf ProtocDataLarge(int nToCreate)
+        {
+            var books = Enumerable.Range(1, nToCreate).Select(i =>
+                new ProtocLargeBook
+                {
+                    Id = i,
+                    Title = $"Book {i}",
+                }).ToList();
+
+            var lret = new ProtocLargeBookShelf();
+            lret.Books.AddRange(books);
+            return lret;
+        }
+
         byte[] CreateAndFillByteBuffer()
         {
             byte[] optionalPayload = new byte[BookDataSize];
@@ -641,6 +707,36 @@ namespace SerializerTests
         }
 
         void TouchAndVerify(BookShelf data, int nExpectedBooks, int optionalPayloadDataSize)
+        {
+            if (!VerifyAndTouch)
+            {
+                return;
+            }
+
+            string tmpTitle = null;
+            int tmpId = 0;
+
+            if (nExpectedBooks != data.Books.Count)
+            {
+                throw new InvalidOperationException($"Number of deserialized Books was {data.Books.Count} but expected {nExpectedBooks}. This Serializer seem to have lost data.");
+            }
+
+            for (int i = 0; i < data.Books.Count; i++)
+            {
+                tmpTitle = data.Books[i].Title;
+                tmpId = data.Books[i].Id;
+                if (data.Books[i].Id != i + 1)
+                {
+                    throw new InvalidOperationException($"Book Id was {data.Books[i].Id} but exepcted {i + 1}");
+                }
+                if (optionalPayloadDataSize > 0 && data.Books[i].BookData.Length != optionalPayloadDataSize)
+                {
+                    throw new InvalidOperationException($"BookData length was {data.Books[i].BookData.Length} but expected {optionalPayloadDataSize}");
+                }
+            }
+        }
+
+        void TouchAndVerify(ProtocBookShelf data, int nExpectedBooks, int optionalPayloadDataSize)
         {
             if (!VerifyAndTouch)
             {

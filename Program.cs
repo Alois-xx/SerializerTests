@@ -653,7 +653,6 @@ namespace SerializerTests
 
         ProtocBookShelf1 ProtocData1(int nToCreate)
         {
-            var bookData = CreateAndFillByteBuffer();
             var books = Enumerable.Range(1, nToCreate).Select(i =>
                 new ProtocBook1
                 {
@@ -668,7 +667,6 @@ namespace SerializerTests
 
         ProtocBookShelf2 ProtocData2(int nToCreate)
         {
-            var bookData = CreateAndFillByteBuffer();
             var books = Enumerable.Range(1, nToCreate).Select(i =>
                 new ProtocBook2
                 {
@@ -684,7 +682,6 @@ namespace SerializerTests
 
         ProtocLargeBookShelf ProtocDataLarge(int nToCreate)
         {
-            var bookData = CreateAndFillByteBuffer();
             var books = Enumerable.Range(1, nToCreate).Select(i =>
                 new ProtocLargeBook
                 {

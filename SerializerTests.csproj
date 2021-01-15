@@ -23,7 +23,6 @@
     <None Remove=".gitignore" />
     <None Remove="SerializationPerf.csv" />
     <None Remove="Serializers\flatc.exe" />
-    <None Remove="Serializers\protoc.exe" />
     <None Remove="Startup_NGen.csv" />
     <None Remove="Startup_NoNGen.csv" />
   </ItemGroup>

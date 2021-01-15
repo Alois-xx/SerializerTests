@@ -1,5 +1,6 @@
-﻿// Generate code by calling from the root folder the following command:
-// .\Serializers\protoc.exe --csharp_out=.\TypesToSerialize .\TypesToSerialize\ProtocBookshelf.proto 
+﻿// Generate code by downloading protoc binaries from https://github.com/protocolbuffers/protobuf/releases
+// and running the following command:
+// protoc --csharp_out=<path-to>\TypesToSerialize <path-to>\TypesToSerialize\ProtocBookshelf.proto
 
 syntax = "proto3";
 

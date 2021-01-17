@@ -126,9 +126,39 @@ namespace SerializerTests
                
 
 #if NET5_0
-                // .NET 5 supports public fields 
+                // .NET 5 supports public fields with the builtin serializer now
                 new SystemTextJson<BookShelf>(Data, TouchAndVerify),
-                new SwifterJson<BookShelf>(Data, TouchAndVerify),
+
+                // SwifterJson crashes when during deserialize due to too large memory requirements and during the "normal test" it crashes with 
+                // SerializerTests.exe -test combined -N 100000,200000,500000,1000000 -serializer swifter
+                // SerializerTests (13380): 2 exceptions
+                //    Json deserialize failed.:   Json deserialize failed.: 1 exception
+                //        Catch: instance void [Swifter.Json] Swifter.Json.JsonFormatter +< DeserializeObjectAsync > d__134`1[System.__Canon]::MoveNext()
+                //            Swifter.Json.JsonDeserializer`1[Swifter.Json.JsonDeserializeModes + Verified].FastReadObject(class Swifter.RW.IDataWriter`1<value class Swifter.Tools.Ps`1<wchar>>)
+			    //   FastObjectRWCreater_Book_d1913bb0372f40a5a3ca8ae5210d4a51.ReadValue(class Swifter.RW.IValueReader)
+                //   Swifter.RW.ListRW`2[System.__Canon, System.__Canon].OnWriteValue(int32,class Swifter.RW.IValueReader)
+                //   Swifter.Json.JsonDeserializer`1[Swifter.Json.JsonDeserializeModes+Verified].SlowReadArray(class Swifter.RW.IDataWriter`1<int32>)
+                //   Swifter.Json.JsonDeserializer`1[Swifter.Json.JsonDeserializeModes+Verified].ReadArray(class Swifter.RW.IDataWriter`1<int32>)
+                //   Swifter.RW.ListInterface`2[System.__Canon, System.__Canon].ReadValue(class Swifter.RW.IValueReader)
+                //   FastObjectRW_BookShelf_b2eb1b0060b9498db34ca3b37cfb0ec2.OnWriteValue(value class Swifter.Tools.Ps`1<wchar>,class Swifter.RW.IValueReader)
+                //   Swifter.Json.JsonDeserializer`1[Swifter.Json.JsonDeserializeModes+Verified].FastReadObject(class Swifter.RW.IDataWriter`1<value class Swifter.Tools.Ps`1<wchar>>)
+                //   FastObjectRWCreater_BookShelf_ac8592457cd04421981eeb0a06342bf0.ReadValue(class Swifter.RW.IValueReader)
+                //   Swifter.Json.JsonFormatter.DeserializeObject(wchar*, int32)
+                //   Swifter.Json.JsonFormatter.DeserializeObject(class System.String)
+                //   Swifter.Json.JsonFormatter+<DeserializeObjectAsync>d__134`1[System.__Canon].MoveNext()
+                //   System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start(!!0&)
+                //   System.Runtime.CompilerServices.AsyncValueTaskMethodBuilder`1[System.__Canon].Start(!!0&)
+                //   Swifter.Json.JsonFormatter.DeserializeObjectAsync(class System.IO.Stream,class System.Text.Encoding)
+                //   SerializerTests.Serializers.SwifterJson`1[System.__Canon].Deserialize(class System.IO.Stream)
+                //   SerializerTests.TestBase`2[System.__Canon, System.__Canon].TestDeserializeOnlyAndTouch(class System.IO.MemoryStream,int32,!0&)
+                //   SerializerTests.TestBase`2+<>c__DisplayClass39_0[System.__Canon, System.__Canon].<TestDeserialize>b__0()
+                //   SerializerTests.TestBase`2[System.__Canon, System.__Canon].Test(int32,class System.Action,bool)
+                //   SerializerTests.TestBase`2[System.__Canon, System.__Canon].TestDeserialize(int32, int32)
+                //   SerializerTests.Test_O_N_Behavior.TestCombined(int32[], int32)
+                //   SerializerTests.Program.Combined()
+                //   SerializerTests.Program.Run()
+                //   SerializerTests.Program.Main(class System.String[])
+                //new SwifterJson<BookShelf>(Data, TouchAndVerify),
 #endif
 #if (NETCOREAPP3_1 || NETCOREAPP3_0) && !NET5_0
                 // .NET Core 3/3.1 do not support public fields so we needed to resort back to public properties

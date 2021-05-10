@@ -64,7 +64,7 @@ namespace SerializerTests
                              "Examples" + Environment.NewLine +
                              "Compare protobuf against MessagePackSharp for serialize and deserialize performance" + Environment.NewLine +
                              " SerializerTests -Runs 1 -test combined -serializer protobuf,MessagePackSharp" + Environment.NewLine +
-                             "Test how serializers perform when reference tracking is enabled. Currently that are BinaryFormatter,Protobuf_net and DataContract" + Environment.NewLine + 
+                             "Test how serializers perform when reference tracking is enabled. Currently that are BinaryFormatter,Protobuf_net and DataContract" + Environment.NewLine +
                              " Although Json.NET claim to have but it is not completely working." + Environment.NewLine +
                              " SerializerTests -Runs 1 -test combined -reftracking" + Environment.NewLine +
                              "Test SimdJsonSharpSerializer serializer with 3 million objects for serialize and deserialize." + Environment.NewLine +
@@ -83,7 +83,7 @@ namespace SerializerTests
         bool VerifyAndTouch = false;
         bool TestReferenceTracking = false;
         int[] NObjectsToDeSerialize = null;
-        string[] SerializerFilters = new string [] { "" };
+        string[] SerializerFilters = new string[] { "" };
 
         const int StartupSerializerCount = 4;
 
@@ -120,6 +120,10 @@ namespace SerializerTests
                 // InvalidOperationException: Type SerializerTests.TypesToSerialize.BookShelf was encountered during deserialization but was not marked as serializable. Use Binary.MarkSerializable before creating any serializers if this type is intended to be serialized.
 #if  NETCOREAPP3_0
                 new ApexSerializer<BookShelf>(Data, TouchAndVerify),
+#endif
+
+#if (NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0)
+                new SerializerTests.Serializers.BinaryPack<BookShelf>(Data, TouchAndVerify),
 #endif
 
                 new Ceras<BookShelf>(Data, TouchAndVerify),
@@ -164,7 +168,7 @@ namespace SerializerTests
                 // .NET Core 3/3.1 do not support public fields so we needed to resort back to public properties
                 new SystemTextJson<NetCorePropertyBookShelf>(DataNetCore, TouchAndVerify),
 #endif
-#if NETCOREAPP3_1 || NETCOREAPP3_0 
+#if NETCOREAPP3_1 || NETCOREAPP3_0  || NET5_0
                 new SimdJsonSharpSerializer<BookShelf>(Data, TouchAndVerify),
                 new SpanJson<BookShelf>(Data, TouchAndVerify),
 #endif
@@ -203,7 +207,7 @@ namespace SerializerTests
 
             // if on command line a filter was specified filter the serializers to test according to filter by type name 
             SerializersToTest = SerializersToTest.Where(filter).ToList();
-            
+
 
             StartupSerializersToTest = new List<ISerializeDeserializeTester>
             {
@@ -217,6 +221,13 @@ namespace SerializerTests
                 new ApexSerializer<BookShelf1>(Data1, null),
                 new ApexSerializer<BookShelf2>(Data2, null),
                 new ApexSerializer<LargeBookShelf>(DataLarge, null),
+#endif
+
+#if (NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0)
+                new SerializerTests.Serializers.BinaryPack<BookShelf>(Data, null),
+                new SerializerTests.Serializers.BinaryPack<BookShelf1>(Data1, null),
+                new SerializerTests.Serializers.BinaryPack<BookShelf2>(Data2, null),
+                new SerializerTests.Serializers.BinaryPack<LargeBookShelf>(DataLarge, null),
 #endif
 
                 new ServiceStack<BookShelf>(Data, null),
@@ -316,10 +327,10 @@ namespace SerializerTests
                 new MsgPack_Cli<BookShelf2>(Data2, null),
                 new MsgPack_Cli<LargeBookShelf>(DataLarge, null),
 
-	            new Utf8JsonSerializer<BookShelf>(Data, null),
-	            new Utf8JsonSerializer<BookShelf1>(Data1, null),
-	            new Utf8JsonSerializer<BookShelf2>(Data2, null),
-	            new Utf8JsonSerializer<LargeBookShelf>(DataLarge, null),
+                new Utf8JsonSerializer<BookShelf>(Data, null),
+                new Utf8JsonSerializer<BookShelf1>(Data1, null),
+                new Utf8JsonSerializer<BookShelf2>(Data2, null),
+                new Utf8JsonSerializer<LargeBookShelf>(DataLarge, null),
             };
 
             StartupSerializersToTest = StartupSerializersToTest.Where(filter).ToList();
@@ -359,7 +370,7 @@ namespace SerializerTests
                 new JsonNet<ReferenceBookShelf>(DataReferenceBookShelf, null, refTracking:TestReferenceTracking),
                 new MsgPack_Cli<ReferenceBookShelf>(DataReferenceBookShelf, null),
                 new BinaryFormatter<ReferenceBookShelf>(DataReferenceBookShelf, null),
-				new Utf8JsonSerializer<ReferenceBookShelf>(DataReferenceBookShelf, null)
+                new Utf8JsonSerializer<ReferenceBookShelf>(DataReferenceBookShelf, null)
             };
 
             SerializersObjectReferencesToTest = SerializersObjectReferencesToTest.Where(filter).ToList();
@@ -383,10 +394,10 @@ namespace SerializerTests
             }
         }
 
-        static void PrintHelp(Exception ex=null)
+        static void PrintHelp(Exception ex = null)
         {
             Console.WriteLine(Help);
-            if( ex != null )
+            if (ex != null)
             {
                 Console.WriteLine($"{ex.GetType().Name}: {ex.Message}");
             }
@@ -422,7 +433,7 @@ namespace SerializerTests
                         break;
                     case "-serializer":
                         string serializers = NextLower() ?? "";
-                        SerializerFilters = serializers.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                        SerializerFilters = serializers.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                         break;
                     case "-list":
                         CreateSerializersToTest();
@@ -437,7 +448,7 @@ namespace SerializerTests
                         break;
                     case "-n":
                         NObjectsToDeSerialize = NextLower()?.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)?.Select(int.Parse).ToArray();
-                        if( NObjectsToDeSerialize == null )
+                        if (NObjectsToDeSerialize == null)
                         {
                             throw new NotSupportedException("Missing object count after -N option");
                         }
@@ -461,7 +472,7 @@ namespace SerializerTests
             CreateSerializersToTest();
 
             // Set optional payload size to be able to generate data files with the payload size in the file name
-            foreach(var x in SerializersToTest.Concat(StartupSerializersToTest).Concat(SerializersObjectReferencesToTest))
+            foreach (var x in SerializersToTest.Concat(StartupSerializersToTest).Concat(SerializersObjectReferencesToTest))
             {
                 x.OptionalBytePayloadSize = BookDataSize;
             }
@@ -502,7 +513,7 @@ namespace SerializerTests
 
             if (IsNGenWarn && !IsNGenned())
             {
-                Console.WriteLine( "Warning: Not NGenned! Results may not be accurate in your target deployment.");
+                Console.WriteLine("Warning: Not NGenned! Results may not be accurate in your target deployment.");
                 Console.WriteLine(@"Please execute Ngen.cmd install to Ngen all dlls.");
                 Console.WriteLine(@"To uninstall call Ngen.cmd uninstall");
                 Console.WriteLine(@"The script will take care that the assemblies are really uninstalled.");
@@ -517,7 +528,7 @@ namespace SerializerTests
         /// </summary>
         private List<ISerializeDeserializeTester> TestSerializers
         {
-            get {  return TestReferenceTracking ? SerializersObjectReferencesToTest : SerializersToTest;  }
+            get { return TestReferenceTracking ? SerializersObjectReferencesToTest : SerializersToTest; }
         }
 
 
@@ -552,11 +563,11 @@ namespace SerializerTests
             }
             else
             {
-                for(int i=0;i<StartupSerializersToTest.Count;i+= StartupSerializerCount)
+                for (int i = 0; i < StartupSerializersToTest.Count; i += StartupSerializerCount)
                 {
                     var serializer = StartupSerializersToTest[i];
-                      // Spawn new process for each serializer to measure each serializer overhead in isolation 
-                      var startArgs = new ProcessStartInfo(Assembly.GetEntryAssembly().Location.Replace(".dll",".exe"), String.Join(" ", Environment.GetCommandLineArgs().Skip(1)) + $" -serializer #{GetSimpleTypeName(serializer.GetType())}")
+                    // Spawn new process for each serializer to measure each serializer overhead in isolation 
+                    var startArgs = new ProcessStartInfo(Assembly.GetEntryAssembly().Location.Replace(".dll", ".exe"), String.Join(" ", Environment.GetCommandLineArgs().Skip(1)) + $" -serializer #{GetSimpleTypeName(serializer.GetType())}")
                     {
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
@@ -564,7 +575,7 @@ namespace SerializerTests
                     Process proc = Process.Start(startArgs);
                     // trim newline of newly started process
                     string output = proc.StandardOutput.ReadToEnd().Trim(Environment.NewLine.ToCharArray());
-                    if( i > 0) // trim header since we need it only once
+                    if (i > 0) // trim header since we need it only once
                     {
                         output = output.Substring(output.IndexOf('\n') + 1);
                     }
@@ -576,7 +587,7 @@ namespace SerializerTests
 
         string NextLower()
         {
-            if( Args.Count > 0 )
+            if (Args.Count > 0)
             {
                 return Args.Dequeue().ToLower();
             }
@@ -590,7 +601,7 @@ namespace SerializerTests
             foreach (ProcessModule module in Process.GetCurrentProcess().Modules)
             {
                 string file = module.ModuleName;
-                if( file == "SerializerTests.ni.exe" || file == "coreclr.dll")
+                if (file == "SerializerTests.ni.exe" || file == "coreclr.dll")
                 {
                     lret = true;
                 }
@@ -611,9 +622,9 @@ namespace SerializerTests
         {
             var lret = new BookShelf("private member value")
             {
-                Books = Enumerable.Range(1, nToCreate).Select(i => new Book 
-                { 
-                    Id = i, 
+                Books = Enumerable.Range(1, nToCreate).Select(i => new Book
+                {
+                    Id = i,
                     Title = $"Book {i}",
                     BookData = CreateAndFillByteBuffer(),
                 }
@@ -643,7 +654,7 @@ namespace SerializerTests
 
             Offset<BookFlat>[] books = new Offset<BookFlat>[nToCreate];
 
-            for(int i=1;i<=nToCreate;i++)
+            for (int i = 1; i <= nToCreate; i++)
             {
                 var title = builder.CreateString($"Book {i}");
                 builder.StartVector(1, BookDataSize, 0);
@@ -806,7 +817,7 @@ namespace SerializerTests
             string tmpTitle = null;
             int tmpId = 0;
 
-            if( nExpectedBooks != data.Books.Count)
+            if (nExpectedBooks != data.Books.Count)
             {
                 throw new InvalidOperationException($"Number of deserialized Books was {data.Books.Count} but expected {nExpectedBooks}. This Serializer seem to have lost data.");
             }
@@ -816,11 +827,11 @@ namespace SerializerTests
                 var book = data.Books[i];
                 tmpTitle = book.Title;
                 tmpId = book.Id;
-                if( book.Id != i+1 )
+                if (book.Id != i + 1)
                 {
                     throw new InvalidOperationException($"Book Id was {book.Id} but exepcted {i + 1}");
                 }
-                if( optionalPayloadDataSize > 0 && book.BookData.Length != optionalPayloadDataSize)
+                if (optionalPayloadDataSize > 0 && book.BookData.Length != optionalPayloadDataSize)
                 {
                     throw new InvalidOperationException($"BookData length was {book.BookData.Length} but expected {optionalPayloadDataSize}");
                 }
@@ -845,7 +856,7 @@ namespace SerializerTests
                 throw new InvalidOperationException($"Number of deserialized Books was {data.BooksLength} but expected {nExpectedBooks}. This Serializer seem to have lost data.");
             }
 
-            for (int i=0;i<data.BooksLength;i++)
+            for (int i = 0; i < data.BooksLength; i++)
             {
                 var book = data.Books(i);
                 tmpTitle = book.Value.Title;
@@ -861,7 +872,7 @@ namespace SerializerTests
             }
         }
 
-        ZeroFormatterBookShelf  DataZeroFormatter(int nToCreate)
+        ZeroFormatterBookShelf DataZeroFormatter(int nToCreate)
         {
             var shelf = new ZeroFormatterBookShelf
             {
@@ -903,7 +914,7 @@ namespace SerializerTests
 
             string tmpTitle = null;
             int tmpId = 0;
-            for(int i=0;i<data.Books.Count;i++)
+            for (int i = 0; i < data.Books.Count; i++)
             {
                 tmpTitle = data.Books[i].Title;
                 tmpId = data.Books[i].Id;
@@ -944,7 +955,7 @@ namespace SerializerTests
         {
             var lret = new ReferenceBookShelf();
             StringBuilder sb = new StringBuilder();
-            for(int i=0;i<10;i++)
+            for (int i = 0; i < 10; i++)
             {
                 sb.Append("This is a really long string");
             }
@@ -958,7 +969,7 @@ namespace SerializerTests
                     Name = largeStrSameReference,
                     Price = i
                 };
-                lret.Books.Add(new DateTime(DateTime.MinValue.Ticks+i, DateTimeKind.Utc), book);
+                lret.Books.Add(new DateTime(DateTime.MinValue.Ticks + i, DateTimeKind.Utc), book);
             }
             return lret;
         }

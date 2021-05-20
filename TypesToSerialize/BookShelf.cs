@@ -1,4 +1,8 @@
-﻿using MessagePack;
+﻿#if NETCOREAPP3_1 || NETCOREAPP3_0 || NET5_0
+using BinaryPack.Attributes;
+using BinaryPack.Enums;
+#endif
+using MessagePack;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
@@ -9,7 +13,11 @@ using System.Threading.Tasks;
 
 namespace SerializerTests.TypesToSerialize
 {
-    [Serializable, DataContract, ProtoContract, MessagePackObject]
+    [Serializable, DataContract, ProtoContract, MessagePackObject
+#if NETCOREAPP3_1 || NETCOREAPP3_0 || NET5_0
+        , BinarySerialization(SerializationMode.Properties | SerializationMode.NonPublicMembers)
+#endif
+        ]
     public class BookShelf
     {
         [DataMember, ProtoMember(1), Key(0)]
@@ -33,7 +41,11 @@ namespace SerializerTests.TypesToSerialize
         }
     }
 
-    [Serializable, DataContract, ProtoContract, MessagePackObject]
+    [Serializable, DataContract, ProtoContract, MessagePackObject
+#if NETCOREAPP3_1 || NETCOREAPP3_0 || NET5_0
+        , BinarySerialization(SerializationMode.AllMembers)
+#endif
+        ]
     public class Book
     {
         [DataMember, ProtoMember(1), Key(0)]

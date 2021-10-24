@@ -1,4 +1,4 @@
-﻿#if ( NETCOREAPP3_1 || NETCOREAPP3_0 ||  NET5_0)
+﻿#if NETCOREAPP3_1_OR_GREATER
 
 using SerializerTests.TypesToSerialize;
 using SimdJsonSharp;
@@ -19,7 +19,7 @@ namespace SerializerTests.Serializers
     {
         // Enable support for public fields which are only supported since .NET 5.0
         JsonSerializerOptions myOptions =
-#if NET5_0
+#if NET5_0 || NET6_0
             new JsonSerializerOptions { IncludeFields = true };
 #elif (NETCOREAPP3_1 || NETCOREAPP3_0) && !NET5_0
       new JsonSerializerOptions {  };

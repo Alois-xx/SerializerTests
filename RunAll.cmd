@@ -11,7 +11,14 @@ echo Profiling results will be copied to directory %CurDir%
 
 if "%1" NEQ "" set PayloadByteSize=%1
 
-cd bin\Release\net48
+cd bin\Release\net60
+cmd /C RunTests_Core.cmd !Runs! !PayloadByteSize!
+move Startup_NoNGen_Core.csv  Startup_NoNGen_6.0.csv
+move SerializationPerf_Core.csv SerializationPerf_6.0.csv
+move SerializationPerf_6.0.csv "%CurDir%"
+move Startup_NoNGen_6.0.csv "%CurDir%"
+
+cd ..\net48
 cmd /C RunTests.cmd !Runs! !PayloadByteSize!
 move Startup_NGen.csv "%CurDir%"
 move Startup_NoNGen.csv "%CurDir%"
@@ -27,15 +34,17 @@ if "%1" EQU "-profile" (
 
 cd ..\net50
 cmd /C RunTests_Core.cmd !Runs! !PayloadByteSize!
-move Startup_NoNGen_Core.csv "%CurDir%"
-move SerializationPerf_Core.csv "%CurDir%"
+move Startup_NoNGen_Core.csv  Startup_NoNGen_5.0.csv
+move SerializationPerf_Core.csv SerializationPerf_5.0.csv
+move Startup_NoNGen_5.0.csv "%CurDir%"
+move SerializationPerf_5.0.csv "%CurDir%"
 
 cd ..\netcoreapp3.1
 cmd /C RunTests_Core.cmd !Runs! !PayloadByteSize!
-move Startup_NoNGen_Core.csv  Startup_NoNGen_Core3.1.csv
-move SerializationPerf_Core.csv SerializationPerf_Core3.1.csv
-move Startup_NoNGen_Core3.1.csv "%CurDir%"
-move SerializationPerf_Core3.1.csv "%CurDir%"
+move Startup_NoNGen_Core.csv  Startup_NoNGen_3.1.csv
+move SerializationPerf_Core.csv SerializationPerf_3.1.csv
+move Startup_NoNGen_3.1.csv "%CurDir%"
+move SerializationPerf_3.1.csv "%CurDir%"
 
 if "%1" EQU "-profile" (
 	cmd /C RunTests_Core.cmd -profile
@@ -47,7 +56,8 @@ if "%1" EQU "-profile" (
 cd "%CurDir%"
 set OutputFileName=SerializationPerf_Combined_!PayloadByteSize!.csv
 copy SerializationPerf.csv !OutputFileName!
-type SerializationPerf_Core.csv  | findstr /v Objects >> !OutputFileName!
-type SerializationPerf_Core3.1.csv  | findstr /v Objects >> !OutputFileName!
+type SerializationPerf_6.0.csv  | findstr /v Objects >> !OutputFileName!
+type SerializationPerf_5.0.csv  | findstr /v Objects >> !OutputFileName!
+type SerializationPerf_3.1.csv  | findstr /v Objects >> !OutputFileName!
 echo Test Results are located at %CurDir%\!OutputFileName!
 @popd

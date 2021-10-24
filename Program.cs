@@ -115,21 +115,21 @@ namespace SerializerTests
             SerializersToTest = new List<ISerializeDeserializeTester>
             {
 
-                new NopSerializer<BookShelf>(Data, null),
+                new AllocPerf<BookShelf>(Data, null),
                 // Apex Serializer works only on .NET Core 3.0! .NET Core 3.1 and 5.0 break with some internal FileNotFoundExeptions which breaks serialization/deserialization
                 // InvalidOperationException: Type SerializerTests.TypesToSerialize.BookShelf was encountered during deserialization but was not marked as serializable. Use Binary.MarkSerializable before creating any serializers if this type is intended to be serialized.
 #if  NETCOREAPP3_0
                 new ApexSerializer<BookShelf>(Data, TouchAndVerify),
 #endif
 
-#if (NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0)
+#if (NETCOREAPP3_0_OR_GREATER)
                 new SerializerTests.Serializers.BinaryPack<BookShelf>(Data, TouchAndVerify),
 #endif
 
                 new Ceras<BookShelf>(Data, TouchAndVerify),
                
 
-#if NET5_0
+#if NET5_0_OR_GREATER
                 // .NET 5 supports public fields with the builtin serializer now
                 new SystemTextJson<BookShelf>(Data, TouchAndVerify),
 
@@ -168,7 +168,7 @@ namespace SerializerTests
                 // .NET Core 3/3.1 do not support public fields so we needed to resort back to public properties
                 new SystemTextJson<NetCorePropertyBookShelf>(DataNetCore, TouchAndVerify),
 #endif
-#if NETCOREAPP3_1 || NETCOREAPP3_0  || NET5_0
+#if NETCOREAPP3_1_OR_GREATER
                 new SimdJsonSharpSerializer<BookShelf>(Data, TouchAndVerify),
                 new SpanJson<BookShelf>(Data, TouchAndVerify),
 #endif
@@ -223,7 +223,7 @@ namespace SerializerTests
                 new ApexSerializer<LargeBookShelf>(DataLarge, null),
 #endif
 
-#if (NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0)
+#if (NETCOREAPP3_0_OR_GREATER)
                 new SerializerTests.Serializers.BinaryPack<BookShelf>(Data, null),
                 new SerializerTests.Serializers.BinaryPack<BookShelf1>(Data1, null),
                 new SerializerTests.Serializers.BinaryPack<BookShelf2>(Data2, null),

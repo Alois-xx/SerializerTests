@@ -8,19 +8,19 @@ using System.Text;
 namespace SerializerTests.Serializers
 {
     /// <summary>
-    /// Test how efficient deserialize can become by testing how fast one can create book objects from a plain UTF-8 buffer where all data is already parsed by indices's
+    /// Test Allocation performance by reading UTF-8 Data into strings. It is kind of a NOP serializer because it does not really serialized data in a format which needs any parsing. 
     /// Serialize time is NOT something to consider because it does create the flat buffer along with indices's. 
     /// /// </summary>
     /// <typeparam name="T"></typeparam>
     [SerializerType("", SerializerTypes.Binary)]
     [IgnoreSerializeTimeAttribute("The data is prepared in the Serialize method for the deserialize call. Ignore it to not confuse users.")]
-    class NopSerializer<T> : TestBase<T, Program> where T : class
+    class AllocPerf<T> : TestBase<T, Program> where T : class
     {
         int myCount = 0;
         List<uint> myStartIdxAndLength = new List<uint>();
         byte[] myUtf8Data = null;
 
-        public NopSerializer(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public AllocPerf(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 

@@ -7,7 +7,8 @@ This test framework compares the most popular and fastest serializers for .NET w
 - https://aloiskraus.wordpress.com/2017/04/23/the-definitive-serialization-performance-guide/
 
 
-The project compiles to .NET 5.0, .NET Core 3.1 and .NET 4.8 where you can check out the serialization performance in your favorite .NET Framework. 
+The project compiles to .NET 6, .NET 5, .NET Core 3.1 and .NET 4.8 where you can check out the serialization performance in your favorite .NET Framework.
+To compile the solution you need Visual Studio 2022.
 The currently tested Serializers are
 - BinaryFormatter
 - Bois (https://github.com/salarcode/Bois)
@@ -52,5 +53,5 @@ I have commented out only the serializer invocations in Program.cs so you can ad
 - Build Release 
 - Execute RunAll.cmd from source directory
 
-You will get a combined CSV file for all tested serializers on your machine for .NET 5.0, .NET Core 3.1 and .NET 4.8.
+You will get a combined CSV file for all tested serializers on your machine for .NET 6, .NET 5, .NET Core 3.1 and .NET 4.8.
 Then you can verify the data yourself. If you want to plug in your own data types see Program.cs how to extend/modify the test suite.

@@ -1,4 +1,7 @@
-﻿using MessagePack;
+﻿#if NETCOREAPP3_0_OR_GREATER
+using MemoryPack;
+#endif
+using MessagePack;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
@@ -9,8 +12,12 @@ using System.Runtime.Serialization;
 
 namespace SerializerTests.TypesToSerialize
 {
-    [Serializable, DataContract, ProtoContract, MessagePackObject]
-    public class LargeBookShelf
+    [Serializable, DataContract, ProtoContract, MessagePackObject
+#if NETCOREAPP3_0_OR_GREATER
+        , MemoryPackable
+#endif
+    ]
+    public partial class LargeBookShelf
     {
         [DataMember, ProtoMember(1), Key(0)]
         public List<LargeBook> Books
@@ -80,15 +87,21 @@ namespace SerializerTests.TypesToSerialize
         {
             Secret = secret;
         }
-
+#if NETCOREAPP3_0_OR_GREATER
+        [MemoryPackConstructor]
+#endif
         public LargeBookShelf() // Parameterless ctor is needed for every protocol buffer class during deserialization
         { }
 
-       
+
     }
 
-    [Serializable, DataContract, ProtoContract, MessagePackObject]
-    public class LargeBook
+    [Serializable, DataContract, ProtoContract, MessagePackObject
+#if NETCOREAPP3_0_OR_GREATER
+        , MemoryPackable
+#endif
+    ]
+    public partial class LargeBook
     {
         [DataMember, ProtoMember(1), Key(0)]
         public string Title;

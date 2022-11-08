@@ -1,6 +1,7 @@
-﻿#if NETCOREAPP3_1 || NETCOREAPP3_0 || NET5_0
+﻿#if NETCOREAPP3_0_OR_GREATER
 using BinaryPack.Attributes;
 using BinaryPack.Enums;
+using MemoryPack;
 #endif
 using MessagePack;
 using ProtoBuf;
@@ -14,11 +15,11 @@ using System.Threading.Tasks;
 namespace SerializerTests.TypesToSerialize
 {
     [Serializable, DataContract, ProtoContract, MessagePackObject
-#if NETCOREAPP3_1 || NETCOREAPP3_0 || NET5_0
-        , BinarySerialization(SerializationMode.Properties | SerializationMode.NonPublicMembers)
+#if NETCOREAPP3_0_OR_GREATER
+        , MemoryPackable, BinarySerialization(SerializationMode.Properties | SerializationMode.NonPublicMembers)
 #endif
         ]
-    public class BookShelf
+    public partial class BookShelf
     {
         [DataMember, ProtoMember(1), Key(0)]
         public List<Book> Books
@@ -35,18 +36,20 @@ namespace SerializerTests.TypesToSerialize
         {
             Secret = secret;
         }
-
+#if NETCOREAPP3_0_OR_GREATER
+        [MemoryPackConstructor]
+#endif
         public BookShelf() // Parameterless ctor is needed for every protocol buffer class during deserialization
         {
         }
     }
 
     [Serializable, DataContract, ProtoContract, MessagePackObject
-#if NETCOREAPP3_1 || NETCOREAPP3_0 || NET5_0
-        , BinarySerialization(SerializationMode.AllMembers)
+#if NETCOREAPP3_0_OR_GREATER
+        , MemoryPackable, BinarySerialization(SerializationMode.AllMembers)
 #endif
         ]
-    public class Book
+    public partial class Book
     {
         [DataMember, ProtoMember(1), Key(0)]
         public string Title;

@@ -1,4 +1,7 @@
-﻿using MessagePack;
+﻿#if NETCOREAPP3_0_OR_GREATER
+using MemoryPack;
+#endif
+using MessagePack;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
@@ -8,16 +11,24 @@ using ZeroFormatter;
 
 namespace SerializerTests.TypesToSerialize
 {
-    [Serializable, MessagePackObject, ZeroFormattable, DataContract]
-    public class ReferenceBookShelf
+    [Serializable, MessagePackObject, ZeroFormattable, DataContract
+#if NETCOREAPP3_0_OR_GREATER
+        , MemoryPackable
+#endif
+    ]
+    public partial class ReferenceBookShelf
     {
         [DataMember(Order = 0), ProtoMember(1), Key(0), Index(0)]
         public virtual Dictionary<DateTime, ReferenceBook> Books
         { get; set; } = new Dictionary<DateTime, ReferenceBook>();
     }
 
-    [Serializable, MessagePackObject, ZeroFormattable, DataContract]
-    public class ReferenceBook
+    [Serializable, MessagePackObject, ZeroFormattable, DataContract
+#if NETCOREAPP3_0_OR_GREATER
+        , MemoryPackable
+#endif
+    ]
+    public partial class ReferenceBook
     {
         [DataMember(Order = 0), Key(0), Index(0)]
         public virtual ReferenceBookShelf Container { get; set; }  // Create object cycle if necessary

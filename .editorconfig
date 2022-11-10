@@ -1,0 +1,10 @@
+﻿[*.cs]
+
+# CS8981: The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
+dotnet_diagnostic.CS8981.severity = none
+
+# SYSLIB0012: Type or member is obsolete
+dotnet_diagnostic.SYSLIB0012.severity = none
+
+# CS0618: Type or member is obsolete
+dotnet_diagnostic.CS0618.severity = silent

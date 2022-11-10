@@ -7,7 +7,7 @@ This test framework compares the most popular and fastest serializers for .NET w
 - https://aloiskraus.wordpress.com/2017/04/23/the-definitive-serialization-performance-guide/
 
 
-The project compiles to .NET 6, .NET 5, .NET Core 3.1 and .NET 4.8 where you can check out the serialization performance in your favorite .NET Framework.
+The project compiles to .NET 7, .NET 6, .NET 5, .NET Core 3.1 and .NET 4.8 where you can check out the serialization performance in your favorite .NET Framework.
 To compile the solution you need Visual Studio 2022.
 The currently tested Serializers are
 - BinaryFormatter
@@ -20,6 +20,7 @@ The currently tested Serializers are
 - JIL (https://github.com/kevin-montrose/Jil)
 - Json.NET (http://www.newtonsoft.com/json)
 - JsonSerializer (.NET)
+- MemoryPack (https://github.com/Cysharp/MemoryPack)
 - MessagePackSharp (https://github.com/neuecc/MessagePack-CSharp)
 - MsgPack.Cli (https://github.com/msgpack/msgpack-cli)
 - Protobuf.NET (https://github.com/mgravell/protobuf-net)

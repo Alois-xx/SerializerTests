@@ -18,6 +18,13 @@ move SerializationPerf_Core.csv SerializationPerf_6.0.csv
 move SerializationPerf_6.0.csv "%CurDir%"
 move Startup_NoNGen_6.0.csv "%CurDir%"
 
+cd ..\net70
+cmd /C RunTests_Core.cmd !Runs! !PayloadByteSize!
+move Startup_NoNGen_Core.csv  Startup_NoNGen_7.0.csv
+move SerializationPerf_Core.csv SerializationPerf_7.0.csv
+move SerializationPerf_7.0.csv "%CurDir%"
+move Startup_NoNGen_7.0.csv "%CurDir%"
+
 cd ..\net48
 cmd /C RunTests.cmd !Runs! !PayloadByteSize!
 move Startup_NGen.csv "%CurDir%"
@@ -56,6 +63,7 @@ if "%1" EQU "-profile" (
 cd "%CurDir%"
 set OutputFileName=SerializationPerf_Combined_!PayloadByteSize!.csv
 copy SerializationPerf.csv !OutputFileName!
+type SerializationPerf_7.0.csv  | findstr /v Objects >> !OutputFileName!
 type SerializationPerf_6.0.csv  | findstr /v Objects >> !OutputFileName!
 type SerializationPerf_5.0.csv  | findstr /v Objects >> !OutputFileName!
 type SerializationPerf_3.1.csv  | findstr /v Objects >> !OutputFileName!

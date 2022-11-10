@@ -16,6 +16,7 @@ namespace SerializerTests.Serializers
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(T obj, Stream stream)
         {
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
             Formatter.Serialize(stream, obj);
         }
 
@@ -26,5 +27,6 @@ namespace SerializerTests.Serializers
         }
     }
 
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
 
 }

@@ -27,61 +27,61 @@ namespace SerializerTests.TypesToSerialize
         }
 
         [DataMember, ProtoMember(2), Key(1)]
-        private string Secret;
+        public string Secret;
 
         [DataMember, ProtoMember(3), Key(2)]
-        private int Id;
+        public int Id;
 
         [DataMember, ProtoMember(4), Key(3)]
-        private int Id4;
+        public int Id4;
 
         [DataMember, ProtoMember(5), Key(4)]
-        private double Id5;
+        public double Id5;
 
         [DataMember, ProtoMember(6), Key(5)]
-        private List<float> Id6;
+        public List<float> Id6;
 
         [DataMember, ProtoMember(7), Key(6)]
-        private List<float> Id7;
+        public List<float> Id7;
 
         [DataMember, ProtoMember(8), Key(7)]
-        private List<float> Id8;
+        public List<float> Id8;
 
         [DataMember, ProtoMember(9), Key(8)]
-        private List<float> Id9;
+        public List<float> Id9;
 
         [DataMember, ProtoMember(10), Key(9)]
-        private Dictionary<double, string> Id10;
+        public List<KeyValuePair<string,double>> Id10;
 
         [DataMember, ProtoMember(11), Key(10)]
-        private Dictionary<double, string> Id11;
+        public List<KeyValuePair<string,double>> Id11;
 
         [DataMember, ProtoMember(12), Key(11)]
-        private Dictionary<double, string> Id12;
+        public List<KeyValuePair<string,double>> Id12;
 
         [DataMember, ProtoMember(13), Key(12)]
-        private Dictionary<double, string> Id13;
+        public List<KeyValuePair<string,double>> Id13;
 
         [DataMember, ProtoMember(14), Key(13)]
-        private Dictionary<double, string> Id14 { get; set; }
+        public List<KeyValuePair<string,double>> Id14 { get; set; }
 
         [DataMember, ProtoMember(15), Key(14)]
-        private Dictionary<double, string> Id15 { get; set; }
+        public List<KeyValuePair<string,double>> Id15 { get; set; }
 
         [DataMember, ProtoMember(16), Key(15)]
-        private Dictionary<double, string> Id16 { get; set; }
+        public List<KeyValuePair<string,double>> Id16 { get; set; }
 
         [DataMember, ProtoMember(17), Key(16)]
-        private Dictionary<double, string> Id17 { get; set; }
+        public List<KeyValuePair<string,double>> Id17 { get; set; }
 
         [DataMember, ProtoMember(18), Key(17)]
-        private Dictionary<double, string> Id18 { get; set; }
+        public List<KeyValuePair<string,double>> Id18 { get; set; }
 
         [DataMember, ProtoMember(19), Key(18)]
-        private Dictionary<double, string> Id19 { get; set; }
+        public List<KeyValuePair<string,double>> Id19 { get; set; }
 
         [DataMember, ProtoMember(20), Key(19)]
-        private Dictionary<double, string> Id20 { get; set; }
+        public List<KeyValuePair<string,double>> Id20 { get; set; }
 
         public LargeBookShelf(string secret)
         {
@@ -110,58 +110,58 @@ namespace SerializerTests.TypesToSerialize
         public int Id;
 
         [DataMember, ProtoMember(3), Key(2)]
-        private int Id3;
+        public int Id3;
 
         [DataMember, ProtoMember(4), Key(3)]
-        private int Id4;
+        public int Id4;
 
         [DataMember, ProtoMember(5), Key(4)]
-        private double Id5;
+        public double Id5;
 
         [DataMember, ProtoMember(6), Key(5)]
-        private List<float> Id6;
+        public List<float> Id6;
 
         [DataMember, ProtoMember(7), Key(6)]
-        private List<float> Id7;
+        public List<float> Id7;
 
         [DataMember, ProtoMember(8), Key(7)]
-        private List<float> Id8;
+        public List<float> Id8;
 
         [DataMember, ProtoMember(9), Key(8)]
-        private List<float> Id9;
+        public List<float> Id9;
 
         [DataMember, ProtoMember(10), Key(9)]
-        private Dictionary<double, string> Id10;
+        public List<KeyValuePair<string,double>> Id10;
 
         [DataMember, ProtoMember(11), Key(10)]
-        private Dictionary<double, string> Id11;
+        public List<KeyValuePair<string,double>> Id11;
 
         [DataMember, ProtoMember(12), Key(11)]
-        private Dictionary<double, string> Id12;
+        public List<KeyValuePair<string,double>> Id12;
 
         [DataMember, ProtoMember(13), Key(12)]
-        private Dictionary<double, string> Id13;
+        public List<KeyValuePair<string,double>> Id13;
 
         [DataMember, ProtoMember(14), Key(13)]
-        private Dictionary<double, string> Id14 { get; set; }
+        public List<KeyValuePair<string,double>> Id14 { get; set; }
 
         [DataMember, ProtoMember(15), Key(14)]
-        private Dictionary<double, string> Id15 { get; set; }
+        public List<KeyValuePair<string,double>> Id15 { get; set; }
 
         [DataMember, ProtoMember(16), Key(15)]
-        private Dictionary<double, string> Id16 { get; set; }
+        public List<KeyValuePair<string,double>> Id16 { get; set; }
 
         [DataMember, ProtoMember(17), Key(16)]
-        private Dictionary<double, string> Id17 { get; set; }
+        public List<KeyValuePair<string,double>> Id17 { get; set; }
 
         [DataMember, ProtoMember(18), Key(17)]
-        private Dictionary<double, string> Id18 { get; set; }
+        public List<KeyValuePair<string,double>> Id18 { get; set; }
 
         [DataMember, ProtoMember(19), Key(18)]
-        private Dictionary<double, string> Id19 { get; set; }
+        public List<KeyValuePair<string,double>> Id19 { get; set; }
 
         [DataMember, ProtoMember(20), Key(19)]
-        private Dictionary<double, string> Id20 { get; set; }
+        public List<KeyValuePair<string,double>> Id20 { get; set; }
 
         public LargeBook()
         {

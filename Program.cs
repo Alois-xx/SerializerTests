@@ -128,7 +128,10 @@ namespace SerializerTests
 #endif
 
                 new Ceras<BookShelf>(Data, TouchAndVerify),
-               
+
+#if NET7_0_OR_GREATER
+                new SystemTextJsonSourceGen<BookShelf>(Data, TouchAndVerify),
+#endif
 
 #if NET5_0_OR_GREATER
                 // .NET 5 supports public fields with the builtin serializer now
@@ -264,6 +267,12 @@ namespace SerializerTests
                 //new ZeroFormatter<ZeroFormatterLargeBookShelf>(DataZeroFormatterLarge, null),
 #endif
 
+#if NET7_0_OR_GREATER
+                new SystemTextJsonSourceGen<BookShelf>(Data, null),
+                new SystemTextJsonSourceGen<BookShelf1>(Data1, null),
+                new SystemTextJsonSourceGen<BookShelf2>(Data2, null),
+                new SystemTextJsonSourceGen<LargeBookShelf>(DataLarge, null),
+#endif
 
 #if NET472
                 // Hyperion does not work on .NET Core 3.0  https://github.com/akkadotnet/Hyperion/issues/111
@@ -405,7 +414,11 @@ namespace SerializerTests
             Console.WriteLine(Help);
             if (ex != null)
             {
+#if DEBUG
+                Console.WriteLine($"{ex}");
+#else
                 Console.WriteLine($"{ex.GetType().Name}: {ex.Message}");
+#endif
             }
         }
 

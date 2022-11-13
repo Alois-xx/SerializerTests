@@ -1,7 +1,5 @@
 ﻿#if NETCOREAPP3_1_OR_GREATER
 
-using SerializerTests.TypesToSerialize;
-using SimdJsonSharp;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -21,7 +19,7 @@ namespace SerializerTests.Serializers
         JsonSerializerOptions myOptions =
 #if NET5_0_OR_GREATER
             new JsonSerializerOptions { IncludeFields = true };
-#elif (NETCOREAPP3_1 || NETCOREAPP3_0)
+#elif NETCOREAPP3_1
       new JsonSerializerOptions {  };
 #endif
 

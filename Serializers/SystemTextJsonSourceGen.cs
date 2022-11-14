@@ -1,26 +1,18 @@
 ﻿#if NET7_0_OR_GREATER
 
 using SerializerTests.TypesToSerialize;
-using ServiceStack.Text.Pools;
 using System;
 using System.Buffers;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace SerializerTests.Serializers
 {
-    [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Default, IncludeFields = true)]
     [JsonSerializable(typeof(BookShelf))]
-    [JsonSerializable(typeof(BookShelf1))]
-    [JsonSerializable(typeof(BookShelf2))]
-    [JsonSerializable(typeof(LargeBookShelf))]
-    internal partial class MyJsonContext : JsonSerializerContext
-    {
-    }
+    internal partial class MyJsonContext : JsonSerializerContext { }
 
     /// <summary>
     /// Source Generators for .NET were added with .NET 7.0 which generate de/serialization code during compilation
@@ -30,67 +22,15 @@ namespace SerializerTests.Serializers
                     SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
     class SystemTextJsonSourceGen<T> : TestBase<T, JsonSerializerOptions>
     {
-        public SystemTextJsonSourceGen(Func<int, T> testData, Action<T, int, int> touchAndVerify) : base(testData, touchAndVerify)
-        {
-        }
+        // Enable support for public fields which are only supported since .NET 5.0
+        JsonSerializerOptions myOptions =new(){ IncludeFields = true, TypeInfoResolver = MyJsonContext.Default };
+        public SystemTextJsonSourceGen(Func<int, T> testData, Action<T, int, int> touchAndVerify) : base(testData, touchAndVerify) { }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
-        {
-            // Use overload which uses precompiled serialization code
-            string dat = JsonSerializer.Serialize(obj, MyJsonContext.Default.Options);
-
-            using IMemoryOwner<byte> utf8_Owner = MemoryPool<byte>.Shared.Rent(dat.Length*2);
-
-            // we still need to convert back to UTF8 or we will write UTF-16 with double size to disk
-            int bytes = Encoding.UTF8.GetBytes(dat, utf8_Owner.Memory.Span);
-            Span<byte> utf8Span = utf8_Owner.Memory.Span[..bytes];
-                        
-            stream.Write(utf8Span);
-        }
+        protected override void Serialize(T obj, Stream stream) => JsonSerializer.Serialize(obj, myOptions);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
-        {
-            // Currently we need to use the MetaData approach for deserialization. 
-            // Precompiled Deserialization seems not to be supporte yet? 
-
-            using IMemoryOwner<byte> owner = MemoryPool<byte>.Shared.Rent((int)stream.Length);
-            using IMemoryOwner<char> destOwner = MemoryPool<char>.Shared.Rent((int)stream.Length);
-
-            Span<byte> buffer = owner.Memory.Span[..(int)stream.Length];
-            stream.Read(buffer);
-
-            int chars = Encoding.UTF8.GetChars(buffer, destOwner.Memory.Span);
-            ReadOnlySpan<char> dest = destOwner.Memory.Span[..chars];
-
-            // This overload is used in unit tests of .NET runtime for source generators
-            // https://github.com/dotnet/runtime/blob/c96e47047af2816cac1f2e240068f71628ef105d/src/libraries/System.Text.Json/tests/System.Text.Json.SourceGeneration.Tests/SerializationContextTests.cs
-            return (T)(object)JsonSerializer.Deserialize(dest, MyJsonContext.Default.BookShelf);
-
-
-            /*
-            if (typeof(T) == typeof(BookShelf))
-            {
-                return (T) (object) JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf);
-            }
-            else if (typeof(T) == typeof(BookShelf1))
-            {
-                return (T)JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf1.Type, MyJsonContext.Default);
-            }
-            else if (typeof(T) == typeof(BookShelf2))
-            {
-                return (T)JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf2.Type, MyJsonContext.Default);
-            }
-            else if (typeof(T) == typeof(LargeBookShelf))
-            {
-                return (T)JsonSerializer.Deserialize(stream, MyJsonContext.Default.LargeBookShelf.Type, MyJsonContext.Default);
-            }
-
-            throw new NotSupportedException($"No source generator for type {typeof(T).Name} declared.");
-            */
-        }
+        protected override T Deserialize(Stream stream) => JsonSerializer.Deserialize<T>(stream, myOptions);
     }
 }
-
 #endif

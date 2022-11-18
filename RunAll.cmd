@@ -1,63 +1,78 @@
 @pushd .
 setlocal enabledelayedexpansion
-set CurDir=%CD%
+set CurDir=%CD%\SerializerTestResults\
+mkdir %CurDir% 2> NUL
 set SimpleTime=%Time::=_%
 set SimpleTime=%SimpleTime: =_%
-set CurDir=%CD%_%SimpleTime%
+set SimpleTime=%SimpleTime:~0,-3%
+set CurDir=%CurDir%%SimpleTime%
+
 set PayloadByteSize=0
-set Runs=1
+set Runs=5
 mkdir "%CurDir%"
 echo Profiling results will be copied to directory %CurDir%
+
+if "%1" EQU "-profile" (
+	set ProfilingEnabled=-profile
+	SHIFT /1
+)
 
 if "%1" NEQ "" set PayloadByteSize=%1
 
 cd bin\Release\net60
-cmd /C RunTests_Core.cmd !Runs! !PayloadByteSize!
+cmd /C RunTests_Core.cmd !ProfilingEnabled! !Runs! !PayloadByteSize!
 move Startup_NoNGen_Core.csv  Startup_NoNGen_6.0.csv
 move SerializationPerf_Core.csv SerializationPerf_6.0.csv
 move SerializationPerf_6.0.csv "%CurDir%"
 move Startup_NoNGen_6.0.csv "%CurDir%"
 
+if "!ProfilingEnabled!" EQU "-profile" (
+	move c:\temp\SerializeTests.etl  "%CurDir%\SerializeTestsNet60.etl"
+)
+
+
 cd ..\net70
-cmd /C RunTests_Core.cmd !Runs! !PayloadByteSize!
+cmd /C RunTests_Core.cmd !ProfilingEnabled! !Runs! !PayloadByteSize!
 move Startup_NoNGen_Core.csv  Startup_NoNGen_7.0.csv
 move SerializationPerf_Core.csv SerializationPerf_7.0.csv
 move SerializationPerf_7.0.csv "%CurDir%"
 move Startup_NoNGen_7.0.csv "%CurDir%"
 
+if "!ProfilingEnabled!" EQU "-profile" (
+	move c:\temp\SerializeTests.etl  "%CurDir%\SerializeTestsNet70.etl"
+)
+
 cd ..\net48
-cmd /C RunTests.cmd !Runs! !PayloadByteSize!
+cmd /C RunTests.cmd !ProfilingEnabled! !Runs! !PayloadByteSize!
 move Startup_NGen.csv "%CurDir%"
 move Startup_NoNGen.csv "%CurDir%"
 move SerializationPerf.csv "%CurDir%"
 
-if "%1" EQU "-profile" (
-	cmd /C RunTests.cmd -profile
-	move c:\temp\Net_SerializationTests.etl "%CurDir%"
-	move c:\temp\Net_SerializationTests.etl.NGENPDB "%CurDir%"
-	robocopy /S c:\temp\Net_SerializationTests.etl.NGENPDB  "%CurDir%\Net_SerializationTests.etl.NGENPDB"
-	move C:\temp\NET_SerializationTests_Profiler.csv "%CurDir%"
+if "!ProfilingEnabled!" EQU "-profile" (
+	move C:\temp\SerializeTests.etl.NGENPDB  "%CurDir%\NETCore_SerializeTestsNet48.etl.NGENPDB"
+	move c:\temp\SerializeTests.etl  "%CurDir%\SerializeTestsNet48.etl"
 )
 
 cd ..\net50
-cmd /C RunTests_Core.cmd !Runs! !PayloadByteSize!
+cmd /C RunTests_Core.cmd !ProfilingEnabled! !Runs! !PayloadByteSize!
 move Startup_NoNGen_Core.csv  Startup_NoNGen_5.0.csv
 move SerializationPerf_Core.csv SerializationPerf_5.0.csv
 move Startup_NoNGen_5.0.csv "%CurDir%"
 move SerializationPerf_5.0.csv "%CurDir%"
 
+if "!ProfilingEnabled!" EQU "-profile" (
+	move c:\temp\SerializeTests.etl  "%CurDir%\SerializeTestsNet50.etl"
+)
+
 cd ..\netcoreapp3.1
-cmd /C RunTests_Core.cmd !Runs! !PayloadByteSize!
+cmd /C RunTests_Core.cmd !ProfilingEnabled! !Runs! !PayloadByteSize!
 move Startup_NoNGen_Core.csv  Startup_NoNGen_3.1.csv
 move SerializationPerf_Core.csv SerializationPerf_3.1.csv
 move Startup_NoNGen_3.1.csv "%CurDir%"
 move SerializationPerf_3.1.csv "%CurDir%"
 
-if "%1" EQU "-profile" (
-	cmd /C RunTests_Core.cmd -profile
-	move c:\temp\NETCore_SerializationTests_Profiler.csv "%CurDir%"
-	move c:\temp\NETCore_SerializeTests.etl "%CurDir%"
-	robocopy /S C:\temp\NETCore_SerializeTests.etl.NGENPDB  "%CurDir%\NETCore_SerializeTests.etl.NGENPDB"
+if "!ProfilingEnabled!" EQU "-profile" (
+	move c:\temp\SerializeTests.etl  "%CurDir%\SerializeTestsNet31.etl"
 )
 
 cd "%CurDir%"

@@ -1,0 +1,987 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0">
+	<Profiles>
+		<!-- to record a boot trace use with CPU Sampling, Disk, CSwitch and MiniFilter you can use
+		wpr -boottrace -addboot c:\temp\MultiProfile.wprp!CSwitch -addboot c:\temp\MultiProfile.wprp!MiniFilter -filemode -recordtempto c:\temp
+		After reboot you can stop it via
+		wpr -boottrace -stopboot c:\temp\Boot_%COMPUTERNAME%.etl
+		-->
+		<!--  To start CPU sampling with a 10ms sample rate use:
+			 wpr -start MultiProfile.wprp 
+			 wpr -setprofint 100000 
+			 Execute your use case 
+			 wpr -stop c:\temp\Longterm.etl
+	   If you want to record a scenario where the system crashes you can record into a ring buffer file. To enable that
+	   see comments in file where FileMode="Circular" is declared
+	   To check the configured settings you can use 
+		 wpr -profiledetails MultiProfile.wprp
+		 wpr -profiledetails MultiProfile.wprp!MiniFilter
+		 wpr -profiledetails MultiProfile.wprp!CSwitch
+	   
+	   which will print the memory profile the used buffer sizes calculated on your current system
+	   
+			 wpr -profiledetails MultiProfile.wprp -filemode
+	   
+		-->
+		<!-- 
+			If during stopping the ETW trace you get the error message 
+				Cannot change thread mode after it is set.
+			Then you need to use the latest WPR from the Windows 11 SDK which has fixed this error. 
+		-->
+		<!--
+		    To record a shutdown trace which is not initiated by WPR (record shutdown until system stops)
+				1. Start/Stop Pre Trace Profiling with
+					a. wpr -start CPU
+					b. wpr -stop c:\temp\PreTrace.etl
+				   This Trace file is needed later to inject image ID events with xperf, because the final merged trace from the reboot will not have loadable symbol information.
+				   These are needed because it reads from the kernel the ASLR module preferred load addresses. After a reboot the offsets will be different and we get no stacks!
+				2. Start Profiling until Shutdown and capture all existing JITed stack method addresses with capturestateonodemand.
+					wpr -start MultiProfile.wprp!CSwitch -start MultiProfile.wprp!File -filemode -recordtempto c:\temp
+					wpr -capturestateondemand
+				3. Initiate shutdown on your own
+				4. Generate Merged ETL file. These operations must be done on the recording machine!
+					First you need to extract the image id events from the PreTrace.etl files into inject.etl
+					You can use latest wpr which supports -merge or you use xperf -merge with the same options as wpr -merge
+					wpr.exe -merge  PreTrace.etl Inject.etl -injectonly
+	
+					Then you can merge the two shutdown trace files with the inject.etl file so we can get loadable modules
+					cd c:\temp
+					wpr -merge "WPR_initiated_WprApp_WPR User Event Collector.etl" "WPR_initiated_WprApp_WPR Rundown Event Collector.etl" "WPR_initiated_WprApp_WPR System Collector.etl" Inject.etl Shutdown_%ComputerName%.etl -compress
+		-->
+
+		<!-- Collector for system session. The definition of memory buffer sizes are overriden later by the profile -->
+		<SystemCollector Base="" Id="SystemProfiling_System" Realtime="false" HostGuestCorrelation="false" />
+		<!-- Collector for user mode events -->
+		<EventCollector Id="EventCollector_UserModeSession" Name="WPR User Event Collector" HostGuestCorrelation="false" />
+		<EventCollector Id="EventCollector_Rundown" Name="WPR Rundown Event Collector " HostGuestCorrelation="false" />
+
+		<!-- ETW provider which contains a collection of kernel and stack events bundled together into a SystemProvider -->
+		<SystemProvider Base="" Id="SystemProvider_Monitoring" >
+			<Keywords>
+				<!--
+					WPRUI enables for CPU profiling bye default:
+					Enabled tracing:        Process Thread ImageLoad CxtSwap Profile Power MemInfo Priority Dispatcher CpuConfig
+					Stack Tracing:          CSwitch ReadyThread Profile
+				-->
+				<!-- 
+					Keywords: 
+						AllFaults	Alpc	AntiStarvation	
+						CacheFlush	CC	ClockInterrupt	ClusterOff	CompactCSwitch	ContiguousMemorygeneration	CpuConfig	
+						CSwitch	
+						DiskIO		DiskIOInit	DPC	DPCQueue	Drivers	FileIO	
+						FileIOInit	Filename
+						FilterIO	FilterIOFailure	FilterIOFastIO	FilterIOInit	
+						FootPrint	KeClock	
+						Handle	HardFaults
+						IdealProcessor	IdleStates	InterProcessorInterrupt	
+						Interrupt	
+						KernelQueue	
+						Loader	
+						Memory	MemoryInfo	MemoryInfoWS	
+						NetworkTrace	
+						Object	OpticalIO	OpticalIOInit	
+						Pool	Power	PmcProfile	ProcessCounter	
+						ProcessFreeze	ProcessThread	
+						ReadyThread		ReferenceSet	Registry	RegistryHive	
+						SampledProfile	Session			SpinLock	SplitIO		SynchronizationObjects	SystemCall	
+						ThreadPriority	Timer	
+						VAMap	
+						VirtualAllocation	
+						WakeCounter	WakeDrop	WakeEvent	WDFDPC	WDFInterrupt	HiberRundown
+					-->
+
+				<!-- For Context Switch Profiling enable this and the Stacks below as well to get Context Switch Data with Stacks
+				<Keyword Value="CSwitch"/>
+				<Keyword Value="ReadyThread"/>
+				-->
+
+				<!-- 
+				<Keyword Value="VirtualAllocation"/>
+				-->
+				<Keyword Value="Filename"/>
+				<Keyword Value="DiskIO"/>
+				<Keyword Value="DiskIOInit"/>
+
+				<Keyword Value="CpuConfig"/>
+				<Keyword Value="Loader"/>
+
+				<!-- These events are always needed. So there is no point in turning them off. These are low volume events anyway -->
+				<Keyword Value="ProcessThread"/>
+				<Keyword Value="MemoryInfo"/>
+				<Keyword Value="MemoryInfoWS"/>
+				<Keyword Value="SampledProfile" />
+			</Keywords>
+			<Stacks>
+				<Stack Value="SampledProfile"/>
+				<Stack Value="ProcessCreate"/>
+
+				<!--
+				<Stack Value="VirtualAllocation"/>
+		Stacks:
+			AlpcClosePort		AlpcConnectFail			AlpcConnectRequest		AlpcConnectSuccess	AlpcReceiveMessage	AlpcSendMessage	AlpcUnwait			AlpcWaitForNewMessage	AlpcWaitForReply		
+			CcCanIWriteFail		CcFlushCache		CcFlushSection	CcLazyWriteScan	CcReadAhead	CcWorkitemComplete		CcWorkitemDequeue	CcWorkitemEnqueue	CcWriteBehind	
+			ContiguousMemoryGeneration	
+			CacheFlush	
+			CSwitch					
+			DiskFlushInit	DiskReadInit	DiskWriteInit		
+			DpcEnqueue		DpcExecute			
+			ExecutiveResource		
+			FileCleanup	FileClose	FileCreate	FileDelete	FileDirEnum	FileDirNotify	FileFlush	FileFSCTL	FileOpEnd	FileQueryInformation	FileRead	FileRename	FileSetInformation	FileWrite	
+			HandleCreate	HandleClose	HandleDuplicate	
+			HardFault	
+			HeapAllocation	HeapCreate	HeapDestroy	HeapFree	HeapRangeCreate	HeapRangeDestroy	HeapRangeRelease	HeapRangeReserve	HeapReallocation	
+			ImageLoad	ImageUnload	
+			KernelQueueEnqueue	KernelQueueDequeue	
+			MapFile	
+			Mark	
+			MiniFilterPreOpInit	MiniFilterPostOpInit	
+			ObjectCreate	ObjectDelete	ObjectReference	ObjectDeReference	
+			PageAccess	PageAccessEx	PagefaultAV	PagefaultCopyOnWrite	PagefaultDemandZero	PagefaultGuard	PagefaultHard	PagefaultTransition	PagefileBackedImageMapping	
+			PagefileMappedSectionCreate	PagefileMappedSectionDelete	PageRangeAccess	PageRangeRelease	PageRelease	PageRemovedfromWorkingSet	
+			PmcInterrupt	
+			PoolAllocation	PoolAllocationSession	PoolFree	PoolFreeSession	
+			PowerDeviceNotify	PowerDeviceNotifyComplete	PowerIdleStateChange	PowerPerfStateChange	PowerPostSleep	PowerPreSleep	PowerSessionCallout	PowerSessionCalloutReturn	PowerSetDevicesState	PowerSetDevicesStateReturn	PowerSetPowerAction	PowerSetPowerActionReturn	PowerThermalConstraint
+			ProcessCreate	ProcessDelete	ProcessFreeze	ProcessResume	SampledProfile	SampledProfileSetInterval	ReadyThread	
+			RegistryCloseKey	RegistryCreateKey	RegistryDeleteKey	RegistryDeleteValue	RegistryEnumerateKey	RegistryEnumerateValueKey	RegistryFlush	RegistryKcbCreate	RegistryKcbDelete	RegistryOpenKey	RegistryQueryKey	RegistryQueryMultipleValue	RegistryQuerySecurity	RegistryQueryValue	RegistrySetInformation	RegistrySetSecurity	RegistrySetValue	RegistryVirtualize	RegHiveInit	RegHiveDestroy	RegHiveLink	RegHiveDirty	
+			SplitIO	SystemCallEnter	SystemCallExit	ThreadCreate	ThreadDCEnd	ThreadDCStart	ThreadDelete
+			ThreadPoolCallbackCancel	ThreadPoolCallbackDequeue	ThreadPoolCallbackEnqueue	ThreadPoolCallbackStart	ThreadPoolCallbackStop	ThreadPoolCancelNtTimer	ThreadPoolClose	ThreadPoolCreate	ThreadPoolSetMaxThreads	ThreadPoolSetMinThreads	ThreadPoolSetNtTimer	ThreadPoolTimerSet	ThreadPoolTimerCancelled	ThreadPoolTimerExpirationBegin	ThreadPoolTimerExpirationEnd	ThreadPoolTimerExpiration	
+			ThreadSetBasePriority	ThreadSetIdealProcessor	ThreadSetPriority	ThreadSetUserIdealProcessor	TimerPeriodic
+			TimerOneShot	UnMapFile	VirtualAllocation	VirtualFree	
+			WakeChargeUser	WakeChargeExecution	WakeChargeKernel	WakeChargeInstrumentation	WakeReleaseUser	WakeReleaseExecution	WakeReleaseKernel	WakeReleaseInstrumentation	WakeDropUser	WakeDropExecution	WakeDropKernel	WakeDropInstrumentation	WakeEventUser	WakeEventExecution	WakeEventKernel	WakeEventInstrumentation   
+			 -->
+			</Stacks>
+		</SystemProvider>
+
+		<SystemProvider Id="SystemProvider_CSWITCH" Base="SystemProvider_Monitoring">
+			<Keywords Operation="Add">
+				<Keyword Value="CSwitch"/>
+				<Keyword Value="ReadyThread"/>
+			</Keywords>
+			<Stacks>
+				<Stack Value="CSwitch"/>
+				<Stack Value="ReadyThread"/>
+			</Stacks>
+		</SystemProvider>
+
+		<SystemProvider Id="SystemProvider_LongRunning" Base="">
+			<Keywords>
+				<Keyword Value="CpuConfig"/>
+				<Keyword Value="Loader"/>
+				<Keyword Value="ProcessThread"/>
+				<!-- Can be useful if sampling rate is reduced
+				<Keyword Value="SampledProfile" />
+				 -->
+			</Keywords>
+			<Stacks>
+				<Stack Value="SampledProfile"/>
+				<Stack Value="ProcessCreate"/>
+			</Stacks>
+		</SystemProvider>
+
+		<SystemProvider Id="SystemProvider_VirtualAlloc_Inclusive" Base="SystemProvider_Monitoring">
+			<Keywords Operation="Add">
+				<Keyword Value="VirtualAllocation"/>
+			</Keywords>
+
+			<Stacks Operation="Add">
+				<Stack Value="VirtualAllocation"/>
+			</Stacks>
+		</SystemProvider>
+
+		<SystemProvider Id="SystemProvider_VirtualAlloc" Base="SystemProvider_VirtualAlloc_Inclusive">
+			<Keywords Operation="Remove">
+				<Keyword Value="SampledProfile"   />
+				<Keyword Value="Filename"   />
+				<Keyword Value="DiskIO"     />
+				<Keyword Value="DiskIOInit" />
+				<Keyword Value="MemoryInfoWS" />
+			</Keywords>
+		</SystemProvider>
+
+		<SystemProvider Id="SystemProvider_MiniFilter" Base="">
+			<Keywords>
+				<Keyword Value="FilterIO"/>
+				<Keyword Value="FilterIOFailure"/>
+				<Keyword Value="FilterIOFastIO"/>
+				<Keyword Value="FilterIOInit"/>
+			</Keywords>
+		</SystemProvider>
+
+		<SystemProvider Id="SystemProvider_File" Base="">
+			<Keywords>
+				<Keyword Value="FileIO"/>
+				<Keyword Value="FileIOInit"/>
+				<Keyword Value="Filename"/>
+			</Keywords>
+		</SystemProvider>
+
+		<SystemProvider Id="SamplingCounter" Base="SystemProvider_Monitoring">
+			<Keywords Operation="Add">
+				<Keyword Value="PmcProfile" />  <!-- required for the sampling counters-->
+			</Keywords>
+		</SystemProvider>
+
+		<SystemProvider Id="PMC_Count_SystemProvider" Base="SystemProvider_CSWITCH">
+			<Keywords Operation="Add">
+				<Keyword Value="CSwitch"/>   <!-- also need the same flag in HardwareCounter <Event> -->
+			</Keywords>
+		</SystemProvider>
+
+		<!-- Sampling Counter - Enables PMC Rollover Graph -->
+    <!-- When Strict is true the profile will not start when no such counters are present e.g. in VMs. BUT this will break WPRUI when even if the profiles are nowhere referenced with:
+		     The number of hardware counters in the profile collection has exceeded the maximum allowable limit by the OS -->
+    <HardwareCounter Id="HardwareCounters_SamplingCounters" Base="" Strict="true">
+			<SampledCounters>
+				<!-- Accordig to https://stackoverflow.com/questions/53840322/difference-between-llcmisses-and-cachemisses-on-hardware-counters the counters are first
+			     defined in a generic way, which have then Processor Architecture specific latter synonyms.
+				 CPI = UnhaltedCoreCycles/InstructionRetired
+				 CPI From Intel Docs:
+					Metric Description
+						Cycles per Instruction Retired, or CPI, is a fundamental performance metric indicating approximately how much time each executed instruction took, in units of cycles. Modern superscalar processors issue up to four instructions per cycle, suggesting a theoretical best CPI of 0.25. But various effects (long-latency memory, floating-point, or SIMD operations; non-retired instructions due to branch mispredictions; instruction starvation in the front-end) tend to pull the observed CPI up. A CPI of 1 is generally considered acceptable for HPC applications but different application domains will have very different expected values. Nonetheless, CPI is an excellent metric for judging an overall potential for application performance tuning.
+					Possible Issues
+						The CPI may be too high. This could be caused by issues such as memory stalls, instruction starvation, branch misprediction or long latency instructions. Explore the other hardware-related metrics to identify what is causing high CPI.
+
+			 wpr -pmcsources
+				Id  Name													Interval  Min      Max
+				  0 Timer													10000    1221    1000000
+				  2 TotalIssues == InstructionRetired						65536  4096 2147483647
+				  6 BranchInstructions   == BranchInstructionRetired		65536  4096 2147483647
+				 10 CacheMisses == LLCMisses								65536  4096 2147483647
+				 11 BranchMispredictions == BranchMispredictsRetired		65536  4096 2147483647
+				 19 TotalCycles == UnhaltedCoreCycles						65536  4096 2147483647
+				*25 UnhaltedCoreCycles										65536  4096 2147483647
+				 26 InstructionRetired										65536  4096 2147483647
+				 27 UnhaltedReferenceCycles									65536  4096 2147483647
+				 28 LLCReference											65536  4096 2147483647
+			    *29 LLCMisses												65536  4096 2147483647
+			    *30 BranchInstructionRetired								65536  4096 2147483647
+				*31 BranchMispredictsRetired								65536  4096 2147483647
+				 32 LbrInserts (LastBranchRecord)							65536  4096 2147483647
+				 33 InstructionsRetiredFixed								65536  4096 2147483647
+				 34 UnhaltedCoreCyclesFixed									65536  4096 2147483647
+				 35 UnhaltedReferenceCyclesFixed							65536  4096 2147483647
+				 36 TimerFixed												10000  1221    1000000
+			-->
+
+				<SampledCounter Value="BranchMispredictions" />
+				<!--
+				<SampledCounter Value="BranchInstructions" />
+				-->
+				<SampledCounter Value="LLCReference" />
+				<SampledCounter Value="LLCMisses" />
+
+
+			</SampledCounters>
+		</HardwareCounter>
+
+		<!-- Counting enabled CPI (Cycles per Instruction Graph) and Branch metrics -->
+		<HardwareCounter Id="HardwareCounters_EventCounters_CPI_Branch" Base="" Strict="true">
+			<Counters>
+				<!-- Only up to 4 counters are supported at a time. If you use 4 then you cannot use CPU sampling because that uses Timer! -->
+				<Counter Value="TotalCycles"/>
+				<Counter Value="InstructionRetired" />
+				<Counter Value="BranchMispredictions" />
+				<!-- 
+				<Counter Value="BranchInstructions" />
+				-->
+
+			</Counters>
+			<Events>
+				<Event Value="CSwitch"/>
+				<!-- counter is called right after these events, should also be in SystemProvider -->
+			</Events>
+		</HardwareCounter>
+
+		<!-- Counting enabled CPI (Cycles per Instruction Graph) and Last Level Cache (LLC) metrics -->
+		<HardwareCounter Id="HardwareCounters_EventCounters_CPI_LLC" Base="" Strict="true">
+			<Counters>
+				<!-- Only up to 4 counters are supported at a time. If you use 4 then you cannot use CPU sampling because that uses Timer!-->
+				<Counter Value="TotalCycles"/>
+				<Counter Value="InstructionRetired" />
+				<Counter Value="LLCMisses" />
+				<!-- 
+				<Counter Value="LLCReference" />
+				-->
+			</Counters>
+			<Events>
+				<Event Value="CSwitch"/>
+				<!-- counter is called right after these events, should also be in SystemProvider -->
+			</Events>
+		</HardwareCounter>
+
+		<!-- Last Branch Record samples Branch data from -> to jump targets which helps to determine e.g. often called methods -->
+		<HardwareCounter Id="HardwareCounters_EventCounters_LBR" Base="" Strict="true">
+			<LastBranch>
+				<Events>
+					<Event Value="SampledProfile" />
+					<Event Value="CSwitch" />
+				</Events>
+				<LastBranchFilters>
+					<!--  LastBranchFilterOut Values: ConditionalBranches NearRelativeCalls NearIndirectCalls NearReturns NearIndirectJumps FarBranches Kernel User StackMode -->
+					<LastBranchFilterOut Value="ConditionalBranches" />
+					<LastBranchFilterOut Value="NearRelativeCalls" />
+					<LastBranchFilterOut Value="NearIndirectCalls" />
+					<!--
+					<LastBranchFilterOut Value="NearReturns" />
+					-->
+					<LastBranchFilterOut Value="NearIndirectJumps" />
+					<LastBranchFilterOut Value="FarBranches" />
+					<LastBranchFilterOut Value="Kernel" />
+				</LastBranchFilters>
+			</LastBranch>
+			<!-- ProcessorTrace is different but I have not found a use for it yet and TraceProcessing does not support reading the data
+			<ProcessorTrace>
+				 BufferSize Values: 4, 8, 16, 32 
+				<BufferSize Value="16" />
+				CodeMode Values: User Kernel UserKernel
+				<CodeMode Value="User" />
+				<Events>
+				 E.g. CSwitch PmcInterrupt 
+					<Event Value="SampledProfile" />
+				</Events>
+			</ProcessorTrace>
+			-->
+		</HardwareCounter> 
+<!-- 
+	<EventProvider CaptureStateOnly="true" Id="EventProvider_DotNETRuntime_CaptureState" Level="5" Name="E13C0D23-CCBC-4E12-931B-D9CC2EEE27E4">
+	  <CaptureStateOnSave>
+		<Keyword Value="0x70138"/>
+	  </CaptureStateOnSave>
+	</EventProvider>
+-->
+		<EventProvider Id="EventProvider_Microsoft-Windows-Subsys-SMSS" Name="Microsoft-Windows-Subsys-SMSS" NonPagedMemory="true" />
+		<EventProvider Id="EventProvider_Microsoft-Windows-Winlogon" Name="Microsoft-Windows-Winlogon" NonPagedMemory="true" />
+		<EventProvider Id="EventProvider_Microsoft-Windows-Wininit" Name="Microsoft-Windows-Wininit" NonPagedMemory="true" />
+		
+		<EventProvider CaptureStateOnly="true" Id="MultiProfile_DotNETRuntimeRundown_CaptureState" Level="5" Name="a669021c-c450-4609-a035-5af59af4df18" Stack="false">
+			<!-- Default of .NET provider of wpr is 0x70138
+		c:\PerfTools\BitmaskDecoder.exe  0x70138 c:\Windows\Microsoft.NET\Framework64\v4.0.30319\CLR-ETW.man | findstr /i rundown
+		0x8             LoaderRundownKeyword                                    Microsoft-Windows-DotNETRuntimeRundown
+		0x10            JitRundownKeyword                                       Microsoft-Windows-DotNETRuntimeRundown
+		0x20            NGenRundownKeyword                                      Microsoft-Windows-DotNETRuntimeRundown
+		0x100           EndRundownKeyword                                       Microsoft-Windows-DotNETRuntimeRundown
+		0x10000         ThreadingKeyword                                        Microsoft-Windows-DotNETRuntimeRundown
+		0x20000         JittedMethodILToNativeMapRundownKeyword                 Microsoft-Windows-DotNETRuntimeRundown
+		0x40000         OverrideAndSuppressNGenEventsRundownKeyword             Microsoft-Windows-DotNETRuntimeRundown
+
+		c:\PerfTools\BitmaskDecoder.exe  0x70138 c:\Windows\Microsoft.NET\Framework64\v4.0.30319\CLR-ETW.man | findstr /i /v rundown
+		0x8             LoaderKeyword                                           Microsoft-Windows-DotNETRuntime
+		0x10            JitKeyword                                              Microsoft-Windows-DotNETRuntime
+		0x20            NGenKeyword                                             Microsoft-Windows-DotNETRuntime
+		0x10000         ThreadingKeyword                                        Microsoft-Windows-DotNETRuntime
+		0x20000         JittedMethodILToNativeMapKeyword                        Microsoft-Windows-DotNETRuntime
+		0x40000         OverrideAndSuppressNGenEventsKeyword                    Microsoft-Windows-DotNETRuntime
+	   -->
+			<CaptureStateOnSave>
+				<Keyword Value="0x50138"/>
+			</CaptureStateOnSave>
+			<CaptureStateOnDemand>
+				<Keyword Value="0x50138"/>
+			</CaptureStateOnDemand>
+		</EventProvider>
+		<EventProvider Id="MultiProfile_DotNetProvider" Level="5" Name="DotNetProvider" NonPagedMemory="true" Stack="true">
+			<Keywords>
+				<!--
+			CLRPROVIDERFLAGS valid values are
+			0x1               GC Activity                         0x40000000  CLR stackwalking for all events of the .NET provider
+			0x94              Image identification                0x02000000  GC Low  Sample object allocation with 5 events/s
+			0x40200099        GC + High Sample Profiling + Stacks 0x00200000  GC High Sample object allocation with 100 events/s
+			0x95              Image identification + GC Activity  0x99        Image identification and Fusion logging
+			0x8000            Exceptions                          0x8099      Image identification and Fusion logging and Exception logging
+			0x40208099        All and exception logging           0x42008099  Like before with Low Sample allocation profiling
+			0x8094            Exception with exception stacks. The exception stacks are enabled with tracelog only for the event 80 which works on machines with Windows 8 and above.
+		0x10000           ThreadPool
+		
+		c:\PerfTools\BitmaskDecoder.exe  0x98 c:\Windows\Microsoft.NET\Framework64\v4.0.30319\CLR-ETW.man
+			0x8             LoaderKeyword                                           Microsoft-Windows-DotNETRuntime
+			0x8             LoaderRundownKeyword                                    Microsoft-Windows-DotNETRuntimeRundown
+			0x10            JitKeyword                                              Microsoft-Windows-DotNETRuntime
+			0x10            JitRundownKeyword                                       Microsoft-Windows-DotNETRuntimeRundown
+			0x80            EndEnumerationKeyword                                   Microsoft-Windows-DotNETRuntime
+			-->
+				<Keyword Value="0x8098"/>
+			</Keywords>
+			<CaptureStateOnDemand>
+				<Keyword Value="0x118"/>
+			</CaptureStateOnDemand>
+			<!--  Stackfilters are only supported in post 1803 Windows versions. If an error happens you can comment it out. You will just record more data. -->
+			<StackFilters FilterIn="true">
+				<EventId Value="80"/>
+			</StackFilters>
+		</EventProvider>
+
+		<EventProvider Id="EventProvider_TCPProvider"  Name="Microsoft-Windows-TCPIP" NonPagedMemory="true" Stack="false">
+			<CaptureStateOnSave> <!-- Get during rundown all open connections and some additional metrics which are stored by WPR. E.g. TcpConnectionRundown, IpRouteRundown, IpInterfaceRundown, TcpConnectionSummary, RssBindingRundow, RssPortRundown -->
+				<Keyword Value="0xffffffff"/>
+			</CaptureStateOnSave>
+			<EventFilters FilterIn="false">
+				<EventId Value="1065"/>  <!-- TcpTcbStartTimer -->
+				<EventId Value="1157"/>  <!-- TcpDeliveryIndicated -->
+				<EventId Value="1205"/>  <!-- TcpipReceiveSlowPath -->
+				<EventId Value="1206"/>  <!-- TcpipSendSlowPath -->
+				<EventId Value="1064"/>  <!-- TcpTcbStartTimer -->
+				<EventId Value="1090"/>  <!-- TcpReleaseIndication -->
+				<EventId Value="1319"/>  <!-- TcpipTimerDpcRescheduleEvent -->
+				<EventId Value="1320"/>  <!-- TcpipTimerDpcFiredEvent -->
+				<EventId Value="1454"/>  <!-- Firewall Packet inspection result -->
+				<EventId Value="1455"/>  <!-- Firewall Create Port -->
+			</EventFilters>
+			<StackFilters FilterIn="true">
+				<EventId Value="1013"/> <!-- TcpCreateEndpoint Useful to find out who initiates a TCP connection from an unusual code location -->
+			</StackFilters>
+		</EventProvider>
+		<!-- Microsoft-Windows-DNS-Client provider flags
+			0x0000000000000100  ut:GenericEvent			0x0000000010000000  ut:DnsAutoLogKeyword	0x0000000020000000  ut:PolicyTable		0x0000000040000000  ut:PerfCheckPoints
+			0x0000000080000000  ut:RegistrationEvent	0x0000000100000000  ut:SendPath				0x0000000200000000  ut:ReceivePath		0x0000000400000000  ut:L3ConnectPath
+			0x0000000800000000  ut:L2ConnectPath		0x0000001000000000  ut:ClosePath			0x0000002000000000  ut:Authentication	0x0000004000000000  ut:Configuration
+			0x0000008000000000  ut:Global				0x0000010000000000  ut:Dropped				0x0000020000000000  ut:PiiPresent		0x0000040000000000  ut:Packet
+			0x0000080000000000  ut:Address				0x0000100000000000  ut:StdTemplateHint		0x8000000000000000  Microsoft-Windows-DNS-Client/Operational Microsoft-Windows-DNS Client Events/Operational
+			0x4000000000000000  System 
+			-->
+		<EventProvider Id="EventProvider_DNSClient"  Name="Microsoft-Windows-DNS-Client" NonPagedMemory="true" Stack="false" />
+		<EventProvider Id="EventProvider_NetworkCorrelation"  Name="Microsoft-Windows-Networking-Correlation" NonPagedMemory="false" Stack="false" />
+
+		<EventProvider Id="EventProvider_FocusEvents"  Name="Microsoft-Windows-Win32k" NonPagedMemory="true" Stack="true">
+			<Keywords>
+				<Keyword Value = "0x42000" />  <!-- Low volume events needed for WPA Window in Focus Graph 0x40000 UIUnresponsiveness 0x2000  Focus -->
+			</Keywords>
+		</EventProvider>
+		<EventProvider Id="EventProvider_UserGDILeaks"  Name="Microsoft-Windows-Win32k" NonPagedMemory="true" Stack="true">
+			<Keywords>
+				<!--  Microsoft-Windows-Win32k
+			0x0000000000000400  AuditApiCalls		0x0000000000000800  CompatImpact		0x0000000000001000  Updates			0x0000000000002000  Focus
+			0x0000000000004000  UIPI				0x0000000000008000  win32Power			0x0000000000010000  Concurrency		0x0000000000020000  UserActivity
+			0x0000000000040000  UIUnresponsiveness	0x0000000000080000  ThreadRundown		0x0000000000100000  Rendering		0x0000000000200000  ThreadInfo
+			0x0000000000400000  MessagePump			0x0000000000800000  MessagePumpInternalAndInput								0x0000000001000000  TouchInput
+			0x0000000002000000  TimerSurvey			0x0000000004000000  PointerInput		0x0000000008000000  AutoRotation	0x0000000010000000  Contention
+			0x0000000020000000  TimerInfo			0x0000000040000000  ComponentHosting	0x0000000080000000  TrappedACRendering
+			0x0000000100000000  Fonts				0x0000000200000000  NullMessages		0x0000000400000000  Visualization	0x0000000800000000  DCompDetails
+			0x0000001000000000  PrecisionTouchpad	0x0000002000000000  ContentionTelemetry	0x0000004000000000  ProcessInfo		0x0000008000000000  DCompInput
+			0x0000010000000000  GdiHandleOperation	0x0000020000000000  UserHandleOperation	0x0000040000000000  WriteClipboard	0x0000080000000000  ReadClipboard
+			0x0001000000000000  win:ResponseTime     Response Time							0x8000000000000000  Microsoft-Windows-Win32k/Tracing
+			0x4000000000000000  Microsoft-Windows-Win32k/UIPI								0x2000000000000000  Microsoft-Windows-Win32k/Power
+			0x1000000000000000  Microsoft-Windows-Win32k/Concurrency						0x0800000000000000  Microsoft-Windows-Win32k/Render
+			0x0400000000000000  Microsoft-Windows-Win32k/Messages							0x0200000000000000  Microsoft-Windows-Win32k/Contention
+			0x0100000000000000  Microsoft-Windows-Win32k/Operational
+			-->
+				<!-- Works since Windows 10 1903 -->
+				<!-- 0x0000010000000000 GdiHandleOperation -->
+				<!-- 0x0000020000000000 UserHandleOperation  -->
+				<Keyword Value = "0x30000000000" />  <!-- Track GDI and Window Handle Leaks -->
+			</Keywords>
+		</EventProvider>
+
+		<EventProvider Id="EventProvider_Socket" Name="Microsoft-Windows-Winsock-AFD" NonPagedMemory="true" Stack="true">
+			<!-- 
+			Microsoft-Windows-Winsock-AFD            {E53C6823-7BB8-44BB-90DC-3F86090D48A6}
+			Value               Keyword              Description
+			0x0000000000000001  AFD_KW_DATAGRAM      Datagram socket		0x0000000000000002  AFD_KW_STREAM        Stream socket
+			0x0000000000000004  AFD_KW_SOURCE_WINSOCK Winsock initiated event	0x0000000000000008  AFD_KW_SOURCE_TRANSPORT Transport initiated event
+			0x0000000000000010  AFD_KW_FASTPATH      Fastpath I/O			0x0000000000000020  AFD_KW_BUFFERED      Buffered
+			0x0000000000000040  AFD_KW_RIO           RIO				0x0000000000000080  AFD_KW_NRT           NRT
+			0x0000010000000000  ut:Dropped						0x8000000000000000  Microsoft-Windows-Winsock-AFD/Operational Microsoft-Windows-Winsock Network Event/Operational
+			Value               Level                Description
+			0x02                win:Error            Error
+			0x03                win:Warning          Warning
+			0x04                win:Informational    Information
+			0x05                win:Verbose          Verbose
+		-->
+			<!-- 
+			<Keywords>
+				<Keyword Value="0x4"/>
+			</Keywords>
+			<EventFilters FilterIn="true" >
+				<EventId Value="1000" /> 
+				<EventId Value="1018" />
+				<EventId Value="1021" /> 
+				<EventId Value="1001" /> 
+				<EventId Value="1024" /> 
+		-->
+			<!-- 1000 AfdCreate                 ws2_32.dll!socket,	              ws2_32.dll!WSASocketW                 Keyword AFD_KW_SOURCE_WINSOCK 0x4 -->
+			<!-- 1018 AfdConnectWithAddress     ws2_32.dll!connect                                                      Keyword AFD_KW_SOURCE_WINSOCK 0x4 -->
+			<!-- 1021 AfdConnectExWithAddress   mswsock.dll!SockDoConnectEx,	  mswsock.dll!MSAFD_ConnectEx           Keyword AFD_KW_SOURCE_WINSOCK 0x4 -->
+			<!-- 1001 AfdClose                  ws2_32.dll!closesocket                                                  Keyword AFD_KW_SOURCE_WINSOCK 0x4 -->
+			<!-- 1024 AfdAcceptWithAddress      ws2_32.dll!accept,           	  ws2_32.dll!WSAAccept                  Keyword AFD_KW_SOURCE_WINSOCK 0x4 -->
+
+
+			<!-- High volume events sending/receiving data -->
+				<!-- <EventId Value="1007" />  --> <!-- AfdSendToWithAddress      ws2_32.dll!sendto,	  afd.sys!AfdFastDatagramSend           Keyword AFD_KW_SOURCE_WINSOCK 0x4 -->
+				<!-- <EventId Value="1003" />  --> <!-- AfdSend                   ws2_32.dll!send,	      ws2_32.dll!WSASend,	                Keyword AFD_KW_SOURCE_WINSOCK 0x4 --> 
+				<!-- <EventId Value="1006" />  --> <!-- AfdReceiveFrom Keywords   ws2_32.dll!recvfrom,	  ws2_32.dll!WSARecvFrom                Keyword AFD_KW_SOURCE_WINSOCK 0x4 -->
+				<!-- <EventId Value="1004" />  --> <!-- AfdReceive                ws2_32.dll!recv,	      ws2_32.dll!WSARecv                    Keyword AFD_KW_SOURCE_WINSOCK 0x4 -->
+				<!-- <EventId Value="1009" />  --> <!-- AfdReceiveFromWithAddress ws2_32.dll!recvfrom,	  afd.sys!AfdSetupReceiveDatagramIrp    Keyword AFD_KW_SOURCE_WINSOCK 0x4 -->
+
+			<!-- Other Events -->
+				<!-- <EventId Value="1017" /> --> <!-- AfdConnect                   ws2_32.dll!connect,	              ws2_32.dll!WSAPoll,	 ws2_32.dll!select  Keyword AFD_KW_SOURCE_WINSOCK   0x4 -->
+				<!-- <EventId Value="3006" /> --> <!-- AfdDisconnect                ws2_32.dll!closesocket                                                      Keyword AFD_KW_SOURCE_TRANSPORT 0x8 -->
+				<!-- <EventId Value="1035" /> --> <!-- AfdOption                    ws2_32.dll!ioctlsocket, ws2_32.dll!WSAEventSelect                           Keyword AFD_KW_SOURCE_WINSOCK   0x4 -->
+				<!-- <EventId Value="1032" /> --> <!-- AfdAbort                     ws2_32.dll!shutdown,	  mswsock.dll!WSPShutdown,	 afd.sys!AfdTLConnectedReceiveEventHandler Keyword AFD_KW_SOURCE_WINSOCK 0x4 -->
+				<!-- <EventId Value="1015" /> --> <!-- AfdReceiveMessageWithAddress KernelBase.dll!DeviceIoControl                                                                 Keyword AFD_KW_SOURCE_WINSOCK 0x4 -->
+				<!-- <EventId Value="1013" /> --> <!-- AfdSendMessageWithAddress    ws2_32.dll!WSASendMs, mswsock.dll!WSPIoctl                                                     Keyword AFD_KW_SOURCE_WINSOCK 0x4 -->
+
+			<!-- Sample Data of nearly all Socket Provider events, the Endpoint pointer is filled during AfdConnectWithAddress/AfdConnectExWithAddress where then the pointer can be used in other events/s
+     to relate the socket which was open
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Reason (Field 5),	 Field 6,	 Field 7,	 Field 8,	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdAbort,	 1032,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 7,	 
+			,	 ,	 2,	 8028,	 0xFFFFAD083A6020C0,	 0xFFFFAD084BAE5580,	 Abortive disconnect requested on endpoint,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 6.979548700
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Status (Field 5),	 Field 6,	 Field 7,	 Field 8,	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdAccept,	 1023,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 23,	 
+			,	 ,	 1,	 6011,	 0xFFFFAD0839FEC4C0,	 0xFFFFAD083A59BD40,	 0x00000000,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 5.526736900
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Buffer (Field 5),	 BufferLength (Field 6),	 Status (Field 7),	 AddressLen (Field 8),	 Address (Field 9),	 AcceptEndpoint (Field 10),	 CurrentBacklog (Field 11),	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdAcceptWithAddress,	 1024,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 23,	 
+		,	 ,	 0,	 6010,	 0xFFFFAD0839FEC4C0,	 0xFFFFAD083A59BD40,	 0x0000000000000000,	 0,	 0x00000000,	 16,	 127.0.0.1:60569,	 0xFFFFAD0837CFB6D0,	 0,	 ,	 ,	 ,	 ,	 1,	 5.526714900
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Status (Field 5),	 AddressLen (Field 6),	 Address (Field 7),	 Field 8,	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdBindWithAddress,	 1030,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 118,	 
+			,	 ,	 0,	 7010,	 0xFFFFAD083C7F1140,	 0xFFFFAD084BAD7690,	 0x00000000,	 16,	 0.0.0.0,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 5.525488900
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Status (Field 5),	 Field 6,	 Field 7,	 Field 8,	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdCleanup,	 1002,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 288,	 
+			,	 ,	 0,	 2002,	 0xFFFFAD082F731080,	 0xFFFFAD08322AA410,	 0x00000000,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 2.465622000
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Status (Field 5),	 Field 6,	 Field 7,	 Field 8,	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdClose,	 1001,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 288,	 
+			,	 ,	 0,	 2000,	 0xFFFFAD082F731080,	 0xFFFFAD08322AA410,	 0x00000000,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 2.465650700
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Status (Field 5),	 Field 6,	 Field 7,	 Field 8,	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdConnect,	 1017,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 43,	 
+			,	 ,	 1,	 5024,	 0xFFFFAD0839FEC4C0,	 0xFFFFAD08322AA410,	 0x00000000,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 5.643181500
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Status (Field 5),	 Field 6,	 Field 7,	 Field 8,	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdConnectEx, 1020,	 1,	 5032,	 0xFFFFAD083C7F1140,	 0xFFFFAD084BAD7690,	 0x00000000,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 5.526486200
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Buffer (Field 5),	 BufferLength (Field 6),	 Status (Field 7),	 AddressLen (Field 8),	 Address (Field 9),	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdConnectExWithAddress,	 1021,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 4,	 
+		,	 ,	 0,	 5031,	 0xFFFFAD083C7F1140,	 0xFFFFAD084BAD7690,	 0xFFFFAD083BCBF780,	 0,	 0x00000000,	 16,	 127.0.0.1:9000,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 5.526212000
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Status (Field 5),	 AddressLen (Field 6),	 Address (Field 7),	 CurrentBacklog (Field 8),	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdConnectIndicationWithAddress,	 3001,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 23,	 
+			,	 ,	 3,	 6501,	 0xFFFFAD0839FEC4C0,	 0xFFFFAD083A59BD40,	 0x00000000,	 16,	 127.0.0.1:60569,	 0,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 5.526555500
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Buffer (Field 5),	 BufferLength (Field 6),	 Status (Field 7),	 AddressLen (Field 8),	 Address (Field 9),	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdConnectWithAddress,	 1018,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 43,	 
+			,	 ,	 0,	 5023,	 0xFFFFAD0839FEC4C0,	 0xFFFFAD08322AA410,	 0x0000000000000000,	 0,	 0x00000000,	 16,	 147.161.168.64:10485,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 5.583675000
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 AddressFamily (Field 5),	 SocketType (Field 6),	 Protocol (Field 7),	 ProcessId (Field 8),	 Status (Field 9),	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdCreate,	 1000,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 358,	 
+			,	 ,	 0,	 1006,	 0xFFFFAD082F731080,	 0xFFFFAD08322AA410,	 23,	 SOCK_DGRAM,	 17,	 0x0000000000000D34,	 0x00000000,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 2.465496000
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Buffer (Field 5),	 BufferLength (Field 6),	 Field 7,	 Field 8,	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdDataIndication,	 3003,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 464,	 
+			,	 ,	 3,	 9000,	 0xFFFFAD0839FEC4C0,	 0xFFFFAD0843774670,	 0xFFFFAD08320D6DF0,	 37,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 1.548530800
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Buffer (Field 5),	 BufferLength (Field 6),	 AddressLen (Field 7),	 Address (Field 8),	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdDataIndicationWithAddress,	 3004,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 272,	 
+			,	 ,	 3,	 9001,	 0xFFFFAD083C3E4080,	 0xFFFFAD084BADF910,	 0xFFFFAD0832EAA750,	 72,	 16,	 52.112.31.187:3481,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 1.223092500
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Status (Field 5),	 Field 6,	 Field 7,	 Field 8,	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdDisconnect,	 3006,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 29,	 
+			,	 ,	 3,	 12001,	 0xFFFFAD0839FEC4C0,	 0xFFFFAD084BADAB20,	 0x00000000,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 5.524919800
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Option (Field 5),	 Value (Field 6),	 Status (Field 7),	 Field 8,	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdOption,	 1035,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 162,	 
+			,	 ,	 4,	 11011,	 0xFFFFAD0839FEC4C0,	 0xFFFFAD0837CFB6D0,	 SO_OOBINLINE,	 0x00000001,	 0x00000000,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 5.527330100
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 BufferCount (Field 5),	 Buffer (Field 6),	 BufferLength (Field 7),	 Status (Field 8),	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdReceive,	 1004,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1387,	 
+			,	 ,	 0,	 4115,	 0xFFFFAD0839FEC4C0,	 0xFFFFAD0843774670,	 1,	 0x0000000000000000,	 5,	 0x00000000,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 1.548663000
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 BufferCount (Field 5),	 Buffer (Field 6),	 BufferLength (Field 7),	 Status (Field 8),	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdReceiveFrom,	 1006,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 262,	 
+			,	 ,	 0,	 4049,	 0xFFFFAD083C3E4080,	 0xFFFFAD084BADF910,	 1,	 0xFFFFAD0853102460,	 1537,	 0x00000000,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 1.223178300
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 BufferCount (Field 5),	 Buffer (Field 6),	 BufferLength (Field 7),	 Status (Field 8),	 AddressLen (Field 9),	 Address (Field 10),	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdReceiveFromWithAddress,	 1009,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 251,	 
+			,	 ,	 1,	 4052,	 0xFFFFAD083C3E4080,	 0xFFFFAD084BADF910,	 1,	 0xFFFFAD0852BCD620,	 72,	 0x00000000,	 16,	 52.112.31.187:3481,	 ,	 ,	 ,	 ,	 ,	 1,	 1.223106100
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 BufferCount (Field 5),	 Buffer (Field 6),	 BufferLength (Field 7),	 Status (Field 8),	 AddressLen (Field 9),	 Address (Field 10),	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdReceiveMessageWithAddress,	 1015,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 11,	 
+			,	 ,	 1,	 4052,	 0xFFFFAD08317EE0C0,	 0xFFFFAD08322AA070,	 1,	 0xFFFFAD085BA10CD0,	 171,	 0x00000000,	 28,	 [::ffff:192.168.178.1]:53,	 ,	 ,	 ,	 ,	 ,	 1,	 5.577296600
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 BufferCount (Field 5),	 Buffer (Field 6),	 BufferLength (Field 7),	 Status (Field 8),	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdSend,	 1003,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1686,	 
+			,	 ,	 0,	 3047,	 0xFFFFAD0839FEC4C0,	 0xFFFFAD084C195D40,	 1,	 0xFFFFAD083BCBF9A8,	 51,	 0x00000000,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 1.548974600
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 BufferCount (Field 5),	 Buffer (Field 6),	 BufferLength (Field 7),	 Status (Field 8),	 AddressLen (Field 9),	 Address (Field 10),	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdSendMessageWithAddress,	 1013,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 42,	 
+			,	 ,	 0,	 3100,	 0xFFFFAD08317EE0C0,	 0xFFFFAD08322AA070,	 1,	 0xFFFFAD083BCBF9A8,	 39,	 0x00000000,	 28,	 [::ffff:192.168.178.1]:53,	 ,	 ,	 ,	 ,	 ,	 1,	 5.537931500
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 BufferCount (Field 5),	 Buffer (Field 6),	 BufferLength (Field 7),	 Status (Field 8),	 AddressLen (Field 9),	 Address (Field 10),	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdSendToWithAddress,	 1007,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 7089,	 
+			,	 ,	 1,	 3049,	 0xFFFFAD083C3E4080,	 0xFFFFAD084BADE350,	 1,	 0xFFFFAD08380301B8,	 159,	 0x00000000,	 16,	 52.112.31.187:3479,	 ,	 ,	 ,	 ,	 ,	 1,	 0.997145700
+Task Name,	 Id,	 EnterExit (Field 1),	 Location (Field 2),	 Process (Field 3),	 Endpoint (Field 4),	 Status (Field 5),	 Field 6,	 Field 7,	 Field 8,	 Field 9,	 Field 10,	 Field 11,	 Field 12,	 Field 13,	 Field 14,	 Field 15,	 Count,	 Time (s)
+AfdWaitForListen,	 1036,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 46,	 
+			,	 ,	 0,	 6216,	 0xFFFFAD0839FEC4C0,	 0xFFFFAD083A59BD40,	 0x00000000,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 ,	 1,	 5.526589600
+-->
+		</EventProvider>
+
+		<!-- Brings in Services Tab in WPA which can show service start/stop timings. Mainly useful during boot -->
+		<EventProvider Id="EventProvider_Services" Level="5" Name="Microsoft-Windows-Services" Base="" NonPagedMemory="true" Stack="false"/>
+
+		<EventProvider Id="EventProvider_Threading" Level="5" Name="DotNetProvider_Threading" Base="MultiProfile_DotNetProvider" NonPagedMemory="true" Stack="true">
+			<Keywords Operation="Add">
+				<!--
+				0x10000           ThreadPool
+			-->
+				<Keyword Value="0x10000"/>
+			</Keywords>
+		</EventProvider>
+
+		<Profile Id="Default.Verbose.File" Name="Default" Description="Default (CPU Samples/Disk/.NET Exceptions/Focus)" LoggingMode="File" DetailLevel="Verbose">
+
+			<Collectors>
+				<!-- In the kernel session we define how much memory it needs and whic SystemProviderId is enable which enables the corresponding kernel and stackwalks -->
+				<SystemCollectorId Value="SystemProfiling_System">
+					<!-- 16 MB buffer size in File Mode, BufferSize value is in KB, together with Buffers the actual memory consumption is defined -->
+					<BufferSize Value="256" />
+					<!-- You can limit the kernel session file size here. User session is normally not a problem for a longer time. File Size is in MB.
+					<MaximumFileSize Value="4000" FileMode="Circular"/>  
+					-->
+					<!-- In "Circular" file is acting as ring buffer. Oldest events are overwritten. In "Sequential" mode profiling stops if max file size has been reached. -->
+
+					<SystemProviderId Value="SystemProvider_Monitoring"/>
+				</SystemCollectorId>
+
+				<!-- In this session, which must have the same value as the EventCollector defined above, we put all user mode providers together we want to enable here   -->
+				<EventCollectorId Value="EventCollector_UserModeSession">
+					<BufferSize Value="256"/>
+					<!-- File Size is in MB
+					<MaximumFileSize Value="4000" FileMode="Circular"/>
+					-->
+					<EventProviders>
+						<EventProviderId Value="MultiProfile_DotNetProvider"/>
+						<EventProviderId Value="EventProvider_FocusEvents"/>
+						<EventProviderId Value="EventProvider_Services" />
+						<EventProviderId Value="EventProvider_Microsoft-Windows-Subsys-SMSS"/>
+						<EventProviderId Value="EventProvider_Microsoft-Windows-Winlogon"/>
+						<EventProviderId Value="EventProvider_Microsoft-Windows-Wininit"/>
+					</EventProviders>
+				</EventCollectorId>
+				<!-- When many .NET processes with JITed code (e.g. Visual Studio) are running the .NET Rundown events can overwrite our actual payload data. We need an extra 
+				     buffer during rundown. But since there is no way to define a buffer used only during rundown we are generous and get an extra GB just for managed stack traces in Memory mode, in file Mode we use 100MB. -->
+				<EventCollectorId Value="EventCollector_Rundown">
+					<BufferSize Value="1024"/>
+					<Buffers Value="100"/>
+					<EventProviders>
+						<EventProviderId Value="MultiProfile_DotNETRuntimeRundown_CaptureState"/>
+					</EventProviders>
+				</EventCollectorId>
+
+			</Collectors>
+
+			<!-- When user and kernel session are merged we need especially the ImageId events or we wont get any stack traces -->
+			<TraceMergeProperties>
+				<TraceMergeProperty Id="TraceMerge_Default" Name="TraceMerge_Default">
+					<DeletePreMergedTraceFiles Value="true"/>
+					<!-- 
+					<SkipMerge Value="true"/>
+					-->
+					<CustomEvents>
+						<CustomEvent Value="ImageId"/>
+						<CustomEvent Value="BuildInfo"/>
+						<CustomEvent Value="VolumeMapping"/>
+						<CustomEvent Value="EventMetadata"/>
+						<CustomEvent Value="PerfTrackMetadata"/>
+						<CustomEvent Value="WinSAT"/>
+						<CustomEvent Value="NetworkInterface"/>
+					</CustomEvents>
+				</TraceMergeProperty>
+			</TraceMergeProperties>
+		</Profile>
+
+		<Profile Id="Default.Verbose.Memory" Name="Default" Description="Default (CPU Samples/Disk/.NET Exceptions/Focus)" Base="Default.Verbose.File" LoggingMode="Memory" DetailLevel="Verbose">
+
+			<!-- We need to remove the default collectors which could contain MaximumFileSize clauses which are not compatible with PercentageOfTotalMemory definitions. 
+		         As an alternative we could not inherit from Default.Verbose.File. With inheritance we can reuse Trace Merge and Rundown settings.
+		         The error is: The MaximumFileSize element does not match with the profiles already in the profile collection.
+			-->
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System" />
+				<EventCollectorId Value="EventCollector_UserModeSession" />
+			</Collectors>
+
+			<Collectors Operation="Add">
+				<!-- In the kernel session we define how much memory it needs and which SystemProviderId is enabled which enables the corresponding kernel and stackwalks 
+					BufferSize is in KB, MaximumBufferSpace is in MB
+				-->
+				<SystemCollectorId Value="SystemProfiling_System">
+					<BufferSize Value="1024"/>
+					<Buffers PercentageOfTotalMemory="true" Value="15" MaximumBufferSpace="4000" />
+					<SystemProviderId Value="SystemProvider_Monitoring"/>
+				</SystemCollectorId>
+
+				<!-- In this session, which must have the same value as the EventCollector defined above, we put all user mode providers together we want to enabled here   -->
+				<EventCollectorId Value="EventCollector_UserModeSession">
+					<BufferSize Value="1024"/>
+					<Buffers PercentageOfTotalMemory="true" Value="7" MaximumBufferSpace="4000"/>
+					<!-- If you want a fixed buffer size to get e.g. maximum ETL files sizes which do not take ages to load specify here the absolute memory buffer size. 
+					     you may want to set this for the SystemCollector as well because at the end both ETL files will be merged together.
+						<BufferSize Value="1024"/>
+						<Buffers Value="800"/>
+					-->
+					<EventProviders>
+						<EventProviderId Value="MultiProfile_DotNetProvider"/>
+						<EventProviderId Value="EventProvider_FocusEvents"/>
+						<EventProviderId Value="EventProvider_Services" />
+						<EventProviderId Value="EventProvider_Microsoft-Windows-Subsys-SMSS"/>
+						<EventProviderId Value="EventProvider_Microsoft-Windows-Winlogon"/>
+						<EventProviderId Value="EventProvider_Microsoft-Windows-Wininit"/>
+					</EventProviders>
+				</EventCollectorId>
+				<EventCollectorId Value="EventCollector_Rundown">
+					<!-- Operation Set will overwrite the value from inherited profile. Add will add the numbers, Remove will subtract!  -->
+					<Buffers Operation="Set" Value="1000" />
+
+				</EventCollectorId>
+
+			</Collectors>
+		</Profile>
+
+
+
+		<Profile Id="CSwitch.Verbose.File" Name="CSwitch" Description="CSwitch (CPU Samples/Disk/.NET Exceptions/Focus/Context Switch)" Base="Default.Verbose.File" LoggingMode="File" DetailLevel="Verbose">
+			<Collectors Operation="Add">
+				<!-- In the kernel session we define how much memory it needs and which SystemProviderId is enable which enables the corresponding kernel and stackwalks -->
+				<SystemCollectorId Value="SystemProfiling_System">
+					<SystemProviderId Value="SystemProvider_CSWITCH"/>
+				</SystemCollectorId>
+
+				<!-- In this session, which must have the same value as the EventCollector defined above, we put all user mode providers together we want to enable here   -->
+				<EventCollectorId Value="EventCollector_UserModeSession">
+					<EventProviders>
+						<EventProviderId Value="EventProvider_Threading"/>
+					</EventProviders>
+				</EventCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="CSwitch.Verbose.Memory" Name="CSwitch" Description="CSwitch (CPU Samples/Disk/.NET Exceptions/Focus/Context Switch)" Base="Default.Verbose.Memory" LoggingMode="Memory" DetailLevel="Verbose">
+			<Collectors Operation="Add">
+				<!-- In the kernel session we define how much memory it needs and which SystemProviderId is enable which enables the corresponding kernel and stackwalks -->
+				<SystemCollectorId Value="SystemProfiling_System" >
+					<SystemProviderId Value="SystemProvider_CSWITCH"/>
+				</SystemCollectorId>
+
+				<!-- In this session, which must have the same value as the EventCollector defined above, we put all user mode providers together we want to enable here   -->
+				<EventCollectorId Value="EventCollector_UserModeSession">
+					<EventProviders>
+						<EventProviderId Value="EventProvider_Threading"/>
+					</EventProviders>
+				</EventCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="MiniFilter.Verbose.File" Name="MiniFilter" Description="MiniFilter (CPU Samples/Disk/.NET Exceptions/Focus/MiniFilter)" Base="Default.Verbose.File"  LoggingMode="File" DetailLevel="Verbose">
+			<Collectors Operation="Add">
+				<!-- In the kernel session we define how much memory it needs and which SystemProviderId is enable which enables the corresponding kernel and stackwalks -->
+				<SystemCollectorId Value="SystemProfiling_System">
+					<SystemProviderId Value="SystemProvider_MiniFilter"/>
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="MiniFilter.Verbose.Memory" Name="MiniFilter" Description="MiniFilter (CPU Samples/Disk/.NET Exceptions/Focus/MiniFilter) " Base="Default.Verbose.Memory" LoggingMode="Memory" DetailLevel="Verbose">
+			<Collectors Operation="Add">
+				<!-- In the kernel session we define how much memory it needs and which SystemProviderId is enable which enables the corresponding kernel and stackwalks -->
+				<SystemCollectorId Value="SystemProfiling_System">
+					<SystemProviderId Value="SystemProvider_MiniFilter"/>
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+
+		<Profile Id="File.Verbose.File" Name="File" Description="File (CPU Samples/Disk/.NET Exceptions/Focus/File IO)" Base="Default.Verbose.File"  LoggingMode="File" DetailLevel="Verbose">
+			<Collectors Operation="Add">
+				<!-- In the kernel session we define how much memory it needs and which SystemProviderId is enable which enables the corresponding kernel and stackwalks -->
+				<SystemCollectorId Value="SystemProfiling_System">
+					<SystemProviderId Value="SystemProvider_File"/>
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="File.Verbose.Memory" Name="File" Description="File (CPU Samples/Disk/.NET Exceptions/Focus/File IO)" Base="Default.Verbose.Memory" LoggingMode="Memory" DetailLevel="Verbose">
+			<Collectors Operation="Add">
+				<SystemCollectorId Value="SystemProfiling_System">
+					<SystemProviderId Value="SystemProvider_File"/>
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+
+		<Profile Id="Network.Verbose.File" Name="Network" Description="Network (CPU Samples/Disk/.NET Exceptions/Focus/Network)" Base="Default.Verbose.File"  LoggingMode="File" DetailLevel="Verbose">
+			<Collectors Operation="Add">
+				<EventCollectorId Value="EventCollector_UserModeSession">
+					<EventProviders>
+						<EventProviderId Value="EventProvider_TCPProvider"/>
+						<EventProviderId Value="EventProvider_DNSClient"/>
+					</EventProviders>
+				</EventCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="Network.Verbose.Memory" Name="Network" Description="Network (CPU Samples/Disk/.NET Exceptions/Focus/Network)" Base="Default.Verbose.Memory" LoggingMode="Memory" DetailLevel="Verbose">
+			<Collectors Operation="Add">
+				<EventCollectorId Value="EventCollector_UserModeSession">
+					<EventProviders>
+						<EventProviderId Value="EventProvider_TCPProvider"/>
+						<EventProviderId Value="EventProvider_DNSClient"/>
+					</EventProviders>
+				</EventCollectorId>
+			</Collectors>
+		</Profile>
+
+		<Profile Id="Sockets.Verbose.File" Name="Sockets" Description="Sockets (CPU Samples/Disk/.NET Exceptions/Focus/Sockets)" Base="Default.Verbose.File"  LoggingMode="File" DetailLevel="Verbose">
+			<Collectors Operation="Add">
+				<EventCollectorId Value="EventCollector_UserModeSession">
+					<EventProviders>
+						<EventProviderId Value="EventProvider_Socket"/>
+					</EventProviders>
+				</EventCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="Sockets.Verbose.Memory" Name="Sockets" Description="Sockets (CPU Samples/Disk/.NET Exceptions/Focus/Sockets)" Base="Default.Verbose.Memory" LoggingMode="Memory" DetailLevel="Verbose">
+			<Collectors Operation="Add">
+				<EventCollectorId Value="EventCollector_UserModeSession">
+					<EventProviders>
+						<EventProviderId Value="EventProvider_Socket"/>
+					</EventProviders>
+				</EventCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="VirtualAlloc.Verbose.File" Name="VirtualAlloc" Description="VirtualAlloc (Long Term)" Base="Default.Verbose.File" LoggingMode="File" DetailLevel="Verbose">
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System"/>
+			</Collectors>
+			<Collectors Operation="Add">
+				<SystemCollectorId Value="SystemProfiling_System">
+					<SystemProviderId Value="SystemProvider_VirtualAlloc"/>
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="VirtualAlloc.Verbose.Memory" Name="VirtualAlloc" Description="VirtualAlloc (Long Term)" Base="Default.Verbose.Memory" LoggingMode="Memory" DetailLevel="Verbose">
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System"/>
+			</Collectors>
+			<Collectors Operation="Add">
+				<!-- In the kernel session we define how much memory it needs and which SystemProviderId is enable which enables the corresponding kernel and stackwalks -->
+				<SystemCollectorId Value="SystemProfiling_System">
+					<Buffers PercentageOfTotalMemory="true" Value="15" MaximumBufferSpace="4000" />
+					<SystemProviderId Value="SystemProvider_VirtualAlloc"/>
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="PMCSample.Verbose.File" Name="PMCSample" Description="PMC Sampling for PMC Rollover + Default" Base="Default.Verbose.File" LoggingMode="File" DetailLevel="Verbose">
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System"/>
+			</Collectors>
+			<Collectors Operation="Add">
+				<SystemCollectorId Value="SystemProfiling_System">
+					<SystemProviderId Value="SamplingCounter"/>
+					<HardwareCounterId Value="HardwareCounters_SamplingCounters" />
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="PMCSample.Verbose.Memory" Name="PMCSample" Description="PMC Sampling for PMC Rollover + Default" Base="Default.Verbose.Memory" LoggingMode="Memory" DetailLevel="Verbose">
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System"/>
+			</Collectors>
+			<Collectors Operation="Add">
+				<!-- In the kernel session we define how much memory it needs and which SystemProviderId is enable which enables the corresponding kernel and stackwalks -->
+				<SystemCollectorId Value="SystemProfiling_System">
+					<Buffers PercentageOfTotalMemory="true" Value="15" MaximumBufferSpace="4000" />
+					<SystemProviderId Value="SamplingCounter"/>
+					<HardwareCounterId Value="HardwareCounters_SamplingCounters" />
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="PMCBranch.Verbose.File" Name="PMCBranch" Description="PMC Cycles per Instruction and Branch data - Counting" Base="Default.Verbose.File" LoggingMode="File" DetailLevel="Verbose">
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System"/>
+			</Collectors>
+			<Collectors Operation="Add">
+				<SystemCollectorId Value="SystemProfiling_System">
+					<SystemProviderId Value="PMC_Count_SystemProvider"/>
+					<HardwareCounterId Value="HardwareCounters_EventCounters_CPI_Branch" />
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="PMCBranch.Verbose.Memory" Name="PMCBranch" Description="PMC Cycles per Instruction and Branch data - Counting" Base="Default.Verbose.Memory" LoggingMode="Memory" DetailLevel="Verbose">
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System"/>
+			</Collectors>
+			<Collectors Operation="Add">
+				<!-- In the kernel session we define how much memory it needs and which SystemProviderId is enable which enables the corresponding kernel and stackwalks -->
+				<SystemCollectorId Value="SystemProfiling_System">
+					<Buffers PercentageOfTotalMemory="true" Value="15" MaximumBufferSpace="4000" />
+					<SystemProviderId Value="PMC_Count_SystemProvider"/>
+					<HardwareCounterId Value="HardwareCounters_EventCounters_CPI_Branch" />
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="PMCLLC.Verbose.File" Name="PMCLLC" Description="PMC Cycles per Instruction and LLC data - Counting" Base="Default.Verbose.File" LoggingMode="File" DetailLevel="Verbose">
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System"/>
+			</Collectors>
+			<Collectors Operation="Add">
+				<SystemCollectorId Value="SystemProfiling_System">
+					<SystemProviderId Value="PMC_Count_SystemProvider"/>
+					<HardwareCounterId Value="HardwareCounters_EventCounters_CPI_LLC" />
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+
+		<Profile Id="LBR.Verbose.Memory" Name="LBR" Description="LBR - Last Branch Record Sampling" Base="Default.Verbose.Memory" LoggingMode="Memory" DetailLevel="Verbose">
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System"/>
+			</Collectors>
+			<Collectors Operation="Add">
+				<!-- In the kernel session we define how much memory it needs and which SystemProviderId is enable which enables the corresponding kernel and stackwalks -->
+				<SystemCollectorId Value="SystemProfiling_System">
+					<Buffers PercentageOfTotalMemory="true" Value="15" MaximumBufferSpace="4000" />
+					<SystemProviderId Value="PMC_Count_SystemProvider"/>
+					<HardwareCounterId Value="HardwareCounters_EventCounters_LBR" />
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="LBR.Verbose.File" Name="LBR" Description="LBR - Last Branch Record Sampling" Base="Default.Verbose.File" LoggingMode="File" DetailLevel="Verbose">
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System"/>
+			</Collectors>
+			<Collectors Operation="Add">
+				<SystemCollectorId Value="SystemProfiling_System">
+					<SystemProviderId Value="PMC_Count_SystemProvider"/>
+					<HardwareCounterId Value="HardwareCounters_EventCounters_LBR" />
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+
+		
+		<Profile Id="PMCLLC.Verbose.Memory" Name="PMCLLC" Description="PMC Cycles per Instruction and LLC data - Counting" Base="Default.Verbose.Memory" LoggingMode="Memory" DetailLevel="Verbose">
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System"/>
+			</Collectors>
+			<Collectors Operation="Add">
+				<!-- In the kernel session we define how much memory it needs and which SystemProviderId is enable which enables the corresponding kernel and stackwalks -->
+				<SystemCollectorId Value="SystemProfiling_System">
+					<Buffers PercentageOfTotalMemory="true" Value="15" MaximumBufferSpace="4000" />
+					<SystemProviderId Value="PMC_Count_SystemProvider"/>
+					<HardwareCounterId Value="HardwareCounters_EventCounters_CPI_LLC" />
+				</SystemCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="UserGDILeaks.Verbose.File" Name="UserGDILeaks" Description="UserGDILeaks  (Long Term)" Base="Default.Verbose.File"  LoggingMode="File" DetailLevel="Verbose">
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System"/>
+			</Collectors>
+
+			<Collectors Operation="Add">
+				<SystemCollectorId Value="SystemProfiling_System">
+					<SystemProviderId Value="SystemProvider_LongRunning"/>
+				</SystemCollectorId>
+
+				<EventCollectorId Value="EventCollector_UserModeSession">
+					<EventProviders>
+						<EventProviderId Value="EventProvider_UserGDILeaks"/>
+					</EventProviders>
+				</EventCollectorId>
+			</Collectors>
+		</Profile>
+		<Profile Id="UserGDILeaks.Verbose.Memory" Name="UserGDILeaks" Description="UserGDILeaks (Long Term)" Base="Default.Verbose.Memory" LoggingMode="Memory" DetailLevel="Verbose">
+			<Collectors Operation="Remove">
+				<SystemCollectorId Value="SystemProfiling_System"/>
+			</Collectors>
+
+			<Collectors Operation="Set">
+				<SystemCollectorId Value="SystemProfiling_System">
+					<Buffers PercentageOfTotalMemory="true" Value="7" MaximumBufferSpace="1500" />
+					<SystemProviderId Value="SystemProvider_LongRunning"/>
+				</SystemCollectorId>
+
+				<EventCollectorId Value="EventCollector_UserModeSession">
+					<Buffers PercentageOfTotalMemory="true" Value="15" MaximumBufferSpace="4000" />
+					<EventProviders>
+						<EventProviderId Value="EventProvider_UserGDILeaks"/>
+					</EventProviders>
+				</EventCollectorId>
+			</Collectors>
+		</Profile>
+
+
+	</Profiles>
+
+</WindowsPerformanceRecorder>
+
+

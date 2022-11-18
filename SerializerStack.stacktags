@@ -2,7 +2,7 @@
 <!-- This is a Stacktag file for WPA to analyze the performance of serializers under ETW profiling 
      It allows easy comparison of .NET and .NET Core profiling data
 -->
-<Tag Name="">
+<Tag Name="Special">
 <Tag Name="Deserialize">
   <Tag Name="Apex">
     <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.ApexSerializer*::Deserialize*"/>
@@ -16,9 +16,12 @@
   <Tag Name="SimdJsonSharp">
     <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.SimdJsonSharpSerializer*::Deserialize*"/>
   </Tag>
-  <Tag Name=".NET Core JsonSerializer">
-    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.NetCoreJsonSerializer*::Deserialize*"/>
+  <Tag Name="SystemTextJson">
+    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.SystemTextJson`*::Deserialize*"/>
   </Tag>
+	<Tag Name="SystemTextJsonSourceGen">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.SystemTextJsonSourceGen`*::Deserialize*"/>
+	</Tag>	
   <Tag Name="BinaryFormatter">
 		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.BinaryFormatter*::Deserialize*"/>
 	</Tag>
@@ -85,6 +88,12 @@
 			<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Program::TouchFlat*"/>
 		</Tag>
 	</Tag>
+	<Tag Name="MemoryPack">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.MemoryPack*::Deserialize*"/>
+	</Tag>
+	<Tag Name="BinaryPack">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.BinaryPack*::Deserialize*"/>
+	</Tag>
 </Tag>
 	<Tag Name="Reflection SetValue">
 		<Entrypoint Module="*.dll" Method="System.Reflection.FieldInfo.SetValue*"/>
@@ -96,6 +105,12 @@
 		<Entrypoint Module="*.dll" Method="System.Activator.CreateInstance*"/>
 	</Tag>
 <Tag Name="Serialize">
+	<Tag Name="MemoryPack">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.MemoryPack*::Serialize*"/>
+	</Tag>
+	<Tag Name="BinaryPack">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.BinaryPack*::Serialize*"/>
+	</Tag>
   <Tag Name="Apex">
     <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.ApexSerializer*::Serialize*"/>
   </Tag>
@@ -108,9 +123,12 @@
   <Tag Name="SimdJsonSharp">
     <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.SimdJsonSharpSerializer*::Serialize*"/>
   </Tag>
-  <Tag Name=".NET Core JsonSerializer">
-    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.NetCoreJsonSerializer*::Serialize*"/>
-  </Tag>  
+  <Tag Name="SystemTextJson">
+    <Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.SystemTextJson`*::Serialize*"/>
+  </Tag>
+	<Tag Name="SystemTextJsonSourceGen">
+		<Entrypoint Module="SerializerTests.*" Method="SerializerTests.Serializers.SystemTextJsonSourceGen`*::Serialize*"/>
+	</Tag>	
 	<Tag Name="Reflection GetValue">
 		<Entrypoint Module="*" Method="System.Reflection.FieldInfo.GetValue*"/>
 	</Tag>

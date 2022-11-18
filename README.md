@@ -56,3 +56,30 @@ I have commented out only the serializer invocations in Program.cs so you can ad
 
 You will get a combined CSV file for all tested serializers on your machine for .NET 7, .NET 6, .NET 5, .NET Core 3.1 and .NET 4.8.
 Then you can verify the data yourself. If you want to plug in your own data types see Program.cs how to extend/modify the test suite.
+
+# Profiling
+
+Execute ```RunAll.cmd -profile``` from source directory after compiling. This uses WPR with MultiProfile.wprp from [FileWriter](https://github.com/Alois-xx/FileWriter).
+WPR is taken from the Windows 10 SDK which needs to have installed the Windows Performance Toolkit from the [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/) first.
+You can use your current WPR of Windows which may work but you need to change the WPR location in RunTests.cmd and RunTests_Core.cmd.
+Besides the CSV files are then the ETL files stored which you can then analyze further with WPA or [ETWAnalyzer](https://github.com/Siemens-Healthineers/ETWAnalyzer).
+
+- SerializeTestsNet31.etl
+- SerializeTestsNet48.etl
+- SerializeTestsNet50.etl
+- SerializeTestsNet60.etl
+- SerializeTestsNet70.etl
+
+When you overwrite the Special.stacktags of ETWAnalyzer with the one from SerializerTests like
+```
+copy D:\Source\git\SerializerTests\SerializerStack.stacktags D:\Utils\ETWAnalyzer\Configuration\Special.stacktags 
+```
+Then extract the data in the folder where the ETL files were generated
+
+```
+ETWAnalyzer -extract all -fd D:\Source\git\SerializerTests\SerializerTestResults\_8_51_33 -symserver MS
+```
+
+you get nice query capabilities which makes it easy to compare things accross .NET versions or machines. 
+
+![alt text](Documentation/Images/ETWAnalyzerStacktags_Deserialize.png "ETWAnalyzerStacktags")

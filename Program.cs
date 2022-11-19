@@ -267,6 +267,13 @@ namespace SerializerTests
                 //new ZeroFormatter<ZeroFormatterLargeBookShelf>(DataZeroFormatterLarge, null),
 #endif
 
+#if NET5_0_OR_GREATER
+                new SystemTextJson<BookShelf>(Data, null),
+                new SystemTextJson<BookShelf1>(Data1, null),
+                new SystemTextJson<BookShelf2>(Data2, null),
+                new SystemTextJson<LargeBookShelf>(DataLarge, null),
+#endif
+
 #if NET7_0_OR_GREATER
                 new SystemTextJsonSourceGen<BookShelf>(Data, null),
                 new SystemTextJsonSourceGen<BookShelf1>(Data1, null),

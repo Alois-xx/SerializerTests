@@ -8,9 +8,11 @@ This test framework compares the most popular and fastest serializers for .NET w
 
 
 The project compiles to .NET 7, .NET 6, .NET 5, .NET Core 3.1 and .NET 4.8 where you can check out the serialization performance in your favorite .NET Framework.
-To compile the solution you need Visual Studio 2022.
+To compile the solution you need Visual Studio 2022 17.4 or later and the corresponding [.NET SDKs](https://dotnet.microsoft.com/en-us/download/dotnet) and [.NET 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48) installed .
+
 The currently tested Serializers are
 - BinaryFormatter
+- BinaryPack (https://github.com/Sergio0694/BinaryPack)
 - Bois (https://github.com/salarcode/Bois)
 - Ceras (https://github.com/rikimaru0345/Ceras)
 - DataContract

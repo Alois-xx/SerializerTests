@@ -15,7 +15,7 @@ if "!Runs!" EQU "" set Runs=3
 set PayloadDataSize=%2
 if "!PayloadDataSize!" EQU "" set PayloadDataSize=0
 
-SerializerTests.exe -test firstcall -bookdatasize !PayloadDataSize! -nongenwarn > Startup_NoNGen_Core.csv
+SerializerTests.exe -test firstcall -bookdatasize !PayloadDataSize! > Startup_NoNGen_Core.csv
 
 echo Running Test !Runs! times with PayloadSize=!PayloadDataSize!
 
@@ -23,7 +23,7 @@ if "%ProfilingEnabled%" EQU "1" (
 	"!WPRLocation!" -start MultiProfile.wprp^^!CSwitch -start MultiProfile.wprp^^!File
 )
 
-SerializerTests.exe -test combined -Runs !Runs! -bookdatasize !PayloadDataSize! -nongenwarn > SerializationPerf_Core.csv
+SerializerTests.exe -test combined -Runs !Runs! -bookdatasize !PayloadDataSize! > SerializationPerf_Core.csv
 
 if "%ProfilingEnabled%" EQU "1" (
 	"!WPRLocation!" -stop c:\temp\SerializeTests.etl -skipPdbGen

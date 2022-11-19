@@ -53,34 +53,19 @@ namespace SerializerTests.Serializers
         protected override T Deserialize(Stream stream)
         {
             // Currently we need to use the MetaData approach for deserialization. 
-            // Precompiled Deserialization seems not to be supporte yet? 
+            // Precompiled Deserialization seems not to be supported yet? 
 
-            using IMemoryOwner<byte> owner = MemoryPool<byte>.Shared.Rent((int)stream.Length);
-            using IMemoryOwner<char> destOwner = MemoryPool<char>.Shared.Rent((int)stream.Length);
-
-            Span<byte> buffer = owner.Memory.Span[..(int)stream.Length];
-            stream.Read(buffer);
-
-            int chars = Encoding.UTF8.GetChars(buffer, destOwner.Memory.Span);
-            ReadOnlySpan<char> dest = destOwner.Memory.Span[..chars];
-
-            // This overload is used in unit tests of .NET runtime for source generators
-            // https://github.com/dotnet/runtime/blob/c96e47047af2816cac1f2e240068f71628ef105d/src/libraries/System.Text.Json/tests/System.Text.Json.SourceGeneration.Tests/SerializationContextTests.cs
-            return (T)(object)JsonSerializer.Deserialize(dest, MyJsonContext.Default.BookShelf);
-
-
-            /*
             if (typeof(T) == typeof(BookShelf))
             {
                 return (T) (object) JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf);
             }
             else if (typeof(T) == typeof(BookShelf1))
             {
-                return (T)JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf1.Type, MyJsonContext.Default);
+                return (T) JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf1.Type, MyJsonContext.Default);
             }
             else if (typeof(T) == typeof(BookShelf2))
             {
-                return (T)JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf2.Type, MyJsonContext.Default);
+                return (T) JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf2.Type, MyJsonContext.Default);
             }
             else if (typeof(T) == typeof(LargeBookShelf))
             {
@@ -88,7 +73,7 @@ namespace SerializerTests.Serializers
             }
 
             throw new NotSupportedException($"No source generator for type {typeof(T).Name} declared.");
-            */
+
         }
     }
 }

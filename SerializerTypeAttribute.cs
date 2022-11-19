@@ -27,6 +27,7 @@ namespace SerializerTests
     /// <summary>
     /// Describe serializer roughly which data format it writes and which data format it writes
     /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
     class SerializerTypeAttribute : Attribute
     {
         public SerializerTypes SerializerTypeDescription
@@ -50,9 +51,10 @@ namespace SerializerTests
     /// When added to a serializer the serialize time is set to 0 because it is e.g. a serializer which only 
     /// can deserialize and the preparation is done in its serialize method
     /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
     class IgnoreSerializeTimeAttribute : Attribute
     {
-        public IgnoreSerializeTimeAttribute(string reason)
+        public IgnoreSerializeTimeAttribute(string _)
         {
             
         }

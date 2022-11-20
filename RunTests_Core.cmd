@@ -8,24 +8,24 @@ if "%1" EQU "-profile" (
 	set ProfilingEnabled=1
 	SHIFT /1
 )
-echo current directory: %CD%
 set Runs=%1
 if "!Runs!" EQU "" set Runs=3
 
 set PayloadDataSize=%2
 if "!PayloadDataSize!" EQU "" set PayloadDataSize=0
 
-SerializerTests.exe -test firstcall -bookdatasize !PayloadDataSize! > Startup_NoNGen_Core.csv
+call Profile.cmd -start
 
-echo Running Test !Runs! times with PayloadSize=!PayloadDataSize!
+SerializerTests.exe -test firstcall -bookdatasize !PayloadDataSize! -scenario NoCrossGen > SerializationPerf_Core.csv
 
-if "%ProfilingEnabled%" EQU "1" (
-	"!WPRLocation!" -start MultiProfile.wprp^^!CSwitch -start MultiProfile.wprp^^!File
-)
+.\publish\SerializerTests.exe -test firstcall -bookdatasize !PayloadDataSize! -scenario CrossGen -NoHeader >> SerializationPerf_Core.csv
 
-SerializerTests.exe -test combined -Runs !Runs! -bookdatasize !PayloadDataSize! > SerializationPerf_Core.csv
+call Profile.cmd -stop c:\temp\SerializeTests_Startup.etl -skipPdbGen
 
-if "%ProfilingEnabled%" EQU "1" (
-	"!WPRLocation!" -stop c:\temp\SerializeTests.etl -skipPdbGen
-)
+echo Running Test !Runs! times with PayloadSize=!PayloadDataSize! Additional Args: !AdditionalArgs!
 
+call Profile.cmd -start
+
+SerializerTests.exe -test combined -Runs !Runs! -bookdatasize !PayloadDataSize! -scenario Combined -NoHeader !AdditionalArgs! >> SerializationPerf_Core.csv
+
+call Profile.cmd -stop c:\temp\SerializeTests.etl -skipPdbGen

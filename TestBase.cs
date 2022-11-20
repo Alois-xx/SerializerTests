@@ -13,8 +13,8 @@ namespace SerializerTests
     /// </summary>
     public interface ISerializeDeserializeTester
     {
-        (double firstS, double averageS, long serializedSize) TestSerialize(int nTimes, int nObjectsToCreate);
-        (double firstS, double averageS, long dataSize) TestDeserialize(int nTimes, int nObjectsToCreate);
+        (double firstS, double averageS, long serializedSize) TestSerialize(int nTimes, int nObjectsToCreate, int nMaxObjects);
+        (double firstS, double averageS, long dataSize) TestDeserialize(int nTimes, int nObjectsToCreate, int nMaxObjects);
 
         string FileVersion { get;  }
 
@@ -33,6 +33,14 @@ namespace SerializerTests
         /// Configurable payload byte array to Book objects which is reflected in serialized file names
         /// </summary>
         public int OptionalBytePayloadSize { get; set; }
+
+        /// <summary>
+        /// Largest serialized output is produced by XmlSerializer which produces ca. 102 bytes per BookShelf object.
+        /// We add 5 times the byte payload on top of it to properly size our memory stream to not get into Memory stream
+        /// resize issues which could influence measured numbers to due MemoryStream reallocations which are not the fault
+        /// of a serializer
+        /// </summary>
+        int MaxObjectSize { get => 102 + OptionalBytePayloadSize * 5; }
 
         /// <summary>
         /// If true and serializer supports it Reference tracking is enabled for this test
@@ -176,11 +184,14 @@ namespace SerializerTests
             return times;
         }
 
-        public (double firstS, double averageS, long serializedSize) TestSerialize(int nTimes, int nObjectsToCreate)
+        
+
+        public (double firstS, double averageS, long serializedSize) TestSerialize(int nTimes, int nObjectsToCreate, int nMaxObjects)
         {
             ObjectsToCreate = nObjectsToCreate;
-            GetMemoryStream().Capacity = 1000 * 1000 * 1000; // Set memory stream to largest serialized payload to prevent resizes during test
-            var tmp = this.TestData;                        // Create testdata before test starts
+            // Set memory stream to largest serialized payload to prevent resizes during test
+            GetMemoryStream().Capacity = MaxObjectSize * nMaxObjects; 
+            var tmp = this.TestData;                     // Create testdata before test starts
             StartDurationThread();
             var times = Test(nTimes, () =>
             {
@@ -218,7 +229,7 @@ namespace SerializerTests
         /// <param name="nObjectsToCreate">Select from a previous serialize test run the file with the objects created.</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public (double firstS, double averageS, long dataSize) TestDeserialize(int nTimes, int nObjectsToCreate)
+        public (double firstS, double averageS, long dataSize) TestDeserialize(int nTimes, int nObjectsToCreate, int nMaxObjects)
         {
             myStream = ReadMemoryStreamFromDisk(nObjectsToCreate);
 

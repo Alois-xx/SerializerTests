@@ -5,6 +5,7 @@ using SerializerTests.TypesToSerialize;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -51,7 +52,7 @@ namespace SerializerTests
     class Program
     {
         static string Help = "SerializerTests is a serializer performance testing framework to evaluate and compare different serializers for .NET by Alois Kraus" + Environment.NewLine +
-                             "SerializerTests [-Runs dd] -test [serialize, deserialize, combined, firstCall] [-reftracking] [-maxobj dd]" + Environment.NewLine +
+                             "SerializerTests [-Runs dd] -test [serialize, deserialize, combined, firstCall] [-reftracking] [-maxobj dd] [-NoHeader]" + Environment.NewLine +
                              " -N 1,2,10000    Set the number of objects to de/serialize which is repeated -Runs times to get stable results." + Environment.NewLine +
                              " -Runs           Default is 5. The result is averaged where the first run is excluded from the average" + Environment.NewLine +
                              " -test xx        xx can be serialize, deserialize, combined or firstcall to test a scenario for many different serializers" + Environment.NewLine +
@@ -61,6 +62,7 @@ namespace SerializerTests
                              " -BookDataSize d Optional byte array payload in bytes to check how good the serializer can deal with large blob payloads (e.g. images)." + Environment.NewLine +
                              " -Verify         Verify deserialized data if all contents could be read." + Environment.NewLine +
                              "                 To execute deserialize you must first have called the serialize to generate serialized test data on disk to be read during deserialize" + Environment.NewLine +
+                             " -NoHeader       Do not print CSV header to enable easy append of different test runs into one file." + Environment.NewLine + 
                              "Examples" + Environment.NewLine +
                              "Compare protobuf against MessagePackSharp for serialize and deserialize performance" + Environment.NewLine +
                              " SerializerTests -Runs 1 -test combined -serializer protobuf,MessagePackSharp" + Environment.NewLine +
@@ -485,6 +487,12 @@ namespace SerializerTests
                     case "-bookdatasize":
                         BookDataSize = int.Parse(NextLower());
                         break;
+                    case "-scenario":
+                        Scenario = Next();
+                        break;
+                    case "-noheader":
+                        NoHeader = true;
+                        break;
                     case "-nongenwarn":
                         IsNGenWarn = false;
                         break;
@@ -557,23 +565,25 @@ namespace SerializerTests
             get { return TestReferenceTracking ? SerializersObjectReferencesToTest : SerializersToTest; }
         }
 
+        public string Scenario { get; private set; }
+        public bool NoHeader { get; private set; }
 
         private void Deserialize()
         {
             var tester = new Test_O_N_Behavior(TestSerializers);
-            tester.TestDeserialize(NObjectsToDeSerialize, nRuns: Runs);
+            tester.TestDeserialize(NObjectsToDeSerialize, nRuns: Runs, scenario:Scenario, noHeader:NoHeader);
         }
 
         private void Serialize()
         {
             var tester = new Test_O_N_Behavior(TestSerializers);
-            tester.TestSerialize(NObjectsToDeSerialize, nRuns: Runs);
+            tester.TestSerialize(NObjectsToDeSerialize, nRuns: Runs, scenario: Scenario, noHeader: NoHeader);
         }
 
         private void Combined()
         {
             var tester = new Test_O_N_Behavior(TestSerializers);
-            tester.TestCombined(NObjectsToDeSerialize, nRuns: Runs);
+            tester.TestCombined(NObjectsToDeSerialize, nRuns: Runs, scenario: Scenario, noHeader: NoHeader);
         }
 
 
@@ -585,28 +595,32 @@ namespace SerializerTests
             if (StartupSerializersToTest.Count == StartupSerializerCount) // we always create 4 serializer with different types for startup tests
             {
                 var tester = new Test_O_N_Behavior(StartupSerializersToTest);
-                tester.TestSerialize(new int[] { 1 }, nRuns: 1);
+                tester.TestSerialize(new int[] { 1 }, nRuns: 1, scenario:Scenario, noHeader:NoHeader);
             }
             else
             {
                 for (int i = 0; i < StartupSerializersToTest.Count; i += StartupSerializerCount)
                 {
-                    var serializer = StartupSerializersToTest[i];
-                    // Spawn new process for each serializer to measure each serializer overhead in isolation 
-                    var startArgs = new ProcessStartInfo(Assembly.GetEntryAssembly().Location.Replace(".dll", ".exe"), String.Join(" ", Environment.GetCommandLineArgs().Skip(1)) + $" -serializer #{GetSimpleTypeName(serializer.GetType())}")
+                    string output = null;
+                    for (int warmupCount = 0; warmupCount < 3; warmupCount++) // do 2 iterations warmup to prevent hard faults which cost a lot of time and can totally skew measured values
                     {
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                    };
-                    Process proc = Process.Start(startArgs);
-                    // trim newline of newly started process
-                    string output = proc.StandardOutput.ReadToEnd().Trim(Environment.NewLine.ToCharArray());
-                    if (i > 0) // trim header since we need it only once
-                    {
-                        output = output.Substring(output.IndexOf('\n') + 1);
+                        var serializer = StartupSerializersToTest[i];
+                        // Spawn new process for each serializer to measure each serializer overhead in isolation 
+                        var startArgs = new ProcessStartInfo(Assembly.GetEntryAssembly().Location.Replace(".dll", ".exe"), String.Join(" ", Environment.GetCommandLineArgs().Skip(1)) + $" -serializer #{GetSimpleTypeName(serializer.GetType())}")
+                        {
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                        };
+                        Process proc = Process.Start(startArgs);
+                        // trim newline of newly started process
+                        output = proc.StandardOutput.ReadToEnd().Trim(Environment.NewLine.ToCharArray());
+                        if (i > 0) // trim header since we need it only once
+                        {
+                            output = output.Substring(output.IndexOf('\n') + 1);
+                        }
+                        proc.WaitForExit();
                     }
                     Console.WriteLine(output);
-                    proc.WaitForExit();
                 }
             }
         }
@@ -620,6 +634,17 @@ namespace SerializerTests
 
             return null;
         }
+
+        public string Next()
+        {
+            if (Args.Count > 0)
+            {
+                return Args.Dequeue();
+            }
+
+            return null;
+        }
+
 
         private bool IsNGenned()
         {

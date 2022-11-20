@@ -1,8 +1,6 @@
 @echo off 
 setlocal enabledelayedexpansion
 
-REM By default use the latest one from the Windows SDK
-set WPRLocation=C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\wpr.exe
 
 if "%1" EQU "-profile" (
 	set ProfilingEnabled=1
@@ -14,21 +12,24 @@ set PayloadDataSize=%2
 if "!PayloadDataSize!" EQU "" set PayloadDataSize=0
 
 cmd /C NGen.cmd 
-SerializerTests.exe -test firstcall -nongenwarn -bookdatasize !PayloadDataSize! > Startup_NoNGen.csv
+SerializerTests.exe -test firstcall -nongenwarn -bookdatasize !PayloadDataSize! -scenario NoNgen > SerializationPerf.csv
 cmd /C Ngen.cmd -install
-SerializerTests.exe -test firstcall -nongenwarn -bookdatasize !PayloadDataSize! > Startup_NGen.csv
+
+call Profile.cmd -start
+
+SerializerTests.exe -test firstcall -nongenwarn -bookdatasize !PayloadDataSize! -scenario Ngen >> SerializationPerf.csv
+
+call Profile.cmd -stop c:\temp\SerializeTests_Startup.etl
+
+
 set Runs=%1
 if "!Runs!" EQU "" set Runs=3
 
-echo Running Test !Runs! times with PayloadSize=!PayloadDataSize!
+echo Running Test !Runs! times with PayloadSize=!PayloadDataSize!, Additional Arguments: !AdditionalArgs!
 
-if "%ProfilingEnabled%" EQU "1" (
-	"!WPRLocation!" -start MultiProfile.wprp^^!CSwitch -start MultiProfile.wprp^^!File
-)
+call Profile.cmd -start
 
-SerializerTests.exe -test combined -Runs !Runs! -bookdatasize !PayloadDataSize! > SerializationPerf.csv
+SerializerTests.exe -test combined -Runs !Runs! -bookdatasize !PayloadDataSize! -scenario Combined !AdditionalArgs! >> SerializationPerf.csv
 
-if "%ProfilingEnabled%" EQU "1" (
-	"!WPRLocation!" -stop c:\temp\SerializeTests.etl
-)
+call Profile -stop c:\temp\SerializeTests.etl
 

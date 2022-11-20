@@ -79,6 +79,7 @@ namespace SerializerTests
 
         int Runs = 5;
         public int BookDataSize = 0;
+        bool IsNGenWarn = true;
         bool VerifyAndTouch = false;
         bool TestReferenceTracking = false;
         int[] NObjectsToDeSerialize = null;
@@ -484,6 +485,9 @@ namespace SerializerTests
                     case "-bookdatasize":
                         BookDataSize = int.Parse(NextLower());
                         break;
+                    case "-nongenwarn":
+                        IsNGenWarn = false;
+                        break;
                     default:
                         throw new NotSupportedException($"Argument {curArg} is not valid");
                 }
@@ -533,7 +537,7 @@ namespace SerializerTests
             {
             }
 
-            if (!IsNGenned())
+            if (IsNGenWarn && !IsNGenned())
             {
                 Console.WriteLine("Warning: Not NGenned! Results may not be accurate in your target deployment.");
                 Console.WriteLine(@"Please execute Ngen.cmd install as Administrator to Ngen all dlls.");

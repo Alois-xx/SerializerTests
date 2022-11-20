@@ -15,3 +15,6 @@
 *.bin
 /SerializerTestResults
 
+/Properties/PublishProfiles/Net70ReadyToRun.pubxml.user
+/Properties/PublishProfiles/NetCore31ReadyToRun.pubxml.user
+/Properties/PublishProfiles/Net50ReadyToRun.pubxml.user

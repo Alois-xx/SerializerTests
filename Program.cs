@@ -5,7 +5,6 @@ using SerializerTests.TypesToSerialize;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -125,8 +124,8 @@ namespace SerializerTests
 #endif
 
 #if (NETCOREAPP3_0_OR_GREATER)
-                new MemoryPack<BookShelf>(Data, TouchAndVerify),
-                new SerializerTests.Serializers.BinaryPack<BookShelf>(Data, TouchAndVerify),
+                //new MemoryPack<BookShelf>(Data, TouchAndVerify),
+                //new SerializerTests.Serializers.BinaryPack<BookShelf>(Data, TouchAndVerify),
 #endif
 
                 new Ceras<BookShelf>(Data, TouchAndVerify),
@@ -230,15 +229,15 @@ namespace SerializerTests
 #endif
 
 #if (NETCOREAPP3_0_OR_GREATER)
-                new MemoryPack<BookShelf>(Data, null),
-                new MemoryPack<BookShelf1>(Data1, null),
-                new MemoryPack<BookShelf2>(Data2, null),
-                new MemoryPack<LargeBookShelf>(DataLarge, null),
+                //new MemoryPack<BookShelf>(Data, null),
+                //new MemoryPack<BookShelf1>(Data1, null),
+                //new MemoryPack<BookShelf2>(Data2, null),
+                //new MemoryPack<LargeBookShelf>(DataLarge, null),
 
-                new SerializerTests.Serializers.BinaryPack<BookShelf>(Data, null),
-                new SerializerTests.Serializers.BinaryPack<BookShelf1>(Data1, null),
-                new SerializerTests.Serializers.BinaryPack<BookShelf2>(Data2, null),
-                new SerializerTests.Serializers.BinaryPack<LargeBookShelf>(DataLarge, null),
+                //new SerializerTests.Serializers.BinaryPack<BookShelf>(Data, null),
+                //new SerializerTests.Serializers.BinaryPack<BookShelf1>(Data1, null),
+                //new SerializerTests.Serializers.BinaryPack<BookShelf2>(Data2, null),
+                //new SerializerTests.Serializers.BinaryPack<LargeBookShelf>(DataLarge, null),
 #endif
 
                 new ServiceStack<BookShelf>(Data, null),

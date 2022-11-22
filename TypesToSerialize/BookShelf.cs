@@ -1,7 +1,5 @@
 ﻿#if NETCOREAPP3_0_OR_GREATER
-using BinaryPack.Attributes;
-using BinaryPack.Enums;
-using MemoryPack;
+
 #endif
 using MessagePack;
 using ProtoBuf;
@@ -16,7 +14,7 @@ namespace SerializerTests.TypesToSerialize
 {
     [Serializable, DataContract, ProtoContract, MessagePackObject
 #if NETCOREAPP3_0_OR_GREATER
-        , MemoryPackable, BinarySerialization(SerializationMode.Properties | SerializationMode.NonPublicMembers)
+       
 #endif
         ]
     public partial class BookShelf
@@ -37,7 +35,7 @@ namespace SerializerTests.TypesToSerialize
             Secret = secret;
         }
 #if NETCOREAPP3_0_OR_GREATER
-        [MemoryPackConstructor]
+       
 #endif
         public BookShelf() // Parameterless ctor is needed for every protocol buffer class during deserialization
         {
@@ -46,7 +44,7 @@ namespace SerializerTests.TypesToSerialize
 
     [Serializable, DataContract, ProtoContract, MessagePackObject
 #if NETCOREAPP3_0_OR_GREATER
-        , MemoryPackable, BinarySerialization(SerializationMode.AllMembers)
+     
 #endif
         ]
     public partial class Book

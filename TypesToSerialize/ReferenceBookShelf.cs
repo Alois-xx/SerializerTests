@@ -1,5 +1,4 @@
 ﻿#if NETCOREAPP3_0_OR_GREATER
-using MemoryPack;
 #endif
 using MessagePack;
 using ProtoBuf;
@@ -13,7 +12,6 @@ namespace SerializerTests.TypesToSerialize
 {
     [Serializable, MessagePackObject, ZeroFormattable, DataContract
 #if NETCOREAPP3_0_OR_GREATER
-        , MemoryPackable
 #endif
     ]
     public partial class ReferenceBookShelf
@@ -25,7 +23,6 @@ namespace SerializerTests.TypesToSerialize
 
     [Serializable, MessagePackObject, ZeroFormattable, DataContract
 #if NETCOREAPP3_0_OR_GREATER
-        , MemoryPackable
 #endif
     ]
     public partial class ReferenceBook

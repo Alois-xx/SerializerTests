@@ -1,5 +1,4 @@
 ﻿#if NETCOREAPP3_0_OR_GREATER
-using MemoryPack;
 #endif
 using MessagePack;
 using ProtoBuf;
@@ -14,7 +13,7 @@ namespace SerializerTests.TypesToSerialize
 {
     [Serializable, DataContract, ProtoContract, MessagePackObject
 #if NETCOREAPP3_0_OR_GREATER
-        , MemoryPackable
+        
 #endif
     ]
     public partial class LargeBookShelf
@@ -88,7 +87,6 @@ namespace SerializerTests.TypesToSerialize
             Secret = secret;
         }
 #if NETCOREAPP3_0_OR_GREATER
-        [MemoryPackConstructor]
 #endif
         public LargeBookShelf() // Parameterless ctor is needed for every protocol buffer class during deserialization
         { }
@@ -98,7 +96,6 @@ namespace SerializerTests.TypesToSerialize
 
     [Serializable, DataContract, ProtoContract, MessagePackObject
 #if NETCOREAPP3_0_OR_GREATER
-        , MemoryPackable
 #endif
     ]
     public partial class LargeBook

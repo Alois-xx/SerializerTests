@@ -181,7 +181,7 @@ namespace SerializerTests
                 new Utf8JsonSerializer<BookShelf>(Data, TouchAndVerify),
                 new MessagePackSharp<BookShelf>(Data, TouchAndVerify),
                 new GroBuf<BookShelf>(Data, TouchAndVerify),
-                new FlatBuffer<BookShelfFlat>(DataFlat, TouchFlat),
+                new FlatBuffer<BookShelf,BookShelfFlat>(Data, TouchFlat),
 #if NET472
                 // Hyperion does not work on .NET Core 3.0  https://github.com/akkadotnet/Hyperion/issues/111
                 // new Hyperion<BookShelf>(Data, Touch),

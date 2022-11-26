@@ -22,21 +22,21 @@ namespace SerializerTests
             For the default settings you need only to override Serialize and Deserialize and call your formatter. The serializer type argument
             is used to print out the assembly version of your serializer. You can use any type of the declaring assembly.
 
-            public class BinaryFormatter<T> : TestBase<T, System.Runtime.Serialization.Formatters.Binary.BinaryFormatter> where T : class
+            public class BinaryFormatter<TSerialize> : TestBase<TSerialize, TSerialize, System.Runtime.Serialization.Formatters.Binary.BinaryFormatter> where TSerialize : class
             {
-                public BinaryFormatter(Func<int,T> testData, Action<T> toucher):base(testData, toucher)
+                public BinaryFormatter(Func<int,T> testData, Action<TSerialize> toucher):base(testData, toucher)
                 {
                     FormatterFactory = () => new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 }
 
-                protected override void Serialize(T obj, Stream stream)
+                protected override void Serialize(TSerialize obj, Stream stream)
                 {
                     Formatter.Serialize(stream, obj);
                 }
 
-                protected override T Deserialize(Stream stream)
+                protected override TSerialize Deserialize(Stream stream)
                 {
-                    return (T)Formatter.Deserialize(stream);
+                    return (TSerialize)Formatter.Deserialize(stream);
                 }
            }
 

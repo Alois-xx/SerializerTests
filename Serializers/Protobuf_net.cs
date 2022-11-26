@@ -15,23 +15,23 @@ namespace SerializerTests
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/mgravell/protobuf-net",
                     SerializerTypes.Binary | SerializerTypes.ProtocolProtobuf | SerializerTypes.SupportsVersioning)]
-    public class Protobuf_net<T> : TestBase<T, RuntimeTypeModel> where T : class
+    public class Protobuf_net<TSerialize> : TestBase<TSerialize, TSerialize, RuntimeTypeModel> where TSerialize : class
     {
-        public Protobuf_net(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public Protobuf_net(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
             FormatterFactory = () => RuntimeTypeModel.Create();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             Formatter.Serialize(stream, obj);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            return (T)Formatter.Deserialize(stream, null, typeof(T));
+            return (TSerialize)Formatter.Deserialize(stream, null, typeof(TSerialize));
         }
     }
 }

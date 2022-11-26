@@ -13,22 +13,22 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/neuecc/Utf8Json", 
                      SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
-    class Utf8JsonSerializer<T> : TestBase<T, IJsonFormatter<T>> where T : class
+    class Utf8JsonSerializer<TSerialize> : TestBase<TSerialize, TSerialize, IJsonFormatter<TSerialize>> where TSerialize : class
 	{
-		public Utf8JsonSerializer(Func<int, T> testData, Action<T,int,int> touchAndVerify, bool refTracking = false) : base(testData, touchAndVerify, refTracking)
+		public Utf8JsonSerializer(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify, bool refTracking = false) : base(testData, touchAndVerify, refTracking)
 		{
 		}
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
 		{
 			JsonSerializer.Serialize(stream, obj);
 		}
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
 		{
-			return JsonSerializer.Deserialize<T>(stream);
+			return JsonSerializer.Deserialize<TSerialize>(stream);
 		}
 	}
 }

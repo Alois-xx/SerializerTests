@@ -11,27 +11,34 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://google.github.io/flatbuffers/",
                     SerializerTypes.Binary | SerializerTypes.SupportsVersioning)]
-    class FlatBuffer<T> : TestBase<BookShelfFlat, ByteBuffer>
+    class FlatBuffer<TSerialize> : TestBase<TSerialize, TSerialize, ByteBuffer>
     {
-        public FlatBuffer(Func<int, BookShelfFlat> testData, Action<BookShelfFlat,int,int> touchAndVerify):base(testData, touchAndVerify)
+        public FlatBuffer(Func<int, TSerialize> testData, Action<TSerialize, int,int> touchAndVerify):base(testData, touchAndVerify)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(BookShelfFlat obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
-            stream.Write(obj.ByteBuffer.ToFullArray(), obj.ByteBuffer.Position, obj.ByteBuffer.Length - obj.ByteBuffer.Position);
+            if(obj is BookShelfFlat bookShelf)
+            {
+                stream.Write(bookShelf.ByteBuffer.ToFullArray(), bookShelf.ByteBuffer.Position, bookShelf.ByteBuffer.Length - bookShelf.ByteBuffer.Position);
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override BookShelfFlat Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
             MemoryStream mem = new MemoryStream();
             // Since flatbuffers do not support memory streams we have to copy here
             stream.CopyTo(mem);
             byte[] data = mem.ToArray();
             var bookShelf = BookShelfFlat.GetRootAsBookShelfFlat(new ByteBuffer(data));
-            return bookShelf;
+            return (TSerialize) (object) bookShelf;
         }
     }
 }

@@ -11,23 +11,23 @@ namespace SerializerTests.Serializers
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/Sergio0694/BinaryPack", SerializerTypes.Binary)]
-    class BinaryPack<T> : TestBase<T, Program> where T : class, new()
+    class BinaryPack<TSerialize> : TestBase<TSerialize, TSerialize, Program> where TSerialize : class, new()
     {
 
-        public BinaryPack(Func<int, T> testData, Action<T, int, int> touchAndVerify) : base(testData, touchAndVerify)
+        public BinaryPack(Func<int, TSerialize> testData, Action<TSerialize, int, int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             BinaryConverter.Serialize(obj, stream);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            return BinaryConverter.Deserialize<T>(stream);
+            return BinaryConverter.Deserialize<TSerialize>(stream);
         }
     }
 }

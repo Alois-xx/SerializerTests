@@ -14,22 +14,22 @@ namespace SerializerTests.Serializers
     /// https://github.com/neuecc/ZeroFormatter
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class ZeroFormatter<T> : TestBase<T, ZeroFormattableAttribute>
+    internal class ZeroFormatter<TSerialize> : TestBase<TSerialize, TSerialize, ZeroFormattableAttribute>
     {
-        public ZeroFormatter(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public ZeroFormatter(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            return ZeroFormatterSerializer.Deserialize<T>(stream);
+            return ZeroFormatterSerializer.Deserialize<TSerialize>(stream);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
-            ZeroFormatterSerializer.Serialize<T>(stream, obj);
+            ZeroFormatterSerializer.Serialize<TSerialize>(stream, obj);
         }
     }
 }

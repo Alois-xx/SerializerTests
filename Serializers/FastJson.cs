@@ -10,14 +10,14 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/mgholam/fastJSON/",
                     SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
-    class FastJson<T> : TestBase<T, fastJSON.JSONParameters> where T : class
+    class FastJson<TSerialize> : TestBase<TSerialize, TSerialize, fastJSON.JSONParameters> where TSerialize : class
     {
-        public FastJson(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public FastJson(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             var text = new StreamWriter(stream);
             var jsonString = fastJSON.JSON.ToJSON(obj);
@@ -26,12 +26,12 @@ namespace SerializerTests.Serializers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
             // FastJson does not support reading from stream ... but it is much slower anyway so this does not cost much
             TextReader text = new StreamReader(stream);
             string fullText = text.ReadToEnd();
-            var lret = fastJSON.JSON.ToObject<T>(fullText);
+            var lret = fastJSON.JSON.ToObject<TSerialize>(fullText);
             return lret;
         }
     }

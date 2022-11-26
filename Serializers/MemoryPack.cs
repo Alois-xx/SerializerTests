@@ -16,14 +16,14 @@ namespace SerializerTests.Serializers
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/Cysharp/MemoryPack", SerializerTypes.Binary | SerializerTypes.SupportsVersioning)]
-    public class MemoryPack<T> : TestBase<T, string> where T : class
+    public class MemoryPack<TSerialize> : TestBase<TSerialize, TSerialize, string> where TSerialize : class
     {
-        public MemoryPack(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public MemoryPack(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             var valueTask = MemoryPackSerializer.SerializeAsync(stream, obj);
             valueTask.GetAwaiter().GetResult();
@@ -34,9 +34,9 @@ namespace SerializerTests.Serializers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            var valueTask = MemoryPackSerializer.DeserializeAsync<T>(stream);
+            var valueTask = MemoryPackSerializer.DeserializeAsync<TSerialize>(stream);
             valueTask.GetAwaiter().GetResult();
             if (!valueTask.IsCompletedSuccessfully)
             {

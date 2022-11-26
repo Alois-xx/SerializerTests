@@ -14,17 +14,17 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/azist/azos/tree/master/src/Azos/Serialization/Slim",
                     SerializerTypes.Binary)]
-    class SlimSerializer<T> : TestBase<T, SlimSerializer> where T:class
+    class SlimSerializer<TSerialize> : TestBase<TSerialize, TSerialize, SlimSerializer> where TSerialize : class
     {
        
-        public SlimSerializer(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public SlimSerializer(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         { 
             FormatterFactory = () =>
             {
               var types = Assembly.GetExecutingAssembly()
                                   .GetTypes()
                                   .Where(t => t.IsClass && t.Namespace == "SerializerTests.TypesToSerialize")
-                                  .SelectMany(t => makeVariations(t));
+                                  .SelectMany(t => makeVariations(typeof(TSerialize)));
 
               var result = new SlimSerializer( types );
               //Enable Batch mode for streaming messages, in that case the deserializing serializer has to be a different instance
@@ -39,17 +39,17 @@ namespace SerializerTests.Serializers
         {
           yield return t;
           yield return t.MakeArrayType();
-          yield return typeof(List<>).MakeGenericType(t);
+          yield return typeof(List<>).MakeGenericType(typeof(TSerialize));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            return (T) Formatter.Deserialize(stream);
+            return (TSerialize) Formatter.Deserialize(stream);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             Formatter.Serialize(stream, obj);
         }

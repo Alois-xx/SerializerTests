@@ -14,13 +14,13 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("", SerializerTypes.Binary)]
     [IgnoreSerializeTimeAttribute("The data is prepared in the Serialize method for the deserialize call. Ignore it to not confuse users.")]
-    class AllocPerf<T> : TestBase<T, Program> where T : class
+    class AllocPerf<TSerialize> : TestBase<TSerialize, TSerialize, Program> where TSerialize : class
     {
         int myCount = 0;
         List<uint> myStartIdxAndLength = new List<uint>();
         byte[] myUtf8Data = null;
 
-        public AllocPerf(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public AllocPerf(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 
@@ -30,7 +30,7 @@ namespace SerializerTests.Serializers
         /// <param name="obj"></param>
         /// <param name="stream"></param>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             if( obj is BookShelf shelf)
             {
@@ -54,10 +54,10 @@ namespace SerializerTests.Serializers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            T lret = default;
-            if( typeof(BookShelf) == typeof(T) )
+            TSerialize lret = default;
+            if( typeof(BookShelf) == typeof(TSerialize) )
             {
                 var tmp = new BookShelf("This is secret")
                 {
@@ -77,7 +77,7 @@ namespace SerializerTests.Serializers
                     });
                 }
 
-                lret = (T) (object) tmp;
+                lret = (TSerialize) (object) tmp;
             }
             else
             {

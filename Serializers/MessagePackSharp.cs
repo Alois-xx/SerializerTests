@@ -15,23 +15,23 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/neuecc/MessagePack-CSharp",
                     SerializerTypes.Binary | SerializerTypes.ProtocolMessagePack | SerializerTypes.SupportsVersioning)]
-    public class MessagePackSharp<T> : TestBase<T, MessagePack.IFormatterResolver> where T : class
+    public class MessagePackSharp<TSerialize> : TestBase<TSerialize, TSerialize, MessagePack.IFormatterResolver> where TSerialize : class
     {
-        public MessagePackSharp(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public MessagePackSharp(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
             FormatterFactory = () => MessagePack.Resolvers.StandardResolver.Instance;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
-            MessagePackSerializer.Serialize(typeof(T), stream, obj);
+            MessagePackSerializer.Serialize(typeof(TSerialize), stream, obj);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            return MessagePackSerializer.Deserialize<T>(stream);
+            return MessagePackSerializer.Deserialize<TSerialize>(stream);
         }
     }
 }

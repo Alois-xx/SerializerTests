@@ -15,23 +15,23 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://docs.microsoft.com/en-us/dotnet/api/system.xml.serialization.xmlserializer", 
                     SerializerTypes.Xml | SerializerTypes.SupportsVersioning)]
-    public class XmlSerializer<T> : TestBase<T, System.Xml.Serialization.XmlSerializer> where T : class
+    public class XmlSerializer<TSerialize> : TestBase<TSerialize, TSerialize, System.Xml.Serialization.XmlSerializer> where TSerialize : class
     {
-        public XmlSerializer(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public XmlSerializer(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
-            FormatterFactory = () => new System.Xml.Serialization.XmlSerializer(typeof(T));
+            FormatterFactory = () => new System.Xml.Serialization.XmlSerializer(typeof(TSerialize));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             Formatter.Serialize(stream, obj);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            return (T)Formatter.Deserialize(stream);
+            return (TSerialize)Formatter.Deserialize(stream);
         }
     }
 }

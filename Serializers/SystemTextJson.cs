@@ -13,7 +13,7 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0 See Fast built-in JSON support",
                     SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
-    class SystemTextJson<T> : TestBase<T, JsonSerializerOptions>
+    class SystemTextJson<TSerialize> : TestBase<TSerialize, TSerialize, JsonSerializerOptions>
     {
         // Enable support for public fields which are only supported since .NET 5.0
         JsonSerializerOptions myOptions =
@@ -23,20 +23,20 @@ namespace SerializerTests.Serializers
       new JsonSerializerOptions {  };
 #endif
 
-        public SystemTextJson(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public SystemTextJson(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             JsonSerializer.SerializeAsync(stream, obj, myOptions).Wait();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            return (T) JsonSerializer.DeserializeAsync(stream, typeof(T), myOptions).Result;
+            return (TSerialize) JsonSerializer.DeserializeAsync(stream, typeof(TSerialize), myOptions).Result;
         }
     }
 }

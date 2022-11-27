@@ -12,28 +12,28 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/msgpack/msgpack-cli",
                     SerializerTypes.Binary | SerializerTypes.ProtocolMessagePack | SerializerTypes.SupportsVersioning)]
-    class MsgPack_Cli<T> : TestBase<T, MessagePackSerializer> where T : class
+    class MsgPack_Cli<TSerialize> : TestBase<TSerialize, TSerialize, MessagePackSerializer> where TSerialize : class
     {
-        public MsgPack_Cli(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public MsgPack_Cli(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
             FormatterFactory = () =>
             {
-                var lret = MessagePackSerializer.Get<T>(); 
+                var lret = MessagePackSerializer.Get<TSerialize>(); 
                 return lret;
             };
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             // Creates serializer.
             Formatter.Pack(stream, obj);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            return (T) Formatter.Unpack(stream);
+            return (TSerialize) Formatter.Unpack(stream);
         }
     }
 }

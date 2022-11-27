@@ -23,11 +23,11 @@ namespace SerializerTests
         void ReleaseMemory();
     }
 
-    public abstract class TestBase<T, F> : ISerializeDeserializeTester where F : class
+    public abstract class TestBase<TSerialize, TDeserialize, F> : ISerializeDeserializeTester where F : class
     {
         string FileBaseName = "Serialized_";
 
-        protected Func<int, T> CreateNTestData;
+        protected Func<int, TSerialize> CreateNTestData;
 
         /// <summary>
         /// Configurable payload byte array to Book objects which is reflected in serialized file names
@@ -72,9 +72,9 @@ namespace SerializerTests
 
         int ObjectsCreated = 0;
 
-        T DefaultTestData = default(T);
+        TSerialize DefaultTestData = default(TSerialize);
 
-        protected T TestData
+        protected TSerialize TestData
         {
             get
             {
@@ -123,21 +123,22 @@ namespace SerializerTests
         /// <param name="testData">Delegate to create test data to serialize</param>
         /// <param name="touchAndVerify">Data toucher after deserialization</param>
         /// <param name="refTracking">If true serializer is instantiated with Reference Tracking</param>
-        protected TestBase(Func<int, T> testData, Action<T,int,int> touchAndVerify, bool refTracking=false)
+        protected TestBase(Func<int, TSerialize> testData, Action<TDeserialize, int,int> touchAndVerify, bool refTracking=false)
         {
             RefTracking = refTracking;
             CreateNTestData = testData;
             TouchAndVerify = touchAndVerify;
         }
 
-        protected Action<T,int,int> TouchAndVerify;
+        protected Action<TDeserialize, int,int> TouchAndVerify;
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected abstract void Serialize(T obj, Stream stream);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        protected abstract T Deserialize(Stream stream);
+        protected abstract void Serialize(TSerialize obj, Stream stream);
 
-        protected Func<MemoryStream, T> CustomDeserialize;
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected abstract TDeserialize Deserialize(Stream stream);
+
+        protected Func<MemoryStream, TDeserialize> CustomDeserialize;
         protected Action<MemoryStream> CustomSerialize;
 
         MemoryStream myStream;
@@ -237,7 +238,7 @@ namespace SerializerTests
             var times = Test(nTimes, () =>
             {
                 var dataStream = GetMemoryStream();
-                TestDeserializeOnlyAndTouch(dataStream, nObjectsToCreate, out T deserialized);
+                TestDeserializeOnlyAndTouch(dataStream, nObjectsToCreate, out TDeserialize deserialized);
             }, isSerialize:false);
 
 
@@ -250,7 +251,7 @@ namespace SerializerTests
         /// </summary>
         /// <param name="dataStream"></param>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void TestDeserializeOnlyAndTouch(MemoryStream dataStream, int nExpectedObjects, out T deserialized)
+        private void TestDeserializeOnlyAndTouch(MemoryStream dataStream, int nExpectedObjects, out TDeserialize deserialized)
         {
 
             if (CustomDeserialize == null)
@@ -267,7 +268,7 @@ namespace SerializerTests
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void TouchDataNoInline(ref T deserialized, int nExpectedObjects)
+        private void TouchDataNoInline(ref TDeserialize deserialized, int nExpectedObjects)
         {
             TouchAndVerify?.Invoke(deserialized, nExpectedObjects, OptionalBytePayloadSize); // touch data and verify if deserialized contents are there
         }
@@ -323,7 +324,7 @@ namespace SerializerTests
 
         static void TestDurationThread(object o)
         {
-            TestBase<T, F> testbase = (TestBase<T, F>)o;
+            TestBase<TSerialize, TDeserialize, F> testbase = (TestBase<TSerialize, TDeserialize, F>)o;
 
             while (true)
             {

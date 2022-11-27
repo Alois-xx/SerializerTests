@@ -10,22 +10,22 @@ namespace SerializerTests.Serializers
 
     [SerializerType("https://github.com/Dogwei/Swifter.Json",
                     SerializerTypes.Json)]
-    class SwifterJson<T> : TestBase<T, JsonFormatter>
+    class SwifterJson<TSerialize> : TestBase<TSerialize, TSerialize, JsonFormatter>
     {
-        public SwifterJson(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public SwifterJson(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             JsonFormatter.SerializeObjectAsync(obj, stream, Encoding.UTF8).AsTask().Wait();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            return JsonFormatter.DeserializeObjectAsync<T>(stream, Encoding.UTF8).Result;
+            return JsonFormatter.DeserializeObjectAsync<TSerialize>(stream, Encoding.UTF8).Result;
         }
     }
 }

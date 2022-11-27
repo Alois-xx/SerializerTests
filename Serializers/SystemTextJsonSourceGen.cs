@@ -28,14 +28,14 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/source-generation See docu for Source Generators",
                     SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
-    class SystemTextJsonSourceGen<T> : TestBase<T, JsonSerializerOptions>
+    class SystemTextJsonSourceGen<TSerialize> : TestBase<TSerialize, TSerialize, JsonSerializerOptions>
     {
-        public SystemTextJsonSourceGen(Func<int, T> testData, Action<T, int, int> touchAndVerify) : base(testData, touchAndVerify)
+        public SystemTextJsonSourceGen(Func<int, TSerialize> testData, Action<TSerialize, int, int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             // Use overload which uses precompiled serialization code
             string dat = JsonSerializer.Serialize(obj, MyJsonContext.Default.Options);
@@ -50,29 +50,29 @@ namespace SerializerTests.Serializers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
             // Currently we need to use the MetaData approach for deserialization. 
             // Precompiled Deserialization seems not to be supported yet? 
 
-            if (typeof(T) == typeof(BookShelf))
+            if (typeof(TSerialize) == typeof(BookShelf))
             {
-                return (T) (object) JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf);
+                return (TSerialize) (object) JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf);
             }
-            else if (typeof(T) == typeof(BookShelf1))
+            else if (typeof(TSerialize) == typeof(BookShelf1))
             {
-                return (T) JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf1.Type, MyJsonContext.Default);
+                return (TSerialize) JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf1.Type, MyJsonContext.Default);
             }
-            else if (typeof(T) == typeof(BookShelf2))
+            else if (typeof(TSerialize) == typeof(BookShelf2))
             {
-                return (T) JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf2.Type, MyJsonContext.Default);
+                return (TSerialize) JsonSerializer.Deserialize(stream, MyJsonContext.Default.BookShelf2.Type, MyJsonContext.Default);
             }
-            else if (typeof(T) == typeof(LargeBookShelf))
+            else if (typeof(TSerialize) == typeof(LargeBookShelf))
             {
-                return (T)JsonSerializer.Deserialize(stream, MyJsonContext.Default.LargeBookShelf.Type, MyJsonContext.Default);
+                return (TSerialize)JsonSerializer.Deserialize(stream, MyJsonContext.Default.LargeBookShelf.Type, MyJsonContext.Default);
             }
 
-            throw new NotSupportedException($"No source generator for type {typeof(T).Name} declared.");
+            throw new NotSupportedException($"No source generator for type {typeof(TSerialize).Name} declared.");
 
         }
     }

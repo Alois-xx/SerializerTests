@@ -64,7 +64,7 @@
     <PackageReference Include="Hyperion" Version="0.12.2" />
     <PackageReference Include="Jil" Version="2.17.0" />
     <PackageReference Include="KdSoft.FlatBuffers" Version="1.12.0" />
-    <PackageReference Include="MemoryPack" Version="1.4.4" />
+    <PackageReference Include="MemoryPack" Version="1.8.10" />
     <PackageReference Include="MessagePack" Version="2.4.35" />
     <PackageReference Include="MsgPack.Cli" Version="1.0.1" />
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />

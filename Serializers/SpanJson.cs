@@ -10,22 +10,22 @@ namespace SerializerTests.Serializers
 
     [SerializerType("https://github.com/Tornhoof/SpanJson",
                     SerializerTypes.Json)]
-    class SpanJson<T> : TestBase<T, SpanJsonOptions>
+    class SpanJson<TSerialize> : TestBase<TSerialize, TSerialize, SpanJsonOptions>
     {
-        public SpanJson(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public SpanJson(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             JsonSerializer.Generic.Utf8.SerializeAsync(obj, stream).GetAwaiter().GetResult();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            return JsonSerializer.Generic.Utf8.DeserializeAsync<T>(stream).Result;
+            return JsonSerializer.Generic.Utf8.DeserializeAsync<TSerialize>(stream).Result;
         }
     }
 }

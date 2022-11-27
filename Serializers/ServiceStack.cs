@@ -11,22 +11,22 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/ServiceStack/ServiceStack.Text",
                     SerializerTypes.Json | SerializerTypes.SupportsVersioning)]
-    class ServiceStack<T> : TestBase<T, Tracer> where T : class
+    class ServiceStack<TSerialize> : TestBase<TSerialize, TSerialize, Tracer> where TSerialize : class
     {
-        public ServiceStack(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public ServiceStack(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
-            JsonSerializer.SerializeToStream<T>(obj, stream);
+            JsonSerializer.SerializeToStream<TSerialize>(obj, stream);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            return JsonSerializer.DeserializeFromStream<T>(stream);
+            return JsonSerializer.DeserializeFromStream<TSerialize>(stream);
         }
     }
 }

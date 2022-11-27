@@ -3,18 +3,19 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Xml;
 using System.Runtime.CompilerServices;
+using static fastJSON.Reflection;
 
 namespace SerializerTests.Serializers
 {
     [SerializerType("https://docs.microsoft.com/en-us/dotnet/api/system.runtime.serialization.datacontractserializer",
                     SerializerTypes.Xml | SerializerTypes.SupportsVersioning)]
-    class DataContractIndented<T> : TestBase<T, DataContractSerializer> where T : class
+    class DataContractIndented<TSerialize> : TestBase<TSerialize, TSerialize, DataContractSerializer> where TSerialize : class
     {
-        public DataContractIndented(Func<int, T> testData, Action<T,int,int> touchAndVerify, bool refTracking = false) : base(testData, touchAndVerify, refTracking)
+        public DataContractIndented(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify, bool refTracking = false) : base(testData, touchAndVerify, refTracking)
         {
             base.CustomSerialize = SerializeXmlIndented;
             base.CustomDeserialize = DeserializeXmlIndented;
-            FormatterFactory = () => new DataContractSerializer(typeof(T), new DataContractSerializerSettings
+            FormatterFactory = () => new DataContractSerializer(typeof(TSerialize), new DataContractSerializerSettings
                                                                           { PreserveObjectReferences = RefTracking });
         }
 
@@ -27,20 +28,20 @@ namespace SerializerTests.Serializers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        T DeserializeXmlIndented(MemoryStream stream)
+        TSerialize DeserializeXmlIndented(MemoryStream stream)
         {
             var xmlReader = XmlReader.Create(stream);
-            T deserialized = (T)Formatter.ReadObject(xmlReader);
+            TSerialize deserialized = (TSerialize)Formatter.ReadObject(xmlReader);
             return deserialized;
         }
 
 
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
             throw new NotImplementedException();
         }
 
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
             throw new NotImplementedException();
         }

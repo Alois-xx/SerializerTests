@@ -16,23 +16,23 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/salarcode/Bois",
                     SerializerTypes.Binary)]
-    class Bois<T> : TestBase<T, BoisSerializer>
+    class Bois<TSerialize> : TestBase<TSerialize, TSerialize, BoisSerializer>
     {
         new BoisSerializer Formatter = new BoisSerializer();
-        public Bois(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+        public Bois(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(T obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
-            Formatter.Serialize<T>(obj, stream);
+            Formatter.Serialize<TSerialize>(obj, stream);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override T Deserialize(Stream stream)
+        protected override TSerialize Deserialize(Stream stream)
         {
-            return Formatter.Deserialize<T>(stream);
+            return Formatter.Deserialize<TSerialize>(stream);
         }
     }
 
@@ -42,23 +42,23 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/salarcode/Bois",
 	    SerializerTypes.Binary)]
-    class Bois_LZ4<T> : TestBase<T, BoisLz4Serializer>
+    class Bois_LZ4<TSerialize> : TestBase<TSerialize, TSerialize, BoisLz4Serializer>
     {
 	    new BoisLz4Serializer Formatter = new BoisLz4Serializer();
-	    public Bois_LZ4(Func<int, T> testData, Action<T,int,int> touchAndVerify) : base(testData, touchAndVerify)
+	    public Bois_LZ4(Func<int, TSerialize> testData, Action<TSerialize,int,int> touchAndVerify) : base(testData, touchAndVerify)
 	    {
 	    }
 
 	    [MethodImpl(MethodImplOptions.NoInlining)]
-	    protected override void Serialize(T obj, Stream stream)
+	    protected override void Serialize(TSerialize obj, Stream stream)
 	    {
 		    Formatter.Pickle(obj, stream);
 	    }
 
 	    [MethodImpl(MethodImplOptions.NoInlining)]
-	    protected override T Deserialize(Stream stream)
+	    protected override TSerialize Deserialize(Stream stream)
 	    {
-		    return Formatter.Unpickle<T>(stream);
+		    return Formatter.Unpickle<TSerialize>(stream);
 	    }
     }
 

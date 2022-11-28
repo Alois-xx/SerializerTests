@@ -31,11 +31,8 @@ namespace SerializerTests.Serializers
 
             this.TranslateObject((BookShelf)(object)obj, ms);
 
-            var serializer = BookShelfFlatSharp.Serializer;
-            var shelf = this.fsShelf;
-
             // Write to the underlying buffer.
-            int bytesWritten = serializer.Write(ms.GetBuffer(), shelf);
+            int bytesWritten = BookShelfFlatSharp.Serializer.Write(ms.GetBuffer(), this.fsShelf);
 
             // Update the buffer to indicate how many bytes were written.
             ms.Position = bytesWritten;

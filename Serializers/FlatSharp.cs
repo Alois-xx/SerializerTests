@@ -27,15 +27,12 @@ namespace SerializerTests.Serializers
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected override void Serialize(TSerialize obj, Stream stream)
         {
-            this.TranslateObject((BookShelf)(object)obj);
-
             MemoryStream ms = (MemoryStream)stream;
+
+            this.TranslateObject((BookShelf)(object)obj, ms);
 
             var serializer = BookShelfFlatSharp.Serializer;
             var shelf = this.fsShelf;
-
-            // Expand size if necessary.
-            ms.SetLength(serializer.GetMaxSize(shelf));
 
             // Write to the underlying buffer.
             int bytesWritten = serializer.Write(ms.GetBuffer(), shelf);
@@ -50,7 +47,7 @@ namespace SerializerTests.Serializers
         /// Note: since this translation process is expensive (and not part of the benchmark),
         /// only do this once per unique BookShelf.
         /// </summary>
-        private void TranslateObject(BookShelf obj)
+        private void TranslateObject(BookShelf obj, MemoryStream stream)
         {
             if (this.knownBookshelf == obj)
             {
@@ -70,6 +67,9 @@ namespace SerializerTests.Serializers
 
             bookshelf.Books = fsBooks;
             this.fsShelf = bookshelf;
+
+            // Expand size if necessary.
+            stream.SetLength(BookShelfFlatSharp.Serializer.GetMaxSize(bookshelf));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

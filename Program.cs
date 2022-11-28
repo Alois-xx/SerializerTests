@@ -182,7 +182,7 @@ namespace SerializerTests
                 new MessagePackSharp<BookShelf>(Data, TouchAndVerify),
                 new GroBuf<BookShelf>(Data, TouchAndVerify),
                 new FlatBuffer<BookShelf,BookShelfFlat>(Data, TouchFlat),
-                new FlatSharpTest(Data, TouchAndVerify),
+                new FlatSharp<BookShelf>(Data, TouchAndVerify),
 #if NET472
                 // Hyperion does not work on .NET Core 3.0  https://github.com/akkadotnet/Hyperion/issues/111
                 // new Hyperion<BookShelf>(Data, Touch),

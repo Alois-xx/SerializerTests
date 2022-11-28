@@ -4,12 +4,11 @@ attribute "fs_serializer";
 namespace SerializerTests.Serializers;
 
 table BookFlatSharp {
-  Title:string;
-  Id:int;
-  BookData:[ubyte];
+  Title : string;
+  Id : int;
+  BookData : [ ubyte ];
 }
 
 table BookShelfFlatSharp (fs_serializer:"Lazy") { // lazy parsing means you must run with -verify to actually use the parsed object
-  Books:[BookFlatSharp];
-  Secret:string;
+  Books : [ BookFlatSharp ];
 }

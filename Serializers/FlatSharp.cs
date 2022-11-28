@@ -1,9 +1,7 @@
-﻿using Azos.Data.Modeling.DataTypes;
-using Azos.Scripting;
+﻿using Azos.Scripting;
 using FlatSharp;
 using Google.FlatBuffers;
 using SerializerTests.TypesToSerialize;
-using ServiceStack.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,19 +15,19 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/jamescourtney/FlatSharp/",
                     SerializerTypes.Binary | SerializerTypes.SupportsVersioning)]
-    class FlatSharpTest : TestBase<BookShelf, BookShelfFlatSharp, ByteBuffer>
+    class FlatSharp<TSerialize> : TestBase<TSerialize, BookShelfFlatSharp, ByteBuffer>
     {
         private BookShelf knownBookshelf;
         private BookShelfFlatSharp fsShelf;
 
-        public FlatSharpTest(Func<int, BookShelf> testData, Action<BookShelfFlatSharp, int, int> touchAndVerify, bool refTracking = false) : base(testData, touchAndVerify, refTracking)
+        public FlatSharp(Func<int, TSerialize> testData, Action<BookShelfFlatSharp, int, int> touchAndVerify, bool refTracking = false) : base(testData, touchAndVerify, refTracking)
         {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected override void Serialize(BookShelf obj, Stream stream)
+        protected override void Serialize(TSerialize obj, Stream stream)
         {
-            this.TranslateObject(obj);
+            this.TranslateObject((BookShelf)(object)obj);
 
             MemoryStream ms = (MemoryStream)stream;
 

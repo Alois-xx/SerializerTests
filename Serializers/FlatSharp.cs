@@ -15,7 +15,7 @@ namespace SerializerTests.Serializers
     /// <typeparam name="T"></typeparam>
     [SerializerType("https://github.com/jamescourtney/FlatSharp/",
                     SerializerTypes.Binary | SerializerTypes.SupportsVersioning)]
-    class FlatSharp<TSerialize> : TestBase<TSerialize, BookShelfFlatSharp, ByteBuffer>
+    class FlatSharp<TSerialize> : TestBase<TSerialize, BookShelfFlatSharp, SharedStringWriter>
     {
         private BookShelf knownBookshelf;
         private BookShelfFlatSharp fsShelf;

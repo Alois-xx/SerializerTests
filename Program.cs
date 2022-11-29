@@ -182,6 +182,7 @@ namespace SerializerTests
                 new MessagePackSharp<BookShelf>(Data, TouchAndVerify),
                 new GroBuf<BookShelf>(Data, TouchAndVerify),
                 new FlatBuffer<BookShelf,BookShelfFlat>(Data, TouchFlat),
+                new FlatSharp<BookShelf>(Data, TouchAndVerify),
 #if NET472
                 // Hyperion does not work on .NET Core 3.0  https://github.com/akkadotnet/Hyperion/issues/111
                 // new Hyperion<BookShelf>(Data, Touch),
@@ -854,6 +855,42 @@ namespace SerializerTests
                 if (optionalPayloadDataSize > 0 && data.Books[i].BookData.Length != optionalPayloadDataSize)
                 {
                     throw new InvalidOperationException($"BookData length was {data.Books[i].BookData.Length} but expected {optionalPayloadDataSize}");
+                }
+            }
+        }
+
+        void TouchAndVerify(BookShelfFlatSharp data, int nExpectedBooks, int optionalPayloadDataSize)
+        {
+            if (!VerifyAndTouch)
+            {
+                return;
+            }
+
+            string tmpTitle = null;
+            int tmpId = 0;
+
+            var books = data.Books;
+            int count = books.Count;
+            if (nExpectedBooks != count)
+            {
+                throw new InvalidOperationException($"Number of deserialized Books was {data.Books.Count} but expected {nExpectedBooks}. This Serializer seem to have lost data.");
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                var book = books[i];
+
+                tmpTitle = book.Title;
+                tmpId = book.Id;
+
+                if (tmpId != i + 1)
+                {
+                    throw new InvalidOperationException($"Book Id was {data.Books[i].Id} but exepcted {i + 1}");
+                }
+
+                if (optionalPayloadDataSize > 0 && book.BookData.Value.Length != optionalPayloadDataSize)
+                {
+                    throw new InvalidOperationException($"BookData length was {data.Books[i].BookData.Value.Length} but expected {optionalPayloadDataSize}");
                 }
             }
         }

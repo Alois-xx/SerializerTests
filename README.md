@@ -63,11 +63,11 @@ Then you can verify the data yourself. If you want to plug in your own data type
 
 Execute ```RunAll.cmd -profile``` from source directory after compiling. This uses WPR with MultiProfile.wprp from [FileWriter](https://github.com/Alois-xx/FileWriter).
 WPR is taken from the Windows 10 SDK which needs to have installed the Windows Performance Toolkit from the [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/) first.
-You can use your current WPR of Windows which may work but you need to change the WPR location in RunTests.cmd and RunTests_Core.cmd.
+You can use your current WPR of Windows which may work but you need to change the WPR location in ```Profile.cmd```.
 Besides the CSV files are then the ETL files stored which you can then analyze further with WPA or [ETWAnalyzer](https://github.com/Siemens-Healthineers/ETWAnalyzer).
 
-- SerializeTestsNet31.etl
 - SerializeTestsNet48.etl
+- SerializeTestsNet31.etl
 - SerializeTestsNet50.etl
 - SerializeTestsNet60.etl
 - SerializeTestsNet70.etl

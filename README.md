@@ -2,6 +2,7 @@
 .NET Serializer testing framework
 
 This test framework compares the most popular and fastest serializers for .NET which was the input for 
+- https://aloiskraus.wordpress.com/2022/11/23/net-serialization-roundup-2022/
 - https://aloiskraus.wordpress.com/2019/09/29/net-serialization-benchmark-2019-roundup/
 - https://aloiskraus.wordpress.com/2018/05/06/serialization-performance-update-with-net-4-7-2/
 - https://aloiskraus.wordpress.com/2017/04/23/the-definitive-serialization-performance-guide/

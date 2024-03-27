@@ -78,7 +78,7 @@
     <PackageReference Include="MessagePack" Version="2.4.35" />
     <PackageReference Include="MsgPack.Cli" Version="1.0.1" />
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="protobuf-net" Version="3.1.25" />
     <PackageReference Include="Salar.Bois" Version="3.2.1" />
     <PackageReference Include="Salar.Bois.LZ4" Version="3.2.1" />
